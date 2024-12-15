@@ -23,4 +23,5 @@
 #define EXIT_FAILURE 1 /* Failing exit status. */
 #define EXIT_SUCCESS 0 /* Successful exit status. */
 
-__link("stdlib/rand.c") uint8_t rand(); /* TODO: uint16_t */
+__link("stdlib/rand.c") int rand(void);
+__link("stdlib/abs.c") int abs(int x);

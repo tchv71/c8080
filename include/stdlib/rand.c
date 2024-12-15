@@ -17,10 +17,11 @@
 
 #include <stdlib.h>
 
-uint8_t rand_seed = 0xFA;
+static uint16_t __rand_seed = 1;
 
-uint8_t rand() {
-    rand_seed *= 5;
-    rand_seed++;
-    return rand_seed;
+int rand(void) {
+    __rand_seed ^= (__rand_seed << 13);
+    __rand_seed ^= (__rand_seed >> 9);
+    __rand_seed ^= (__rand_seed << 7);
+    return __rand_seed;
 }

@@ -233,10 +233,10 @@ void addRandom() {
     }
 
     if (len > 0) {
-        r = rand() % len;
+        r = (uint8_t)rand() % len;
         x = list[r][0];
         y = list[r][1];
-        n = (rand() % 10) / 9 + 1;
+        n = ((uint8_t)rand() % 10) / 9 + 1;
         board[x][y] = n;
     }
 }

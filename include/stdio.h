@@ -24,3 +24,4 @@ __link("stdio/snprintf.c") int __stdcall snprintf(char *buffer, size_t bufer_siz
 __link("stdio/printf.c") int __stdcall printf(const char *format, ...);
 __link("stdio/getchar.c") int getchar();
 __link("stdio/putchar.c") int putchar(int c);
+__link("stdio/puts.c") int puts(const char* text);

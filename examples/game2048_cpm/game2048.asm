@@ -3,6 +3,15 @@
 __begin:
 __entry:
 main:
+        ld   de, __bss
+        xor  a
+__init_loop:
+        ld   (de), a
+        inc  de
+        ld   hl, 10000h - __end
+        add  hl, de
+        jp   nc, __init_loop
+
 ; 309  main(int argc, char *argv[]) {
 	ld (__a_2_main), hl
 
@@ -556,7 +565,7 @@ l_55:
 ; 27         seconds--;
 	dec hl
 	ld (__a_1_sleep), hl
-; 28         Delay(C8080_SECOND_DELAY);
+; 28         Delay(__C8080_ONE_SECOND_DELAY);
 	ld hl, 5000
 	call delay
 	jp l_55
@@ -653,8 +662,9 @@ l_61:
 	ld a, (__s_addrandom + 3)
 	or a
 	ret z
-; 236         r = rand() % len;
+; 236         r = (uint8_t)rand() % len;
 	call rand
+	ld a, l
 	ld l, a
 	ld h, 0
 	ex hl, de
@@ -680,8 +690,9 @@ l_61:
 	inc hl
 	ld a, (hl)
 	ld (__s_addrandom + 1), a
-; 239         n = (rand() % 10) / 9 + 1;
+; 239         n = ((uint8_t)rand() % 10) / 9 + 1;
 	call rand
+	ld a, l
 	ld l, a
 	ld h, 0
 	ld de, 10
@@ -1342,17 +1353,40 @@ l_109:
 	jp nz, l_109
 	ret
 rand:
-; 22  rand() {
-; 23     rand_seed *= 5;
-	ld a, (rand_seed)
-	ld d, a
-	add a
-	add a
-	add d
-; 24     rand_seed++;
-	inc a
-	ld (rand_seed), a
-; 25     return rand_seed;
+; 22  rand(void) {
+; 23     __rand_seed ^= (__rand_seed << 13);
+	ld hl, (__rand_seed)
+	ld h, l
+	ld l, 0
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	ex hl, de
+	ld hl, (__rand_seed)
+	call __o_xor_16
+	ld (__rand_seed), hl
+; 24     __rand_seed ^= (__rand_seed >> 9);
+	ld de, 9
+	call __o_shr_u16
+	ex hl, de
+	ld hl, (__rand_seed)
+	call __o_xor_16
+	ld (__rand_seed), hl
+; 25     __rand_seed ^= (__rand_seed << 7);
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	ex hl, de
+	ld hl, (__rand_seed)
+	call __o_xor_16
+	ld (__rand_seed), hl
+; 26     return __rand_seed;
 	ret
 countempty:
 ; 186  countEmpty() {
@@ -1782,7 +1816,7 @@ l_146:
 	ld d, (hl)
 	ex hl, de
 	ld a, l
-	and 0
+	and 255
 	call __printf_out
 	jp l_130
 l_145:
@@ -1989,7 +2023,8 @@ __printf_out:
 	jp nz, l_181
 ; 32         putchar((uint8_t)c);
 	ld a, (__a_1___printf_out)
-	call __o_i8_to_i16
+	ld l, a
+	ld h, 0
 	jp putchar
 l_181:
 ; 33         return;
@@ -2288,12 +2323,6 @@ __o_sub_32:
     ld d, a ; de - result
     ld hl, bc
     ret
-__o_i8_to_i16:
-    ld l, a
-    rla
-    sbc a
-    ld h, a
-    ret
 __o_i16_to_i32:
     ld de, 0
     ld a, h
@@ -2450,38 +2479,65 @@ __o_minus_32:
     sbc d
     ld d, a
     ret
-__c_5: db 0
-__c_2: db 10, 10, 10, 10, 0
-__c_12: db 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 119, 44, 97, 44, 115, 44, 100, 32, 111, 114, 32, 114, 44, 113, 32, 32, 32, 32, 32, 32, 32, 10, 0
-__c_0: db 27, 91, 72, 0
-__c_7: db 27, 91, 72, 27, 91, 50, 74, 0
-__c_18: db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 71, 65, 77, 69, 32, 79, 86, 69, 82, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10, 0
-__c_19: db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 81, 85, 73, 84, 63, 32, 40, 121, 47, 110, 41, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10, 0
-__c_20: db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 82, 69, 83, 84, 65, 82, 84, 63, 32, 40, 121, 47, 110, 41, 32, 32, 32, 32, 32, 32, 32, 10, 0
-__c_3: db 37, 117, 0
-__c_10: db 43, 10, 0
-__c_9: db 43, 45, 45, 45, 45, 45, 45, 45, 0
-__c_8: db 50, 48, 52, 56, 46, 99, 32, 37, 49, 55, 100, 32, 112, 116, 115, 10, 10, 0
-__c_1: db 50, 48, 52, 56, 46, 99, 32, 37, 50, 51, 100, 32, 112, 116, 115, 0
-__c_11: db 124, 10, 0
-__c_6: db 124, 32, 32, 32, 32, 32, 32, 32, 0
-__c_4: db 124, 37, 42, 115, 37, 115, 37, 42, 115, 0
+__c_5:
+  db 0
+__c_2:
+  db 10, 10, 10, 10, 0
+__c_12:
+  db 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 119, 44, 97, 44, 115
+  db 44, 100, 32, 111, 114, 32, 114, 44, 113, 32, 32, 32, 32, 32, 32, 32
+  db 10, 0
+__c_0:
+  db 27, 91, 72, 0
+__c_7:
+  db 27, 91, 72, 27, 91, 50, 74, 0
+__c_18:
+  db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 71, 65, 77, 69
+  db 32, 79, 86, 69, 82, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10
+  db 0
+__c_19:
+  db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 81, 85, 73, 84
+  db 63, 32, 40, 121, 47, 110, 41, 32, 32, 32, 32, 32, 32, 32, 32, 32
+  db 10, 0
+__c_20:
+  db 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 82, 69, 83, 84, 65, 82
+  db 84, 63, 32, 40, 121, 47, 110, 41, 32, 32, 32, 32, 32, 32, 32, 10
+  db 0
+__c_3:
+  db 37, 117, 0
+__c_10:
+  db 43, 10, 0
+__c_9:
+  db 43, 45, 45, 45, 45, 45, 45, 45, 0
+__c_8:
+  db 50, 48, 52, 56, 46, 99, 32, 37, 49, 55, 100, 32, 112, 116, 115, 10
+  db 10, 0
+__c_1:
+  db 50, 48, 52, 56, 46, 99, 32, 37, 50, 51, 100, 32, 112, 116, 115, 0
+__c_11:
+  db 124, 10, 0
+__c_6:
+  db 124, 32, 32, 32, 32, 32, 32, 32, 0
+__c_4:
+  db 124, 37, 42, 115, 37, 115, 37, 42, 115, 0
 score:
 	dd 0
-board:
-	ds 16
 __s_addrandom_initialized:
 	db 0
+__rand_seed:
+	dw 1
+__bss:
+board:
+	ds 16
 __printf_out_pointer:
 	ds 2
 __printf_out_end:
 	ds 2
 __printf_out_total:
 	ds 2
-rand_seed:
-	db 250
 __static_stack:
 	ds 70
+__end:
 __s_drawboard equ __static_stack + 48
 __s_strlen equ __static_stack + 0
 __a_1_strlen equ __s_strlen + 0
@@ -2534,5 +2590,4 @@ __a_2_uint32tostring equ __s_uint32tostring + 3
 __a_3_uint32tostring equ __s_uint32tostring + 7
 __s_cpmbiosconout equ __static_stack + 0
 __a_1_cpmbiosconout equ __s_cpmbiosconout + 0
-__end:
-    savebin "game2048.com", __begin, __end - __begin
+    savebin "game2048.com", __begin, __bss - __begin
