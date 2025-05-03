@@ -315,8 +315,8 @@ l_40:
 ; 255     drawBoard();
 	jp drawboard
 getchar:
-; 40  getchar() {
-; 41     return cpmBiosConIn();
+; 34  getchar() {
+; 35     return cpmBiosConIn();
 	call cpmbiosconin
 	ld l, a
 	ld h, 0
@@ -762,6 +762,7 @@ printf:
 	push bc
 ; 22     va_list va;
 ; 23     va_start(va, format);
+; 1 arg) + 1)
 	ld hl, 6
 	add hl, sp
 	ex hl, de
@@ -770,7 +771,7 @@ printf:
 	ld (hl), e
 	inc hl
 	ld (hl), d
-; 24     __printf_out_pointer = NULL;
+; 24  = NULL;
 	ld hl, 0
 	ld (__printf_out_pointer), hl
 ; 25     __printf(format, va);
@@ -919,10 +920,10 @@ l_81:
 ; 66     drawBoard();
 	jp drawboard
 cpmbiosconin:
-; 32  uint8_t __fastcall cpmBiosConIn() {
+; 20  __fastcall cpmBiosConIn(void) {
 
         ld hl, (1)
-        ld l, 09h
+        ld l, 7
         jp hl
     
 	ret
@@ -1283,6 +1284,7 @@ snprintf:
 	push bc
 ; 33     va_list va;
 ; 34     va_start(va, format);
+; 1 arg) + 1)
 	ld hl, 10
 	add hl, sp
 	ex hl, de
@@ -1291,7 +1293,7 @@ snprintf:
 	ld (hl), e
 	inc hl
 	ld (hl), d
-; 35     __snprintf(buffer, buffer_size, format, va);
+; 35 buffer, buffer_size, format, va);
 	ld hl, 4
 	add hl, sp
 	ld e, (hl)
@@ -1559,6 +1561,9 @@ l_135:
 	cp 42
 	jp nz, l_136
 ; 86                     width = va_arg(va, unsigned);
+; 1  *(type *)((char *)(v) - sizeof(type)))
+; 86 va_arg(va, unsigned);
+; 1  sizeof(type), *(type *)((char *)(v) - sizeof(type)))
 	ld hl, (__a_2___printf)
 	inc hl
 	inc hl
@@ -1570,7 +1575,7 @@ l_135:
 	ld d, (hl)
 	ex hl, de
 	ld (__s___printf + 1), hl
-; 87                     format++;
+; 87 ;
 	ld hl, (__a_1___printf)
 	inc hl
 	ld (__a_1___printf), hl
@@ -1687,6 +1692,9 @@ l_147:
 	ld a, (__s___printf + 4)
 	or a
 	jp z, l_154
+; 1  *(type *)((char *)(v) - sizeof(type)))
+; 117 va_arg(va, uint32_t) : va_arg(va, uint16_t);
+; 1  sizeof(type), *(type *)((char *)(v) - sizeof(type)))
 	ld hl, (__a_2___printf)
 	ld de, 4
 	add hl, de
@@ -1696,6 +1704,8 @@ l_147:
 	call __o_load_32
 	jp l_155
 l_154:
+; 117 va_arg(va, uint16_t);
+; 1  sizeof(type), *(type *)((char *)(v) - sizeof(type)))
 	ld hl, (__a_2___printf)
 	inc hl
 	inc hl
@@ -1711,7 +1721,7 @@ l_155:
 	ld (__s___printf + 17), hl
 	ex hl, de
 	ld ((__s___printf + 17) + 2), hl
-; 118                         if (c == 'i' || c == 'd') {
+; 118  == 'i' || c == 'd') {
 	ld a, (__s___printf + 0)
 	cp 105
 	jp z, l_158
@@ -1805,6 +1815,9 @@ l_146:
 ; 141                     }
 ; 142                     case 'c': {
 ; 143                         __printf_out(va_arg(va, uint16_t) & 0xFF);
+; 1  *(type *)((char *)(v) - sizeof(type)))
+; 143 va_arg(va, uint16_t) & 0xFF);
+; 1  sizeof(type), *(type *)((char *)(v) - sizeof(type)))
 	ld hl, (__a_2___printf)
 	inc hl
 	inc hl
@@ -1820,10 +1833,8 @@ l_146:
 	call __printf_out
 	jp l_130
 l_145:
-; 144                         break;
-; 145                     }
-; 146                     case 'n': {
-; 147                         size_t *out = va_arg(va, size_t *);
+; 147  *out = va_arg(va, size_t *);
+; 1  sizeof(type), *(type *)((char *)(v) - sizeof(type)))
 	ld hl, (__a_2___printf)
 	inc hl
 	inc hl
@@ -1835,7 +1846,7 @@ l_145:
 	ld d, (hl)
 	ex hl, de
 	ld (__s___printf + 6), hl
-; 148                         *out = __printf_out_total;
+; 148 out = __printf_out_total;
 	ld hl, (__printf_out_total)
 	ex hl, de
 	ld hl, (__s___printf + 6)
@@ -1858,6 +1869,9 @@ l_143:
 	ld hl, (__printf_out_total)
 	ld (__s___printf + 6), hl
 ; 156                         __printf_text(va_arg(va, char *));
+; 1  *(type *)((char *)(v) - sizeof(type)))
+; 156 va_arg(va, char *));
+; 1  sizeof(type), *(type *)((char *)(v) - sizeof(type)))
 	ld hl, (__a_2___printf)
 	inc hl
 	inc hl
@@ -1869,7 +1883,7 @@ l_143:
 	ld d, (hl)
 	ex hl, de
 	call __printf_text
-; 157                         __printf_spaces(width, __printf_out_total - prevTotal, ' ');
+; 157 width, __printf_out_total - prevTotal, ' ');
 	ld hl, (__s___printf + 1)
 	ld (__a_1___printf_spaces), hl
 	ld hl, (__s___printf + 6)
@@ -2078,7 +2092,7 @@ l_185:
 	add 48
 	ld (__s_uint32tostring + 0), a
 ; 28         if (c > '9') c += 'A' - '0' - 10;
-	cp 57
+	cp 58
 	jp m, l_188
 	add 7
 	ld (__s_uint32tostring + 0), a

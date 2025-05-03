@@ -29,13 +29,7 @@ int __fastcall getchar() {
 #endif
 
 #ifdef ARCH_CPM
-static uint8_t __fastcall cpmBiosConIn() {
-    asm {
-        ld hl, (1)
-        ld l, 09h
-        jp hl
-    }
-}
+#include <cpmbios.h>
 
 int getchar() {
     return cpmBiosConIn();

@@ -20,3 +20,4 @@
 #include <stdint.h>
 
 __link("cpmbios/cpmbiosconst.c") uint8_t __fastcall cpmBiosConSt(void);
+__link("cpmbios/cpmbiosconin.c") uint8_t __fastcall cpmBiosConIn(void);
