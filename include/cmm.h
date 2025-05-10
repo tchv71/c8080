@@ -218,18 +218,22 @@ uint8_t flag_pe();
 void carry_add(uint8_t a, uint8_t r8_xhl_const_number);
 void carry_sub(uint8_t a, uint8_t r8_xhl_const_number);
 
-// *** Включение/выключение прерываний ***
+// *** Разные простые команды ***
 // enable_interrupts()               | EI         | нет      | 4 такта
 // disable_interrupts()              | DI         | нет      | 4 такта
+// daa()                             | DAA        | нет      | 4 такта
+// halt()                            | HLT        | нет      | 7 тактов
+// nop()                             | NOP        | нет      | 4 такта
 
 void enable_interrupts(void);
 void disable_interrupts(void);
+void nop(void);
+void halt(void);
+void daa(void);
 
 /*
+TODO:
 3F 	CMC 	CCF 	Инвертировать флаг C 	4
-27 	DAA 	DAA 	Десятичная коррекция аккумулятора 	4
-76 	HLT 	HALT 	Остановка до прерывания 	7
-00 	NOP 	NOP 	Нет операции 	4
 C7 	RST 0 	RST 0 	Запуск подпрограммы по адресу 0 	11
 CF 	RST 8 	RST 8 	Запуск подпрограммы по адресу 8 	11
 D7 	RST 10h 	RST 10h 	Запуск подпрограммы по адресу 10h 	11
