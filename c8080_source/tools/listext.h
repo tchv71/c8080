@@ -31,6 +31,6 @@ inline T &Get(std::list<T> &a, size_t n) {
     assert(n < a.size());
     typename std::list<T>::iterator x = a.begin();
     while (n--)
-        x++;
+        ++x;
     return *x;
 }
