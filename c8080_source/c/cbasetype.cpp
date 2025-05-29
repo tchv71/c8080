@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "basetype.h"
+#include "cbasetype.h"
 #include <stdexcept>
 #include "consts.h"
 
