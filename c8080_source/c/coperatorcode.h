@@ -18,7 +18,7 @@
 #pragma once
 
 enum COperatorCode {
-    OP_CMP_L, // TODO: Rename to COP_CMP_L
+    OP_CMP_L,  // TODO: Rename to COP_CMP_L
     OP_CMP_G,
     OP_CMP_LE,
     OP_CMP_GE,

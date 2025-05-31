@@ -1,0 +1,50 @@
+/*
+ * c8080 compiler
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "ctype.h"
+#include "cerrorposition.h"
+#include "cnodeptr.h"
+#include "cvariablecompiler.h"
+
+struct CVariable {
+    CType type;
+    bool only_extern{};
+    bool is_stack_variable{};
+    bool is_function_argument{};  // To select ARG_STACK_ADDRESS or STACK_ADDRESS
+    bool is_label{};              // For all_top_variables
+    bool function_body_exists{};
+    CNodePtr body;  // Function body or expression for initializing a variable
+    std::string name;
+    std::string output_name;
+    std::vector<std::shared_ptr<CVariable>> function_arguments;
+    size_t function_stack_size{};
+    CErrorPosition place;
+    uint64_t stack_offset{};
+    size_t label_call_count{};
+
+    // __address(number) or __link(number) in programm
+    bool address_exists{};
+    uint64_t address_value{};
+
+    // __link(file_name) in programm
+    std::string auto_include_base_name;
+    std::string auto_include_name_for_path;
+
+    struct CVariableCompiler c;
+};

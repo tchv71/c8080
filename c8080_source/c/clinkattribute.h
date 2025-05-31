@@ -25,5 +25,5 @@ struct CLinkAttribute {
     std::string base_name;
     std::string name_for_path;
     uint64_t address = 0;
-    bool address_mode = false;
+    bool address_enabled = false;
 };

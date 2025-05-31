@@ -15,8 +15,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cerrorposition.h"
+#pragma once
 
-std::string CErrorPosition::ToString() const {
-    return std::string(file_name) + ":" + std::to_string(line) + ":" + std::to_string(column);
-}
+#include "c_tree.h"
+
+void CCompileError(const CErrorPosition &position, CString text);
+void CCompileError(ConstCNodePtr node, CString text);
+
+#define TYPE_NOT_SUPPORTED(NODE)                                                                                     \
+    CCompileError((NODE), "Type " + (NODE)->ctype.ToString() + " is not supported in " + __PRETTY_FUNCTION__ + " " + \
+                              std::to_string(__LINE__))

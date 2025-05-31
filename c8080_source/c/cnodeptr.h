@@ -15,8 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cerrorposition.h"
+#pragma once
 
-std::string CErrorPosition::ToString() const {
-    return std::string(file_name) + ":" + std::to_string(line) + ":" + std::to_string(column);
-}
+#include <memory>
+
+class CNode;
+
+typedef std::shared_ptr<CNode> CNodePtr;
+typedef const std::shared_ptr<CNode> &ConstCNodePtr;

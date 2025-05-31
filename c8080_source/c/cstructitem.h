@@ -35,6 +35,6 @@ public:
     }
 
     std::string ToString() const {
-        return type.ToString() + " " + name + " " + std::to_string(struct_item_offset);
+        return type.ToString() + " " + name;
     }
 };

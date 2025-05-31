@@ -15,8 +15,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cerrorposition.h"
+#include "cnodelist.h"
+#include "c_tree.h"
 
-std::string CErrorPosition::ToString() const {
-    return std::string(file_name) + ":" + std::to_string(line) + ":" + std::to_string(column);
+void CNodeList::PushBack(CNodePtr item) {
+    if (first == nullptr) {
+        first = item;
+        last = item;
+    } else {
+        while (last->next_node != nullptr)
+            last = last->next_node;
+        last->next_node = item;
+    }
 }

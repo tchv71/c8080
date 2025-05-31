@@ -15,8 +15,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cerrorposition.h"
+#include "ccompileerror.h"
+#include <stdexcept>
 
-std::string CErrorPosition::ToString() const {
-    return std::string(file_name) + ":" + std::to_string(line) + ":" + std::to_string(column);
+void CCompileError(const CErrorPosition &position, CString text) {
+    throw std::runtime_error(position.ToString() + ": " + text);
+}
+
+void CCompileError(ConstCNodePtr node, CString text) {
+    CCompileError(node->place, text);
 }
