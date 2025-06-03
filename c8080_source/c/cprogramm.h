@@ -27,7 +27,6 @@
 class CProgramm {
 public:
     CNodePtr first_node;
-    CNodePtr last_node;
     std::map<std::string, std::shared_ptr<CConstString>> const_strings;
     std::map<std::string, std::shared_ptr<CStruct>> global_structs;
     std::map<std::string, std::shared_ptr<CStruct>> global_unions;

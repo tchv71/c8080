@@ -114,4 +114,15 @@ public:
         if (!IfToken(strings, out_index))
             SyntaxError();
     }
+
+    template <class T>
+    bool IfToken(const std::vector<T> &array, size_t &out_index) {
+        for (auto i = array.rbegin(); i != array.rend(); i++) {
+            if (IfToken(i->name)) {
+                out_index = array.size() - 1 - (i - array.rbegin());
+                return true;
+            }
+        }
+        return false;
+    }
 };
