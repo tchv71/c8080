@@ -17,13 +17,7 @@
 
 #pragma once
 
-#include <string>
-#include <stdint.h>
+#include "../ctype.h"
+#include "../cnode.h"
 
-struct CLinkAttribute {
-    bool enabled = false;
-    std::string base_name;
-    std::string name_for_path;
-    uint64_t address = 0;
-    bool address_enabled = false;
-};
+CNodePtr Convert(CConstType to_type, CNodePtr from, bool cmm = false);

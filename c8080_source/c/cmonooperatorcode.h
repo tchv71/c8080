@@ -18,19 +18,19 @@
 #pragma once
 
 enum CMonoOperatorCode {
-    MOP_INC,
-    MOP_DEC,
-    MOP_PLUS,
-    MOP_MINUS,
-    MOP_NOT,
-    MOP_NEG,
-    MOP_DEADDR,
-    MOP_ADDR,
-    MOP_POST_INC,
-    MOP_POST_DEC,
-    MOP_ARRAY_ELEMENT,
-    MOP_STRUCT_ITEM,
-    MOP_STRUCT_ITEM_POINTER,
+    MOP_INC,                  // ++a
+    MOP_DEC,                  // --a
+    MOP_PLUS,                 // +a
+    MOP_MINUS,                // -a
+    MOP_NOT,                  // ~a
+    MOP_NEG,                  // -a
+    MOP_DEADDR,               // *a
+    MOP_ADDR,                 // &a
+    MOP_POST_INC,             // a++
+    MOP_POST_DEC,             // a--
+    MOP_ARRAY_ELEMENT,        // a[n]
+    MOP_STRUCT_ITEM,          // a.n
+    MOP_STRUCT_ITEM_POINTER,  // a->n
 };
 
 const char *ToString(CMonoOperatorCode operator_code);

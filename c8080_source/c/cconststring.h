@@ -18,11 +18,9 @@
 #pragma once
 
 #include <string>
-#include <stddef.h>
-#include "../tools/number_size.h"
+#include "cconststringcomiler.h"
 
 struct CConstString {
-    char name[4u + CHARS_IN_64_BIT_NUBMER + 1u]{};  // "__c_12345\0"
     std::string text;
-    size_t use_counter = 0;
+    CConstStringCompiler c;
 };

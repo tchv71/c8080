@@ -18,5 +18,5 @@
 #include "cerrorposition.h"
 
 std::string CErrorPosition::ToString() const {
-    return std::string(file_name) + ":" + std::to_string(line) + ":" + std::to_string(column);
+    return std::string(file_name) + ":" + std::to_string(line) + ":" + std::to_string(column);  // gcc compatible
 }

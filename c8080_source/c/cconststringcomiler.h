@@ -18,27 +18,10 @@
 #pragma once
 
 #include <string>
-#include "../tools/cstring.h"
+#include <stddef.h>
+#include "../tools/number_size.h"
 
-class CLex;  // Declared here to reduce the code amount
-
-class CErrorPosition {
-public:
-    const char *file_name;
-    size_t line;
-    size_t column;
-    const char *cursor;
-
-    CErrorPosition() {
-        file_name = nullptr;
-        line = 0;
-        column = 0;
-        cursor = nullptr;
-    }
-
-    CErrorPosition(const CLex &p);  // Declared here to reduce the code amount
-
-    std::string ToString() const;
+struct CConstStringCompiler {
+    char name[4u + CHARS_IN_64_BIT_NUBMER + 1u]{};  // "__c_12345\0"
+    size_t use_counter{};
 };
-
-typedef const CErrorPosition &CConstErrorPosition;

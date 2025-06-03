@@ -18,27 +18,21 @@
 #pragma once
 
 #include <string>
-#include "../tools/cstring.h"
+#include <stdint.h>
 
-class CLex;  // Declared here to reduce the code amount
+// Example: __link(0xF800) void reboot(void);
+// TODO: __address
 
-class CErrorPosition {
-public:
-    const char *file_name;
-    size_t line;
-    size_t column;
-    const char *cursor;
-
-    CErrorPosition() {
-        file_name = nullptr;
-        line = 0;
-        column = 0;
-        cursor = nullptr;
-    }
-
-    CErrorPosition(const CLex &p);  // Declared here to reduce the code amount
-
-    std::string ToString() const;
+struct CAddressAttribute {
+    bool exists{};
+    uint64_t value{};
 };
 
-typedef const CErrorPosition &CConstErrorPosition;
+// Example: __link("stdio/snprintf.c") int snprintf(char *buffer, size_t bufer_size, const char *format, ...);
+// TODO: __include
+
+struct CIncludeAttribute {
+    bool exists{};
+    std::string base_name;
+    std::string name_for_path;
+};

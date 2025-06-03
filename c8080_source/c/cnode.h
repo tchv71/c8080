@@ -18,7 +18,7 @@
 #pragma once
 
 #include "cnodeptr.h"
-#include "clinkattribute.h"
+#include "cattribute.h"
 #include "cerrorposition.h"
 #include "cconststring.h"
 #include "coperatorcode.h"
@@ -101,7 +101,8 @@ struct CNode {
 
     std::string text;
 
-    CLinkAttribute link_attribute;
+    CIncludeAttribute include_attribute;
+    CAddressAttribute address_attribute;
     CErrorPosition place;
 
     // Заполняется оптимизатором
