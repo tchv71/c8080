@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tokenizer.h"
+#include "ctokenizer.h"
 #include <errno.h>
 #include <stdlib.h>
 

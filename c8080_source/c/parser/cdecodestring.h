@@ -19,4 +19,4 @@
 
 #include <string>
 
-const char *UnquoteCString(std::string &str);
+const char *CDecodeString(std::string &str);

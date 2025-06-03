@@ -15,9 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "unquotecstring.h"
+#include "cdecodestring.h"
 
-const char *UnquoteCString(std::string &str) {
+const char *CDecodeString(std::string &str) {
     char *begin = &str[0];
     char *dest = begin;
     const char *src = dest + 1;
