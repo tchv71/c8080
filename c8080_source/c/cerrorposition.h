@@ -40,3 +40,5 @@ public:
 
     std::string ToString() const;
 };
+
+typedef const CErrorPosition &CConstErrorPosition;

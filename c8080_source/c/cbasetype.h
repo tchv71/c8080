@@ -18,6 +18,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "cerrorposition.h"
 
 enum CBaseType {
     CBT_STRUCT = 0,
@@ -42,7 +43,7 @@ enum CBaseType {
     CBT_SIZE = CBT_UNSIGNED_INT,
 };
 
-uint8_t SizeOf(CBaseType type);
+uint8_t SizeOf(CBaseType type, CConstErrorPosition e);
 bool IsInteger(CBaseType type);
 bool IsUnsigned(CBaseType type);
 CBaseType CalcResultCBaseType(CBaseType a, CBaseType b);

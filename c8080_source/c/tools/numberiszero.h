@@ -17,11 +17,6 @@
 
 #pragma once
 
-#include "c_tree.h"
+#include "../cnode.h"
 
-void CCompileError(const CErrorPosition &position, CString text);
-void CCompileError(ConstCNodePtr node, CString text);
-
-#define TYPE_NOT_SUPPORTED(NODE)                                                                                     \
-    CCompileError((NODE), "Type " + (NODE)->ctype.ToString() + " is not supported in " + __PRETTY_FUNCTION__ + " " + \
-                              std::to_string(__LINE__))
+bool NumberIsZero(ConstCNodePtr node);

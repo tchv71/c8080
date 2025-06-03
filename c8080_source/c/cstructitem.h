@@ -24,7 +24,7 @@ class CStructItem {
 public:
     CType type;
     std::string name;
-    uint64_t struct_item_offset = 0;
+    uint64_t struct_item_offset{};
 
     bool operator==(const CStructItem &b) const {
         return type == b.type && name == b.name;

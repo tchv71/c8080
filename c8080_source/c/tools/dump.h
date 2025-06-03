@@ -17,4 +17,7 @@
 
 #pragma once
 
-enum CVariablesMode { CVM_DEFAULT, CVM_STACK, CVM_GLOBAL };
+#include <string>
+#include "../cnodeptr.h"
+
+void Dump(CNodePtr node, const std::string &level);

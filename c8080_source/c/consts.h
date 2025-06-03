@@ -18,6 +18,8 @@
 #pragma once
 
 static const uint8_t C_SIZEOF_POINTER = 2;
+static const uint8_t C_SIZEOF_CHAR = 1;
+static const uint8_t C_SIZEOF_SHORT = 2;
 static const uint8_t C_SIZEOF_INT = 2;
 static const uint8_t C_SIZEOF_LONG = 4;
 static const uint8_t C_SIZEOF_LONG_LONG = 8;

@@ -17,26 +17,13 @@
 
 #pragma once
 
-#include "cstructitem.h"
+#include "../cerrorposition.h"
+#include "../cnodeptr.h"
 
-struct CStruct {
-    std::string name;
-    std::vector<CStructItem> items;
-    uint64_t size_bytes = 0;
-    bool inited = false;
-    bool is_union = false;
+void CThrow(CConstErrorPosition position, CString text);
+void CThrow(ConstCNodePtr node, CString text);
+void CThrowTypeNotSupportedInternal(ConstCNodePtr node, const char *file_name, unsigned line);
 
-    bool operator==(const CStruct &b) const {
-        return name == b.name && items == b.items && is_union == b.is_union;
-    }
+// Throw an internal compiler error exception, including the position in the compiler source code
 
-    bool operator!=(const CStruct &b) const {
-        return !(*this == b);
-    }
-
-    std::string ToString() const;
-    void CalcOffsets(const CErrorPosition &place);
-    CStructItem *FindItem(const char *name);
-};
-
-typedef std::shared_ptr<CStruct> CStructPtr;
+#define C_THROW_TYPE_NOT_SUPPORTED_INTERNAL(NODE) CThrowTypeNotSupportedInternal((NODE), __PRETTY_FUNCTION__, __LINE__)

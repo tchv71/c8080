@@ -15,28 +15,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "cvariablecompiler.h"
+#include "cvariable.h"
 
-#include "cstructitem.h"
-
-struct CStruct {
-    std::string name;
-    std::vector<CStructItem> items;
-    uint64_t size_bytes = 0;
-    bool inited = false;
-    bool is_union = false;
-
-    bool operator==(const CStruct &b) const {
-        return name == b.name && items == b.items && is_union == b.is_union;
+void CVariableCompiler::AddCalledBy(const std::shared_ptr<CVariable> &function, bool call) {
+    for (auto &i : called_by) {  // TODO: Optimize, change to map
+        if (i.function.lock() == function) {
+            if (call)
+                i.call = true;
+            return;
+        }
     }
-
-    bool operator!=(const CStruct &b) const {
-        return !(*this == b);
-    }
-
-    std::string ToString() const;
-    void CalcOffsets(const CErrorPosition &place);
-    CStructItem *FindItem(const char *name);
-};
-
-typedef std::shared_ptr<CStruct> CStructPtr;
+    called_by.push_back(CalledBy{function, call});
+    function->c.call_count++;
+}

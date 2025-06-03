@@ -18,18 +18,21 @@
 #include "cbasetype.h"
 #include <stdexcept>
 #include "consts.h"
+#include "tools/cthrow.h"
 
-uint8_t SizeOf(CBaseType type) {
+// Get size of base type
+
+uint8_t SizeOf(CBaseType type, CConstErrorPosition &e) {
     switch (type) {
         case CBT_VOID:
             return 0;
         case CBT_CHAR:
         case CBT_UNSIGNED_CHAR:
         case CBT_SIGNED_CHAR:
-            return 1;
+            return C_SIZEOF_CHAR;
         case CBT_SHORT:
         case CBT_UNSIGNED_SHORT:
-            return 2;
+            return C_SIZEOF_SHORT;
         case CBT_INT:
         case CBT_UNSIGNED_INT:
             return C_SIZEOF_INT;
@@ -45,15 +48,18 @@ uint8_t SizeOf(CBaseType type) {
             return C_SIZEOF_DOUBLE;
         case CBT_LONG_DOUBLE:
             return C_SIZEOF_LONG_DOUBLE;
-        case CBT_STRUCT:
-            throw std::runtime_error("Can't sizeof(struct)");
+        case CBT_STRUCT:  // Must use CType::SizeOf()
+            CThrow(e, "Internal error, sizeof(struct) in " + std::string(__PRETTY_FUNCTION__));
         case CBT_FUNCTION:
-            throw std::runtime_error("Can't sizeof(function)");
+            CThrow(e, "C forbids applying ‘sizeof’ to an expression of function type");  // gcc
         case CBT_VA_LIST:
-            throw std::runtime_error("Can't sizeof(va_list)");
+            CThrow(e, "sizeof(__builtin_va_list) not implemented");
     }
-    throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " " + std::to_string(type));
+    CThrow(e, "Internal error, sizeof(unknown " + std::to_string(type) + ") in " + std::string(__PRETTY_FUNCTION__));
+    return 1;  // no return
 }
+
+// Check for integer base type
 
 bool IsInteger(CBaseType type) {
     switch (type) {
@@ -69,10 +75,11 @@ bool IsInteger(CBaseType type) {
         case CBT_LONG_LONG:
         case CBT_UNSIGNED_LONG_LONG:
             return true;
-        default:
-            return false;
     }
+    return false;
 }
+
+// Check for unsigned base type
 
 bool IsUnsigned(CBaseType type) {
     switch (type) {
@@ -82,10 +89,12 @@ bool IsUnsigned(CBaseType type) {
         case CBT_UNSIGNED_LONG:
         case CBT_UNSIGNED_LONG_LONG:
             return true;
-        default:
-            return false;
     }
+    return false;
 }
+
+// Base type of the result after an operation on values ​​of base types
+// Example: char + unsigned char => unsigned int
 
 CBaseType CalcResultCBaseType(CBaseType a, CBaseType b) {
     static_assert(CBT_CHAR < CBT_UNSIGNED_CHAR, "");
@@ -123,7 +132,6 @@ CBaseType CalcResultCBaseType(CBaseType a, CBaseType b) {
             return CBT_DOUBLE;
         case CBT_LONG_DOUBLE:
             return CBT_LONG_DOUBLE;
-        default:
-            return CBT_VOID;  // Error
     }
+    return CBT_VOID;  // Error
 }

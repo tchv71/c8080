@@ -15,13 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ccompileerror.h"
-#include <stdexcept>
+#pragma once
 
-void CCompileError(const CErrorPosition &position, CString text) {
-    throw std::runtime_error(position.ToString() + ": " + text);
-}
+#include "../cnode.h"
+#include "../coperatorcode.h"
+#include "../cerrorposition.h"
 
-void CCompileError(ConstCNodePtr node, CString text) {
-    CCompileError(node->place, text);
-}
+CNodePtr MakeOperator(COperatorCode o, CNodePtr a, CNodePtr b, CConstErrorPosition e, bool cmm);
+CNodePtr MakeOperatorIf(CNodePtr a, CNodePtr b, CNodePtr c, CConstErrorPosition e, bool cmm);

@@ -32,9 +32,8 @@ bool IsSetOperator(COperatorCode code) {
         case OP_SET_OR:
         case OP_SET_XOR:
             return true;
-        default:
-            return false;
     }
+    return false;
 }
 
 bool IsCompareOperator(COperatorCode code) {
@@ -46,9 +45,8 @@ bool IsCompareOperator(COperatorCode code) {
         case OP_CMP_L:
         case OP_CMP_G:
             return true;
-        default:
-            return false;
     }
+    return false;
 }
 
 const char *ToString(COperatorCode code) {
@@ -116,5 +114,5 @@ const char *ToString(COperatorCode code) {
         case OP_COMMA:
             return ",";
     }
-    throw std::runtime_error("Unsuppoerted operator " + std::to_string(int(code)) + " in " + __PRETTY_FUNCTION__);
+    throw std::runtime_error("Unsupported operator " + std::to_string(int(code)) + " in " + __PRETTY_FUNCTION__);
 }

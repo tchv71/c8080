@@ -18,12 +18,12 @@
 #include "cstruct.h"
 #include <stdexcept>
 
-void CStruct::CalcOffsets() {
+void CStruct::CalcOffsets(const CErrorPosition &place) {
     if (is_union) {
         uint64_t max_size = 0;
         for (auto &i : items) {
             i.struct_item_offset = 0;
-            auto size = i.type.SizeOf();
+            auto size = i.type.SizeOf(place);
             if (max_size < size)
                 max_size = size;
         }
@@ -32,7 +32,7 @@ void CStruct::CalcOffsets() {
         uint64_t offset = 0;
         for (auto &i : items) {
             i.struct_item_offset = offset;
-            if (__builtin_add_overflow(offset, i.type.SizeOf(), &offset))
+            if (__builtin_add_overflow(offset, i.type.SizeOf(place), &offset))
                 throw std::runtime_error("Address overflow when calculating offset");
         }
         size_bytes = offset;
