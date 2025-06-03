@@ -20,9 +20,9 @@
 #include "cstring.h"
 
 static inline std::string GetPath(CString file_name) {
-    const auto pos = file_name.rfind('/');
+    size_t pos = file_name.rfind('/');
 #if WIN32
-    const auto pos1 = file_name.rfind('\\');
+    const size_t pos1 = file_name.rfind('\\');
     if (pos1 != file_name.npos && (pos == file_name.npos || pos < pos1))
         pos = pos1;
 #endif

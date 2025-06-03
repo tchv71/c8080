@@ -19,9 +19,15 @@
 
 void TrimSelf(std::string &string) {
     const auto begin = string.find_first_not_of(' ');
-    if (begin != 0u)
+    if (begin != 0u) {
+        if (begin == std::string::npos) {
+            string.clear();
+            return;
+        }
         string.erase(0u, begin);
-    const auto end = string.find_last_not_of(' ');
-    if (end != string.size())
-        string.resize(end + 1u);
+    }
+
+    const auto end = string.find(' ');
+    if (end != std::string::npos)
+        string.resize(end);
 }

@@ -24,7 +24,7 @@ bool ConvertUtf8(uint32_t &output, const char *&input, const char *input_end) {
     const uint8_t a = *input++;
     if ((a & 0x80) == 0) { /* 0xxxxxxx */
         output = a;
-        return 1;
+        return true;
     }
 
     if ((a & 0xE0) == 0xC0) { /* 110xxxxx */
