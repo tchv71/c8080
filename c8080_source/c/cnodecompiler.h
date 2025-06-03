@@ -17,24 +17,12 @@
 
 #pragma once
 
-#include "cstructitem.h"
+#include "cvariable.h"
 
-struct CStruct {
-    std::string name;
-    std::vector<CStructItemPtr> items;
-    uint64_t size_bytes = 0;
-    bool inited = false;
-    bool is_union = false;
+class AssemblerLabel;
 
-    bool operator==(const CStruct &b) const;
-
-    bool operator!=(const CStruct &b) const {
-        return !(*this == b);
-    }
-
-    std::string ToString() const;
-    void CalcOffsets(const CErrorPosition &e);
-    CStructItemPtr FindItem(const char *name);
+struct CNodeCompiler {
+    bool const_prepared{};
+    std::vector<CVariablePtr> used_variables;  // Only in CONST
+    AssemblerLabel *label{};
 };
-
-typedef std::shared_ptr<CStruct> CStructPtr;

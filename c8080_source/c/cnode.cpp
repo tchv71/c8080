@@ -18,104 +18,41 @@
 #include "cnode.h"
 #include <stdexcept>
 
-const char *ToString(CNodeType type) {
-    switch (type) {
-        case CNT_STACK_ADDRESS:
-            return "STACK_ADDRESS";
-        case CNT_ARG_STACK_ADDRESS:
-            return "ARG_STACK_ADDRESS";
-        case CNT_NUMBER:
-            return "NUMBER";
-        case CNT_RETURN:
-            return "RETURN";
-        case CNT_IF:
-            return "IF";
-        case CNT_WHILE:
-            return "WHILE";
-        case CNT_LEVEL:
-            return "LEVEL";
-        case CNT_VARIABLE:
-            return "VARIABLE";
-        case CNT_OPERATOR:
-            return "OPERATOR";
-        case CNT_MONO_OPERATOR:
-            return "MONO_OPERATOR";
-        case CNT_SIZEOF_TYPE:
-            return "SIZEOF_TYPE";
-        case CNT_LOAD_VARIABLE:
-            return "LOAD_VARIABLE";
-        case CNT_FUNCTION_CALL:
-            return "FUNCTION_CALL";
-        case CNT_TYPEDEF:
-            return "TYPEDEF";
-        case CNT_CONST_STRING:
-            return "CONST_STRING";
-        case CNT_STRUCT_STRING:
-            return "STRUCT_STRING";
-        case CNT_FOR:
-            return "FOR";
-        case CNT_CONVERT:
-            return "CONVERT";
-        case CNT_DO:
-            return "DO";
-        case CNT_BREAK:
-            return "BREAK";
-        case CNT_CONTINUE:
-            return "CONTINUE";
-        case CNT_CONST:
-            return "CONST";
-        case CNT_CASE:
-            return "CASE";
-        case CNT_DEFAULT:
-            return "DEFAULT";
-        case CNT_SWITCH:
-            return "SWITCH";
-        case CNT_ASM:
-            return "ASM";
-        case CNT_SAVE_TO_REGISTER:
-            return "SAVE_TO_REGISTER";
-        case CNT_LOAD_FROM_REGISTER:
-            return "LOAD_FROM_REGISTER";
-        case CNT_SELF_CHANGE:
-            return "SELF_CHANGE";
-        case CNT_DELETED:
-            return "DELETED";
-    }
-    return "?";
-}
-
 void DeleteNode(CNodePtr &node, char c) {
     assert(node != nullptr);
-    CNodePtr save;
+    CNodePtr saved_child;
     switch (c) {
         case 'a':
-            save = node->a;
+            saved_child = node->a;
             break;
         case 'b':
-            save = node->b;
+            saved_child = node->b;
             break;
         case 'c':
-            save = node->c;
+            saved_child = node->c;
             break;
         default:
-            throw std::runtime_error(__PRETTY_FUNCTION__);
+            throw std::runtime_error("Internal error, invalid argument " + std::to_string(int(c)) + " in " +
+                                     std::string(__PRETTY_FUNCTION__));
     }
-    CNodePtr next_node = node->next_node;
-    *node = *save;
-    assert(node->next_node == nullptr);
-    node->next_node = next_node;
+    if (saved_child->next_node != nullptr)
+        throw std::runtime_error("Internal error, next_node != nullptr in " + std::string(__PRETTY_FUNCTION__));
+
+    CNodePtr saved_next_node = node->next_node;
+    *node = *saved_child;
+    node->next_node = saved_next_node;
 }
 
-CNodePtr CopyNode(CNodePtr a) {
-    if (a == nullptr)
+CNodePtr CopyNode(CNodePtr source) {
+    if (source == nullptr)
         return nullptr;
 
-    CNodePtr result = CNODE();
-    *result = *a;
-    result->a = CopyNode(a->a);
-    result->b = CopyNode(a->b);
-    result->c = CopyNode(a->c);
-    result->d = CopyNode(a->d);
-    result->next_node = CopyNode(a->next_node);
+    CNodePtr result = std::make_shared<CNode>();
+    *result = *source;
+    result->a = CopyNode(source->a);
+    result->b = CopyNode(source->b);
+    result->c = CopyNode(source->c);
+    result->d = CopyNode(source->d);
+    result->next_node = CopyNode(source->next_node);
     return result;
 }

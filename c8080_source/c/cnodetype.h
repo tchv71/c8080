@@ -1,0 +1,60 @@
+/*
+ * c8080 compiler
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+enum CNodeType {
+    CNT_NUMBER,              // Exmaple: 12
+    CNT_LOAD_VARIABLE,       // Exmaple: a
+    CNT_RETURN,              // Exmaple: return [a]
+    CNT_IF,                  // Example: if (a) b [ else c ]
+    CNT_DO,                  // Exmaple: do { a } while (b)
+    CNT_WHILE,               // Exmaple: while (a) b
+    CNT_BREAK,               // Exmaple: break
+    CNT_CONTINUE,            // Exmaple: continue
+    CNT_SWITCH,              // Exmaple: switch(a) { b }
+    CNT_CASE,                // Exmaple: case a:
+    CNT_DEFAULT,             // Exmaple: default:
+    CNT_LEVEL,               // Example: { a }
+    CNT_DECLARE_VARIABLE,    // Example: int a [= b];
+    CNT_OPERATOR,            // Example: a + b
+    CNT_MONO_OPERATOR,       // Example: -a
+    CNT_SIZEOF_TYPE,         // Example: sizeof(a)
+    CNT_FUNCTION_CALL,       // Example: function(a)
+    CNT_FUNCTION_CALL_ADDR,  // Example: pointer(b);
+    CNT_TYPEDEF,             // Example: typedef a;
+    CNT_CONST_STRING,        // Example: "a"
+    CNT_FOR,                 // Example: for(a; b; c) d
+    CNT_CONVERT,             // Example: (int)a
+    CNT_PUSH_POP,            // Example: push_pop(a) { b }  Only in CMM
+    CNT_ASM,                 // Example: asm { a }
+    CNT_LABEL,               // Example: a:
+    CNT_GOTO,                // Example: goto a
+    CNT_STRUCT_STRING,       // TODO
+
+    // Optimizer replaces CNT_LOAD_VARIABLE with
+    CNT_CONST,               // Expression for asm file
+    CNT_SAVE_TO_REGISTER,    // The processor register in which the last argument to the function is passed
+    CNT_LOAD_FROM_REGISTER,  // The processor register in which the last argument to the function is passed
+    CNT_STACK_ADDRESS,       // Address relative to the first stack variable of the function
+    CNT_ARG_STACK_ADDRESS,   // Address relative to the first argument of the function
+
+    // Optimizer replaces MOP_INC, MOP_POST_INC, MOP_DEC, MOP_POST_DEC, OP_SET_
+    CNT_SET,  // Example: a = b
+};
+
+const char *ToString(CNodeType type);

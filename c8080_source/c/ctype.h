@@ -80,9 +80,9 @@ public:
         return pointers.size() == 0 && base_type == CBT_VOID;
     }
 
-    uint64_t SizeOf(const CErrorPosition &place) const;
+    uint64_t SizeOf(const CErrorPosition &e) const;
 
-    uint64_t SizeOfBase(const CErrorPosition &place) const;
+    uint64_t SizeOfBase(const CErrorPosition &e) const;
 
     CVariableMode GetVariableMode() const {
         static const CVariableMode default_memory = CVM_GLOBAL;
@@ -109,7 +109,7 @@ public:
 
     CBaseType GetAsmType() const;
 
-    uint64_t SizeOfElement(const CErrorPosition &place) const;
+    uint64_t SizeOfElement(const CErrorPosition &e) const;
 };
 
 typedef const CType &CConstType;

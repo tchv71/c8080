@@ -21,8 +21,8 @@
 
 // Throw an exception including the position in the source code
 
-void CThrow(ConstCNodePtr node, CString text) {
-    CThrow(node->place, text);
+void CThrow(CConstNodePtr node, CString text) {
+    CThrow(node->e, text);
 }
 
 // Throw an exception including the position in the source code
@@ -33,7 +33,7 @@ void CThrow(const CErrorPosition &position, CString text) {
 
 // Throw an internal compiler error exception, including the position in the compiler source code
 
-void CThrowTypeNotSupportedInternal(ConstCNodePtr node, const char *file_name, unsigned line) {
+void CThrowTypeNotSupportedInternal(CConstNodePtr node, const char *file_name, unsigned line) {
     CThrow(node, "Internal error, type " + node->ctype.ToString() + " is not supported in " + file_name + " " +
                      std::to_string(line));
 }

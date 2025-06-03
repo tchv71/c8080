@@ -22,4 +22,4 @@
 class CNode;
 
 typedef std::shared_ptr<CNode> CNodePtr;
-typedef const std::shared_ptr<CNode> &ConstCNodePtr;
+typedef const std::shared_ptr<CNode> &CConstNodePtr;

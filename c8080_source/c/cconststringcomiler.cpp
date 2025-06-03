@@ -15,26 +15,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "cconststringcomiler.h"
+#include <stdexcept>
+#include <stdio.h>
+#include <inttypes.h>
 
-#include "cstructitem.h"
-
-struct CStruct {
-    std::string name;
-    std::vector<CStructItemPtr> items;
-    uint64_t size_bytes = 0;
-    bool inited = false;
-    bool is_union = false;
-
-    bool operator==(const CStruct &b) const;
-
-    bool operator!=(const CStruct &b) const {
-        return !(*this == b);
+const char *CConstStringCompiler::GetName(uint64_t &counter) {
+    if (name[0] == 0) {
+        auto result = snprintf(name, sizeof(name), "__c_%" PRIu64, counter++);
+        if (result <= 0 || result >= (ssize_t)sizeof(name))
+            throw std::runtime_error("Internal error in " + std::string(__PRETTY_FUNCTION__));
     }
-
-    std::string ToString() const;
-    void CalcOffsets(const CErrorPosition &e);
-    CStructItemPtr FindItem(const char *name);
-};
-
-typedef std::shared_ptr<CStruct> CStructPtr;
+    return name;
+}

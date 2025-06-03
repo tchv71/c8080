@@ -18,7 +18,7 @@
 #include "numberiszero.h"
 #include "cthrow.h"
 
-bool NumberIsZero(ConstCNodePtr node) {
+bool NumberIsZero(CConstNodePtr node) {
     assert(node != nullptr);
 
     if (node->type == CNT_CONVERT)

@@ -19,6 +19,7 @@
 
 #include <string>
 #include "ctype.h"
+#include <memory>
 
 class CStructItem {
 public:
@@ -38,3 +39,5 @@ public:
         return type.ToString() + " " + name;
     }
 };
+
+typedef std::shared_ptr<CStructItem> CStructItemPtr;

@@ -19,4 +19,4 @@
 
 #include "../cnode.h"
 
-bool NumberIsZero(ConstCNodePtr node);
+bool NumberIsZero(CConstNodePtr node);

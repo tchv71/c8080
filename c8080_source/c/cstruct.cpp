@@ -18,12 +18,23 @@
 #include "cstruct.h"
 #include <stdexcept>
 
-void CStruct::CalcOffsets(const CErrorPosition &place) {
+bool CStruct::operator==(const CStruct &b) const {
+    if (name != b.name || items.size() != b.items.size() || is_union != b.is_union)
+        return false;
+
+    for (size_t i = 0; i < items.size(); i++)
+        if (*(items[i]) != *(b.items[i]))
+            return false;
+
+    return true;
+}
+
+void CStruct::CalcOffsets(const CErrorPosition &e) {
     if (is_union) {
         uint64_t max_size = 0;
         for (auto &i : items) {
-            i.struct_item_offset = 0;
-            auto size = i.type.SizeOf(place);
+            i->struct_item_offset = 0;
+            auto size = i->type.SizeOf(e);
             if (max_size < size)
                 max_size = size;
         }
@@ -31,8 +42,8 @@ void CStruct::CalcOffsets(const CErrorPosition &place) {
     } else {
         uint64_t offset = 0;
         for (auto &i : items) {
-            i.struct_item_offset = offset;
-            if (__builtin_add_overflow(offset, i.type.SizeOf(place), &offset))
+            i->struct_item_offset = offset;
+            if (__builtin_add_overflow(offset, i->type.SizeOf(e), &offset))
                 throw std::runtime_error("Address overflow when calculating offset");
         }
         size_bytes = offset;
@@ -40,19 +51,19 @@ void CStruct::CalcOffsets(const CErrorPosition &place) {
     inited = true;
 }
 
-CStructItem *CStruct::FindItem(const char *name) {
+CStructItemPtr CStruct::FindItem(const char *name) {
     for (auto &i : items) {
-        if (i.name.empty()) {
-            if (i.type.pointers.empty() && i.type.base_type == CBT_STRUCT) {
-                std::shared_ptr<CStruct> &s = i.type.struct_object;
+        if (i->name.empty()) {
+            if (i->type.pointers.empty() && i->type.base_type == CBT_STRUCT) {
+                std::shared_ptr<CStruct> &s = i->type.struct_object;
                 if (s != nullptr) {
-                    CStructItem *result = s->FindItem(name);
+                    CStructItemPtr result = s->FindItem(name);
                     if (result != nullptr)
                         return result;
                 }
             }
-        } else if (i.name == name) {
-            return &i;
+        } else if (i->name == name) {
+            return i;
         }
     }
     return nullptr;
@@ -70,7 +81,7 @@ std::string CStruct::ToString() const {
         if (!first)
             result += ", ";
         first = false;
-        result += i.ToString();
+        result += i->ToString();
     }
     result += "}";
     return result;

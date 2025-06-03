@@ -28,7 +28,7 @@ class CProgramm {
 public:
     CNodePtr first_node;
     CNodePtr last_node;
-    std::map<std::string, CConstString> const_strings;
+    std::map<std::string, std::shared_ptr<CConstString>> const_strings;
     std::map<std::string, std::shared_ptr<CStruct>> global_structs;
     std::map<std::string, std::shared_ptr<CStruct>> global_unions;
     std::list<std::string> macro_bodies;
@@ -42,6 +42,6 @@ public:
 
     CProgramm();
     std::shared_ptr<CVariable> FindVariable(const std::string &name);
-    CConstString *RegisterConstString(const std::string &text);
+    std::shared_ptr<CConstString> RegisterConstString(const std::string &text);
     void AddVariable(std::shared_ptr<CVariable> a);
 };

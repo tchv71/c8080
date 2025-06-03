@@ -180,28 +180,28 @@ CBaseType CType::GetAsmType() const {
     }
 }
 
-uint64_t CType::SizeOfBase(const CErrorPosition &place) const {
+uint64_t CType::SizeOfBase(const CErrorPosition &e) const {
     if (base_type == CBT_STRUCT) {
         if (struct_object == nullptr)
-            CThrow(place, "Struct is not declared");
+            CThrow(e, "Struct is not declared");
         if (!struct_object->inited)
-            CThrow(place, "Struct " + struct_object->name + " is not declared");
+            CThrow(e, "Struct " + struct_object->name + " is not declared");
         return struct_object->size_bytes;
     }
-    return ::SizeOf(base_type, place);
+    return ::SizeOf(base_type, e);
 }
 
-uint64_t CType::SizeOf(const CErrorPosition &place) const {
+uint64_t CType::SizeOf(const CErrorPosition &e) const {
     uint64_t total_size = 1;
     for (size_t i = pointers.size(); i != 0; i--) {
         if (pointers[i - 1].count == 0)
             return total_size * C_SIZEOF_POINTER;  // TODO: overflow
         total_size *= pointers[i - 1].count;       // TODO: overflow
     }
-    return total_size * SizeOfBase(place);
+    return total_size * SizeOfBase(e);
 }
 
-uint64_t CType::SizeOfElement(const CErrorPosition &place) const {
+uint64_t CType::SizeOfElement(const CErrorPosition &e) const {
     if (pointers.empty())
         return 1;  // Multiplier of a regular variable (unsigned i; i++;)
     uint64_t total_size = 1;
@@ -210,5 +210,5 @@ uint64_t CType::SizeOfElement(const CErrorPosition &place) const {
             return total_size * C_SIZEOF_POINTER;  // TODO: overflow
         total_size *= pointers[i - 1].count;       // TODO: overflow
     }
-    return total_size * SizeOfBase(place);
+    return total_size * SizeOfBase(e);
 }

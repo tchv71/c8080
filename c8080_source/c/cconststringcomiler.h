@@ -22,6 +22,15 @@
 #include "../tools/number_size.h"
 
 struct CConstStringCompiler {
-    char name[4u + CHARS_IN_64_BIT_NUBMER + 1u]{};  // "__c_12345\0"
-    size_t use_counter{};
+    char name[4u + CHARS_IN_64_BIT_NUBMER + 1u];  // "__c_12345\0"
+
+    CConstStringCompiler() {
+        name[0] = 0;
+    }
+
+    bool IsUsed() {
+        return name[0] != 0;
+    }
+
+    const char *GetName(uint64_t &counter);
 };

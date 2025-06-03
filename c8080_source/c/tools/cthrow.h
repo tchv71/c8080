@@ -21,8 +21,8 @@
 #include "../cnodeptr.h"
 
 void CThrow(CConstErrorPosition position, CString text);
-void CThrow(ConstCNodePtr node, CString text);
-void CThrowTypeNotSupportedInternal(ConstCNodePtr node, const char *file_name, unsigned line);
+void CThrow(CConstNodePtr node, CString text);
+void CThrowTypeNotSupportedInternal(CConstNodePtr node, const char *file_name, unsigned line);
 
 // Throw an internal compiler error exception, including the position in the compiler source code
 

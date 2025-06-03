@@ -75,6 +75,14 @@ bool IsInteger(CBaseType type) {
         case CBT_LONG_LONG:
         case CBT_UNSIGNED_LONG_LONG:
             return true;
+        case CBT_STRUCT:
+        case CBT_FUNCTION:
+        case CBT_VOID:
+        case CBT_FLOAT:
+        case CBT_DOUBLE:
+        case CBT_LONG_DOUBLE:
+        case CBT_VA_LIST:
+            return false;
     }
     return false;
 }
@@ -89,6 +97,20 @@ bool IsUnsigned(CBaseType type) {
         case CBT_UNSIGNED_LONG:
         case CBT_UNSIGNED_LONG_LONG:
             return true;
+        case CBT_STRUCT:
+        case CBT_FUNCTION:
+        case CBT_VOID:
+        case CBT_CHAR:
+        case CBT_SIGNED_CHAR:
+        case CBT_SHORT:
+        case CBT_INT:
+        case CBT_LONG:
+        case CBT_LONG_LONG:
+        case CBT_FLOAT:
+        case CBT_DOUBLE:
+        case CBT_LONG_DOUBLE:
+        case CBT_VA_LIST:
+            return false;
     }
     return false;
 }
@@ -132,6 +154,11 @@ CBaseType CalcResultCBaseType(CBaseType a, CBaseType b) {
             return CBT_DOUBLE;
         case CBT_LONG_DOUBLE:
             return CBT_LONG_DOUBLE;
+        case CBT_STRUCT:
+        case CBT_FUNCTION:
+        case CBT_VOID:
+        case CBT_VA_LIST:
+            return CBT_VOID;
     }
     return CBT_VOID;  // Error
 }
