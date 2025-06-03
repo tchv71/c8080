@@ -42,8 +42,8 @@ bool CParser::FindAnyIncludeFile(CString file_name, CString local_path, std::str
 }
 
 bool CParser::FindGlobalIncludeFile(CString file_name, std::string &result) {
-    for (auto &path : include_dirs)
-        if (FindIncludeFile(path, file_name, result))
+    for (auto &dir : include_dirs)
+        if (FindIncludeFile(dir, file_name, result))
             return true;
     return false;
 }

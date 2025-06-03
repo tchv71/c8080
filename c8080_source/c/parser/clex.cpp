@@ -28,6 +28,8 @@
 #include "../tools/cthrow.h"
 
 // TODO: a\EOLb это ab
+// TODO: Может ли внутри макроса быть директива препроцессора? Это же все сломает
+// TODO: Работа # и ## в макросах
 
 void CLex::Open(const char *contents, const char *name) {
     stack.clear();
@@ -57,25 +59,21 @@ void CLex::NextToken() {
     for (;;) {
         SkipSpaces();
 
-        // Preprocessor directive
         if (cursor[0] == '#' && preprocessor) {
             std::string directive;
-            (void)ReadDirective(directive);
+            ReadDirective(directive);
             preprocessor(directive);
             continue;
         }
 
-        // Read token
         NextToken2();
 
-        // Eof of file
         if (token == CT_EOF) {
             if (Leave())
                 continue;
             return;
         }
 
-        // Remark
         if (token == CT_REMARK)
             continue;
 
