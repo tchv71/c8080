@@ -15,16 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cconststringcomiler.h"
-#include <stdexcept>
-#include <stdio.h>
-#include <inttypes.h>
+#pragma once
 
-const char *CConstStringCompiler::GetName(uint64_t &counter) {
-    if (name[0] == 0) {
-        int result = snprintf(name, sizeof(name), "__c_%" PRIu64, counter++);
-        if (result < 0 || result >= (int)sizeof(name))
-            throw std::runtime_error("Internal error in " + std::string(__PRETTY_FUNCTION__));
-    }
-    return name;
-}
+#include <string>
+
+const char *UnquoteCString(std::string &str);

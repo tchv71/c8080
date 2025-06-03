@@ -18,7 +18,6 @@
 #pragma once
 
 #include <sys/stat.h>
-#include <errno.h>
 #include "cstring.h"
 
 static inline bool DirExists(CString file_name) {

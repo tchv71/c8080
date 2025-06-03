@@ -28,7 +28,7 @@ struct CConstStringCompiler {
         name[0] = 0;
     }
 
-    bool IsUsed() {
+    bool IsUsed() const {
         return name[0] != 0;
     }
 
