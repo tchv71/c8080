@@ -16,6 +16,7 @@
  */
 
 #include "ccomfortablelex.h"
+#include "cdecodestring.h"
 
 bool CComfortableLex::IfString1(std::string &out_string) {
     if (token != CT_STRING1)

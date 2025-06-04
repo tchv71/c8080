@@ -28,22 +28,20 @@
 #include "../tools/cthrow.h"
 
 // TODO: a\EOLb это ab
-// TODO: Может ли внутри макроса быть директива препроцессора? Это же все сломает
-// TODO: Работа # и ## в макросах
 
 void CLex::Open(const char *contents, const char *name) {
     stack.clear();
     macro.clear();
-    error_position.file_name = nullptr;
-    line = 1;
-    column = 1;
-    file_name = name;
-    cursor = contents;
-    token_data = nullptr;
+    in_macro = 0;
+    endif_counter = 0;
+    error_position = CErrorPosition();
+
+    Open2(contents, name);
 }
 
 void CLex::Include(const char *contents, const char *name) {
-    Enter(0, -1, contents, name);
+    assert(in_macro == 0);
+    Enter(nullptr, contents, name);
 }
 
 void CLex::SyntaxError() {
@@ -57,57 +55,45 @@ void CLex::Throw(CString text) {
 
 void CLex::NextToken() {
     for (;;) {
-        SkipSpaces();
-
-        if (cursor[0] == '#' && preprocessor) {
-            std::string directive;
-            ReadDirective(directive);
-            preprocessor(directive);
-            continue;
-        }
-
         NextToken2();
 
         if (token == CT_EOF) {
             if (Leave())
                 continue;
-            return;
+            break;  // There are no more files
         }
 
         if (token == CT_REMARK)
             continue;
 
+        if (token_data[0] == '#' && preprocessor) {
+            if (in_macro != 0)
+                Throw("# in macro");  // TODO
+            std::string directive;
+            ReadDirectiveBody(directive);
+            preprocessor(directive);
+            continue;
+        }
+
         if (token == CT_WORD) {
-            size_t macro_index = 0u;
-            for (Macro &m : macro) {
-                if (!m.disabled && token_size == m.name_size && 0 == memcmp(m.name, token_data, token_size))
-                    break;
-                macro_index++;
-            }
-            if (macro_index >= macro.size())
+            auto mi = macro.find(CString(token_data, token_size));
+            if (mi == macro.end() || mi->second->disabled)  // Macro should not call itself
                 break;
 
-            Macro &m = Get(macro, macro_index);
+            Macro &m = *mi->second;
             if (m.args.size() > 0) {
-                if (cursor[0] != '(')
+                NextToken();
+                if (token_size != 1 || token_data[0] != '(')
                     SyntaxError();
 
-                const char *s = cursor;
-
-                cursor++;
-
                 for (size_t j = 0; j < m.args.size(); j++) {
-                    const char *end = strchr(cursor, (j + 1) < m.args.size() ? ',' : ')');
-                    if (end == nullptr)
-                        SyntaxError();
-                    AddMacro(m.args[j], cursor, end - cursor);
-                    cursor = (char *)end + 1;
+                    std::string arg_body;
+                    ReadMacroArgument(arg_body, (j + 1) < m.args.size() ? ',' : ')');
+                    AddMacro(m.args[j], arg_body.c_str(), arg_body.size());
                 }
-
-                UpdateLineColumn(s);
             }
-            m.disabled = true;  // Макрос не должен вызывать сам себя
-            Enter(m.args.size(), macro_index, m.body, m.name);
+            m.disabled = true;  // Macro should not call itself
+            Enter(&m, m.body, mi->first.c_str());
             continue;
         }
 
@@ -115,20 +101,25 @@ void CLex::NextToken() {
     }
 }
 
-void CLex::Enter(int remove_count, int macro_index, const char *contents, const char *name) {
-    Stack *m = Add(stack);
-    if (macro_index != -1) {
-        error_position.line = token_line;
-        error_position.column = token_column;
-        error_position.cursor = token_data;
-        error_position.file_name = file_name;
+void CLex::Enter(Macro *active_macro, const char *contents, const char *name) {
+    Stack *s = Add(stack);
+    if (active_macro) {
+        if (in_macro == 0) {
+            error_position.line = token_line;
+            error_position.column = token_column;
+            error_position.cursor = token_data;
+            error_position.file_name = file_name;
+        }
+        in_macro++;
+    } else {
+        if (in_macro != 0)
+            Throw("can't include from macro");
     }
-    m->column = column;
-    m->line = line;
-    m->cursor = cursor;
-    m->file_name = file_name;
-    m->disabled_macro_index = macro_index;
-    m->remove_count = remove_count;
+    s->column = column;
+    s->line = line;
+    s->cursor = cursor;
+    s->file_name = file_name;
+    s->active_macro = active_macro;
     file_name = name;
     cursor = contents;
     line = 1;
@@ -137,92 +128,96 @@ void CLex::Enter(int remove_count, int macro_index, const char *contents, const 
 }
 
 bool CLex::Leave() {
+    if (endif_counter != 0)
+        Throw("unterminated #if");  // gcc
+
+    if (in_macro > 0)
+        in_macro--;
+
     if (stack.empty())
         return false;
 
-    Stack &m = stack.back();
-    file_name = m.file_name;
+    Stack &s = stack.back();
 
-    for (size_t i = 0; i < m.remove_count; i++)
-        macro.pop_back();
-    if (m.disabled_macro_index != -1) {
-        Get(macro, m.disabled_macro_index).disabled = false;
-        error_position.file_name = nullptr;
+    if (s.active_macro) {
+        assert(s.active_macro->disabled);
+        for (auto i : s.active_macro->args)
+            DeleteMacro(i);
+        s.active_macro->disabled = false;
     }
 
-    cursor = m.cursor;
-    line = m.line;
-    column = m.column;
+    file_name = s.file_name;
+    cursor = s.cursor;
+    line = s.line;
+    column = s.column;
+
+    stack.pop_back();
 
     token_data = nullptr;  // Self test
 
-    stack.pop_back();
     return true;
 }
 
 bool CLex::ReadDirective(std::string &result) {
-    const char *inital_cursor = cursor;
-
-    const char *next = strchr(cursor, '#');  // TODO: # может быть в комментарии!!!
-    if (next == nullptr)
-        return false;
-    cursor = next + 1;
-
-    // TODO: Нужно отсеять комментарии
-    const char *line_begin = cursor;
-    char current_char{};
-    for (;;) {
-        const char prev_char = current_char;
-        current_char = *cursor;
-        if (current_char == 0) {  // End of file
-            ReadDirectiveAppend(result, line_begin, 0);
-            break;
-        }
-        cursor++;
-        if (current_char == '\n') {
-            if (prev_char == '\\') {
-                ReadDirectiveAppend(result, line_begin, 2);
-                continue;
-            }
-            ReadDirectiveAppend(result, line_begin, 1);
-            break;
-        }
-    }
-
-    UpdateLineColumn(inital_cursor);
+    do {
+        NextToken2();
+        if (token == CT_EOF)
+            return false;
+    } while (token_data[0] != '#');
+    ReadDirectiveBody(result);
     return true;
 }
 
-void CLex::ReadDirectiveAppend(std::string &result, const char *&line_start, unsigned remove_eol) {
-    size_t line_size = cursor - line_start - remove_eol;
-    if (remove_eol != 0 && line_size > 0 && line_start[line_size - 1u] == '\r')  // Windows style EOL
-        line_size--;
-    result.append(line_start, line_size);
-    line_start = cursor;
+void CLex::ReadDirectiveBody(std::string &result) {
+    for (;;) {
+        const char *start = cursor;
+        NextTokenEol();
+        if (token == CT_EOF || token == CT_EOL)
+            return;
+        if (token != CT_REMARK)
+            result.append(start, cursor - start);
+    }
+}
+
+void CLex::ReadMacroArgument(std::string &result, char terminator) {
+    for (;;) {
+        const char *start = cursor;
+        NextTokenEol();
+        if (token == CT_EOF)
+            Throw("unterminated argument list invoking macro");
+        if (token_size == 1 && token_data[0] == terminator)
+            return;
+        if (token != CT_REMARK)
+            result.append(start, cursor - start);
+    }
 }
 
 void CLex::AddMacro(CString name, const char *body, size_t size, const std::vector<std::string> *args) {
-    Macro *m = Add(macro);
-    m->name = save_string(name.c_str(), name.size());
-    m->name_size = name.size();
+    // TODO: assert(!in_macro);
+    std::shared_ptr<Macro> m = std::make_shared<Macro>();
+    m->name = name;                     // Копия в Macro
     m->body = save_string(body, size);  // TODO: Не выделять память, а сохранить указатели???
     if (args != nullptr)
         m->args = *args;
-}
-
-bool CLex::DeleteMacro(CString name) {
-    for (std::list<Macro>::iterator m = macro.begin(), m_end = macro.end(); m != m_end; m++) {
-        if (m->name == name) {
-            macro.erase(m);
-            return true;
-        }
-    }
-    return false;
+    auto &i = macro[m->name];  // В качестве индекса ссылка на Macro
+    m->prev = i;
+    i = m;
 }
 
 bool CLex::FindMacro(CString name) {
-    for (std::list<Macro>::iterator m = macro.begin(), m_end = macro.end(); m != m_end; m++)
-        if (m->name == name)
-            return true;
-    return false;
+    return macro.find(name) != macro.end();
+}
+
+bool CLex::DeleteMacro(CString name) {
+    // TODO: assert(!in_macro);
+    auto i = macro.find(name);
+    if (i == macro.end())
+        return false;
+
+    if (i->second->prev)
+        i->second = i->second->prev;
+    else
+        macro.erase(i);
+
+    return true;
 }

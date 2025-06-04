@@ -44,6 +44,12 @@ public:
         assert(string_start != nullptr);
     }
 
+    CString(const char a[], size_t s) {
+        string_start = a;
+        string_size = s;
+        assert(string_start != nullptr);
+    }
+
     CString(const CString &a) {
         string_start = a.string_start;
         string_size = a.string_size;
@@ -175,5 +181,44 @@ public:
 
     friend bool operator!=(const CString &a, const std::string &b) {
         return !(a == b);
+    }
+
+    // <
+
+    friend bool operator<(const char a[], const CString &b) {
+        assert(a != nullptr);
+        const size_t s = strlen(a), bs = b.size();
+        if (s == bs)
+            return 0 < memcmp(a, b.string_start, s);
+        return s < bs;
+    }
+
+    friend bool operator<(const CString &a, const char b[]) {
+        assert(b != nullptr);
+        const size_t s = a.size(), bs = strlen(b);
+        if (s == bs)
+            return 0 < memcmp(a.string_start, b, s);
+        return s < bs;
+    }
+
+    friend bool operator<(const CString &a, const CString &b) {
+        const size_t s = a.size(), bs = b.size();
+        if (s == bs)
+            return 0 < memcmp(a.string_start, b.string_start, s);
+        return s < bs;
+    }
+
+    friend bool operator<(const std::string &a, const CString &b) {
+        const size_t s = a.size(), bs = b.size();
+        if (s == bs)
+            return 0 < memcmp(a.c_str(), b.string_start, s);
+        return s < bs;
+    }
+
+    friend bool operator<(const CString &a, const std::string &b) {
+        const size_t s = a.size(), bs = b.size();
+        if (s == bs)
+            return 0 < memcmp(a.string_start, b.c_str(), s);
+        return s < bs;
     }
 };

@@ -24,10 +24,10 @@ static inline std::string RemoveExtension(const std::string &file_name) {
     if (dot_position == file_name.npos)
         return file_name;
     if (file_name.find('/', dot_position) != file_name.npos)
-        return file_name; // A dot in the path, for example /my.dir/file
+        return file_name;  // A dot in the path, for example /my.dir/file
 #ifdef WIN32
     if (file_name.find('\\', s) != file_name.npos)
-        return file_name; // A dot in the path, for example /my.dir/file
+        return file_name;  // A dot in the path, for example /my.dir/file
 #endif
     return file_name.substr(0, dot_position);
 }

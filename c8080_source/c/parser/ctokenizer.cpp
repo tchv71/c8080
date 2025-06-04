@@ -24,7 +24,44 @@ static inline size_t Tab(size_t column) {
     return ((column + tab_size) & ~tab_size) + 1;
 }
 
-void CTokenizer::SkipSpaces() {
+void CTokenizer::Open2(const char *contents, const char *name) {
+    cursor = contents;
+    file_name = name;
+    line = 1;
+    column = 1;
+
+    token = CT_EOF;
+    token_integer = 0;
+    token_float = 0;
+    token_column = 0;
+    token_line = 0;
+    token_data = 0;
+    token_size = 0;
+}
+
+void CTokenizer::NextTokenEol() {
+    for (;;) {
+        switch (*cursor) {
+            case 0:
+                break;
+            case '\t':
+                cursor++;
+                column = Tab(column);
+                continue;
+            case ' ':
+                cursor++;
+                column++;
+                continue;
+            case '\r':
+                cursor++;
+                continue;
+        }
+        break;
+    }
+    NextToken3();
+}
+
+void CTokenizer::NextToken2() {
     for (;;) {
         switch (*cursor) {
             case 0:
@@ -48,14 +85,18 @@ void CTokenizer::SkipSpaces() {
         }
         break;
     }
+    NextToken3();
 }
 
-void CTokenizer::NextToken2() {
+void CTokenizer::NextToken3() {
     token_line = line;
     token_column = column;
     token_data = cursor;
-    token = NextToken3();
+
+    token = NextToken4();
+
     token_size = cursor - token_data;
+
     UpdateLineColumn(token_data);
 }
 
@@ -78,7 +119,7 @@ void CTokenizer::UpdateLineColumn(const char *from) {
     }
 }
 
-CToken CTokenizer::NextToken3() {
+CToken CTokenizer::NextToken4() {
     char c = *cursor++;
 
     if (c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
@@ -112,6 +153,8 @@ CToken CTokenizer::NextToken3() {
         case 0:
             cursor--;
             return CT_EOF;
+        case '\n':
+            return CT_EOL;
         case '\'':
             do {
                 c = *cursor;
@@ -156,11 +199,9 @@ CToken CTokenizer::NextToken3() {
                     cursor++;
                     for (;;) {
                         c = *cursor;
-                        if (c == 0)
+                        if (c == 0 || (c == '\n' && cursor[-2] != '\\'))
                             break;
                         cursor++;
-                        if (c == '\n' && cursor[-2] != '\\')
-                            break;
                     }
                     return CT_REMARK;
                 case '*':  // /*
@@ -245,6 +286,18 @@ CToken CTokenizer::NextToken3() {
                 case '&':  // &&
                 case '=':  // &=
                     cursor++;
+            }
+            return CT_OPERATOR;
+        case '\\':
+            switch (*cursor) {
+                case '\n':
+                    cursor++;
+                    return CT_REMARK;
+                case '\r':
+                    if (cursor[1] == '\n') {
+                        cursor += 2;
+                        return CT_REMARK;
+                    }
             }
             return CT_OPERATOR;
         default:

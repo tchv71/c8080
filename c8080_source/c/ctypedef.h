@@ -18,27 +18,20 @@
 #pragma once
 
 #include <string>
-#include "../tools/cstring.h"
+#include "cerrorposition.h"
+#include "ctype.h"
 
-class CLex;  // Declared here to reduce the code amount
-
-class CErrorPosition {
+class CTypedef {
 public:
-    const char *file_name;
-    size_t line;
-    size_t column;
-    const char *cursor;
+    CType type;
+    std::string name;
+    CErrorPosition e;
 
-    CErrorPosition() {
-        file_name = "";
-        line = 0;
-        column = 0;
-        cursor = nullptr;
+    bool operator==(const CTypedef &b) const {
+        return type == b.type && name == b.name;
     }
 
-    CErrorPosition(const CLex &p);  // Declared here to reduce the code amount
-
-    std::string ToString() const;
+    bool operator!=(const CTypedef &b) const {
+        return !(*this == b);
+    }
 };
-
-typedef const CErrorPosition &CConstErrorPosition;

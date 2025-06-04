@@ -20,38 +20,38 @@
 
 bool IsSetOperator(COperatorCode code) {
     switch (code) {
-        case OP_SET:
-        case OP_SET_ADD:
-        case OP_SET_SUB:
-        case OP_SET_MUL:
-        case OP_SET_DIV:
-        case OP_SET_MOD:
-        case OP_SET_SHR:
-        case OP_SET_SHL:
-        case OP_SET_AND:
-        case OP_SET_OR:
-        case OP_SET_XOR:
+        case COP_SET:
+        case COP_SET_ADD:
+        case COP_SET_SUB:
+        case COP_SET_MUL:
+        case COP_SET_DIV:
+        case COP_SET_MOD:
+        case COP_SET_SHR:
+        case COP_SET_SHL:
+        case COP_SET_AND:
+        case COP_SET_OR:
+        case COP_SET_XOR:
             return true;
-        case OP_CMP_L:
-        case OP_CMP_G:
-        case OP_CMP_LE:
-        case OP_CMP_GE:
-        case OP_CMP_E:
-        case OP_CMP_NE:
-        case OP_ADD:
-        case OP_SUB:
-        case OP_MUL:
-        case OP_DIV:
-        case OP_MOD:
-        case OP_SHR:
-        case OP_SHL:
-        case OP_AND:
-        case OP_OR:
-        case OP_XOR:
-        case OP_LAND:
-        case OP_LOR:
-        case OP_IF:
-        case OP_COMMA:
+        case COP_CMP_L:
+        case COP_CMP_G:
+        case COP_CMP_LE:
+        case COP_CMP_GE:
+        case COP_CMP_E:
+        case COP_CMP_NE:
+        case COP_ADD:
+        case COP_SUB:
+        case COP_MUL:
+        case COP_DIV:
+        case COP_MOD:
+        case COP_SHR:
+        case COP_SHL:
+        case COP_AND:
+        case COP_OR:
+        case COP_XOR:
+        case COP_LAND:
+        case COP_LOR:
+        case COP_IF:
+        case COP_COMMA:
             return false;
     }
     return false;
@@ -59,38 +59,38 @@ bool IsSetOperator(COperatorCode code) {
 
 bool IsCompareOperator(COperatorCode code) {
     switch (code) {
-        case OP_CMP_E:
-        case OP_CMP_NE:
-        case OP_CMP_LE:
-        case OP_CMP_GE:
-        case OP_CMP_L:
-        case OP_CMP_G:
+        case COP_CMP_E:
+        case COP_CMP_NE:
+        case COP_CMP_LE:
+        case COP_CMP_GE:
+        case COP_CMP_L:
+        case COP_CMP_G:
             return true;
-        case OP_ADD:
-        case OP_SUB:
-        case OP_MUL:
-        case OP_DIV:
-        case OP_MOD:
-        case OP_SHR:
-        case OP_SHL:
-        case OP_AND:
-        case OP_OR:
-        case OP_XOR:
-        case OP_LAND:
-        case OP_LOR:
-        case OP_SET:
-        case OP_SET_ADD:
-        case OP_SET_SUB:
-        case OP_SET_MUL:
-        case OP_SET_DIV:
-        case OP_SET_MOD:
-        case OP_SET_SHR:
-        case OP_SET_SHL:
-        case OP_SET_AND:
-        case OP_SET_OR:
-        case OP_SET_XOR:
-        case OP_IF:
-        case OP_COMMA:
+        case COP_ADD:
+        case COP_SUB:
+        case COP_MUL:
+        case COP_DIV:
+        case COP_MOD:
+        case COP_SHR:
+        case COP_SHL:
+        case COP_AND:
+        case COP_OR:
+        case COP_XOR:
+        case COP_LAND:
+        case COP_LOR:
+        case COP_SET:
+        case COP_SET_ADD:
+        case COP_SET_SUB:
+        case COP_SET_MUL:
+        case COP_SET_DIV:
+        case COP_SET_MOD:
+        case COP_SET_SHR:
+        case COP_SET_SHL:
+        case COP_SET_AND:
+        case COP_SET_OR:
+        case COP_SET_XOR:
+        case COP_IF:
+        case COP_COMMA:
             return false;
     }
     return false;
@@ -98,67 +98,67 @@ bool IsCompareOperator(COperatorCode code) {
 
 const char *ToString(COperatorCode code) {
     switch (code) {
-        case OP_CMP_L:
+        case COP_CMP_L:
             return "<";
-        case OP_CMP_G:
+        case COP_CMP_G:
             return ">";
-        case OP_CMP_LE:
+        case COP_CMP_LE:
             return "<=";
-        case OP_CMP_GE:
+        case COP_CMP_GE:
             return ">=";
-        case OP_CMP_E:
+        case COP_CMP_E:
             return "==";
-        case OP_CMP_NE:
+        case COP_CMP_NE:
             return "!=";
-        case OP_ADD:
+        case COP_ADD:
             return "+";
-        case OP_SUB:
+        case COP_SUB:
             return "-";
-        case OP_MUL:
+        case COP_MUL:
             return "*";
-        case OP_DIV:
+        case COP_DIV:
             return "/";
-        case OP_MOD:
+        case COP_MOD:
             return "%";
-        case OP_SHR:
+        case COP_SHR:
             return ">>";
-        case OP_SHL:
+        case COP_SHL:
             return "<<";
-        case OP_AND:
+        case COP_AND:
             return "&";
-        case OP_OR:
+        case COP_OR:
             return "%";
-        case OP_XOR:
+        case COP_XOR:
             return "^";
-        case OP_LAND:
+        case COP_LAND:
             return "&&";
-        case OP_LOR:
+        case COP_LOR:
             return "||";
-        case OP_SET:
+        case COP_SET:
             return "=";
-        case OP_SET_ADD:
+        case COP_SET_ADD:
             return "+=";
-        case OP_SET_SUB:
+        case COP_SET_SUB:
             return "-=";
-        case OP_SET_MUL:
+        case COP_SET_MUL:
             return "*=";
-        case OP_SET_DIV:
+        case COP_SET_DIV:
             return "/=";
-        case OP_SET_MOD:
+        case COP_SET_MOD:
             return "%=";
-        case OP_SET_SHR:
+        case COP_SET_SHR:
             return ">>=";
-        case OP_SET_SHL:
+        case COP_SET_SHL:
             return "<<=";
-        case OP_SET_AND:
+        case COP_SET_AND:
             return "&=";
-        case OP_SET_OR:
+        case COP_SET_OR:
             return "|=";
-        case OP_SET_XOR:
+        case COP_SET_XOR:
             return "^=";
-        case OP_IF:
+        case COP_IF:
             return "?:";
-        case OP_COMMA:
+        case COP_COMMA:
             return ",";
     }
     throw std::runtime_error("Internal error " + std::to_string(int(code)) + " in " + __PRETTY_FUNCTION__);

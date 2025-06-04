@@ -23,39 +23,43 @@
 #include <string>
 #include <stdexcept>
 #include <string.h>
+#include <memory>
 #include "../../tools/cstring.h"
 #include "../cerrorposition.h"
-#include "cdecodestring.h"
 #include "ctokenizer.h"
 
 class CLex : public CTokenizer {
 private:
     struct Macro {
-        const char *name{};
-        size_t name_size{};
+        std::string name;
         const char *body{};
         bool disabled{};  // Macro should not call itself
         std::vector<std::string> args;
+        std::shared_ptr<Macro> prev;
     };
 
     struct Stack {
         const char *cursor{};
         size_t line{};
         size_t column{};
-        size_t remove_count{};
         const char *file_name{};
-        int disabled_macro_index{};  // Macro should not call itself
+        Macro *active_macro{};  // Macro should not call itself
     };
 
-    std::list<Macro> macro;
+    std::map<CString, std::shared_ptr<Macro>> macro;
     std::list<Stack> stack;
+
+    bool Leave();
+    void Enter(Macro *macro_index, const char *contents, const char *name);
+    void ReadDirectiveBody(std::string &result);
+    void ReadMacroArgument(std::string &result, char terminator);
 
 public:
     std::function<const char *(const char *, size_t)> save_string;
     std::function<void(std::string &)> preprocessor;
-
-    CErrorPosition error_position;  // Что бы указывать в тексте ошибки места, где был вызван первый макрос
-    const char *file_name{};
+    size_t endif_counter{};
+    unsigned in_macro{};
+    CErrorPosition error_position;  // Use only if in macro > 0
 
     void Open(const char *contents, const char *name);
     void Include(const char *contents, const char *name);
@@ -67,15 +71,10 @@ public:
     void Throw(CString text);
 
     bool ReadDirective(std::string &out);
-
-private:
-    bool Leave();
-    void Enter(int remove_count, int macro_index, const char *contents, const char *name);
-    void ReadDirectiveAppend(std::string &result, const char *&line_start, unsigned remove_eol);
 };
 
 inline CErrorPosition::CErrorPosition(const CLex &lex) {
-    if (lex.error_position.file_name != nullptr) {
+    if (lex.in_macro > 0) {
         *this = lex.error_position;
     } else {
         line = lex.line;

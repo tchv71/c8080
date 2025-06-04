@@ -22,6 +22,7 @@
 
 enum CToken {
     CT_EOF,       // Eof of file
+    CT_EOL,       // Eof of line
     CT_WORD,      // Abc_def
     CT_INTEGER,   // 0 123
     CT_FLOAT,     // 1.0 1.2e-2
@@ -33,6 +34,7 @@ enum CToken {
 
 class CTokenizer {
 public:
+    const char *file_name{};
     const char *cursor{};
     size_t line{};
     size_t column{};
@@ -45,12 +47,14 @@ public:
     const char *token_data{};
     size_t token_size{};
 
-    void SkipSpaces();
+    void Open2(const char *contents, const char *name);
+    void NextTokenEol();
     void NextToken2();
     void UpdateLineColumn(const char *from);
 
     virtual void Throw(CString text) = 0;
 
 private:
-    CToken NextToken3();
+    void NextToken3();
+    CToken NextToken4();
 };
