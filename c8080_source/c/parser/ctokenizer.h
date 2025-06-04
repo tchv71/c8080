@@ -47,14 +47,11 @@ public:
     const char *token_data{};
     size_t token_size{};
 
-    void Open2(const char *contents, const char *name);
-    void NextTokenEol();
+    void Open2(const char *contents, const char *file_name);
     void NextToken2();
-    void UpdateLineColumn(const char *from);
 
     virtual void Throw(CString text) = 0;
 
 private:
-    void NextToken3();
-    CToken NextToken4();
+    CToken NextToken3();
 };

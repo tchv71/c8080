@@ -20,7 +20,7 @@
 #include <string>
 #include "../tools/cstring.h"
 
-class CLex;  // Declared here to reduce the code amount
+class CMacroizer;  // Declared here to reduce the code amount
 
 class CErrorPosition {
 public:
@@ -36,7 +36,7 @@ public:
         cursor = nullptr;
     }
 
-    CErrorPosition(const CLex &p);  // Declared here to reduce the code amount
+    CErrorPosition(const CMacroizer &p);  // Declared here to reduce the code amount
 
     std::string ToString() const;
 };

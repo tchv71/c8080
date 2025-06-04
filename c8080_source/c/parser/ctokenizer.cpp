@@ -24,9 +24,9 @@ static inline size_t Tab(size_t column) {
     return ((column + tab_size) & ~tab_size) + 1;
 }
 
-void CTokenizer::Open2(const char *contents, const char *name) {
+void CTokenizer::Open2(const char *contents, const char *file_name_) {
     cursor = contents;
-    file_name = name;
+    file_name = file_name_;
     line = 1;
     column = 1;
 
@@ -37,28 +37,6 @@ void CTokenizer::Open2(const char *contents, const char *name) {
     token_line = 0;
     token_data = 0;
     token_size = 0;
-}
-
-void CTokenizer::NextTokenEol() {
-    for (;;) {
-        switch (*cursor) {
-            case 0:
-                break;
-            case '\t':
-                cursor++;
-                column = Tab(column);
-                continue;
-            case ' ':
-                cursor++;
-                column++;
-                continue;
-            case '\r':
-                cursor++;
-                continue;
-        }
-        break;
-    }
-    NextToken3();
 }
 
 void CTokenizer::NextToken2() {
@@ -77,31 +55,19 @@ void CTokenizer::NextToken2() {
             case '\r':
                 cursor++;
                 continue;
-            case '\n':
-                cursor++;
-                line++;
-                column = 1;
-                continue;
         }
         break;
     }
-    NextToken3();
-}
 
-void CTokenizer::NextToken3() {
     token_line = line;
     token_column = column;
     token_data = cursor;
 
-    token = NextToken4();
+    token = NextToken3();
 
     token_size = cursor - token_data;
 
-    UpdateLineColumn(token_data);
-}
-
-void CTokenizer::UpdateLineColumn(const char *from) {
-    for (const char *i = from; i < cursor; i++) {
+    for (const char *i = token_data; i < cursor; i++) {
         switch (*i) {
             case '\t':
                 column = Tab(column);
@@ -119,7 +85,7 @@ void CTokenizer::UpdateLineColumn(const char *from) {
     }
 }
 
-CToken CTokenizer::NextToken4() {
+CToken CTokenizer::NextToken3() {
     char c = *cursor++;
 
     if (c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {

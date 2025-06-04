@@ -17,69 +17,112 @@
 
 #pragma once
 
-#include <map>
-#include <functional>
-#include <list>
-#include <string>
-#include <stdexcept>
-#include <string.h>
-#include <memory>
-#include "../../tools/cstring.h"
-#include "../cerrorposition.h"
-#include "ctokenizer.h"
+#include "cmacronizer.h"
 
-class CLex : public CTokenizer {
-private:
-    struct Macro {
-        std::string name;
-        const char *body{};
-        bool disabled{};  // Macro should not call itself
-        std::vector<std::string> args;
-        std::shared_ptr<Macro> prev;
-    };
-
-    struct Stack {
-        const char *cursor{};
-        size_t line{};
-        size_t column{};
-        const char *file_name{};
-        Macro *active_macro{};  // Macro should not call itself
-    };
-
-    std::map<CString, std::shared_ptr<Macro>> macro;
-    std::list<Stack> stack;
-
-    bool Leave();
-    void Enter(Macro *macro_index, const char *contents, const char *name);
-    void ReadDirectiveBody(std::string &result);
-    void ReadMacroArgument(std::string &result, char terminator);
-
+class CLex : public CMacroizer {
 public:
-    std::function<const char *(const char *, size_t)> save_string;
-    std::function<void(std::string &)> preprocessor;
-    size_t endif_counter{};
-    unsigned in_macro{};
-    CErrorPosition error_position;  // Use only if in macro > 0
-
-    void Open(const char *contents, const char *name);
-    void Include(const char *contents, const char *name);
-    void AddMacro(CString name, const char *body, size_t size, const std::vector<std::string> *args = nullptr);
-    bool FindMacro(CString name);
-    bool DeleteMacro(CString name);
-    void NextToken();
-    void SyntaxError();
-    void Throw(CString text);
-
-    bool ReadDirective(std::string &out);
-};
-
-inline CErrorPosition::CErrorPosition(const CLex &lex) {
-    if (lex.in_macro > 0) {
-        *this = lex.error_position;
-    } else {
-        line = lex.line;
-        column = lex.column;
-        cursor = lex.cursor;
-        file_name = lex.file_name;
+    bool IfToken(CToken t) {
+        if (token != t)
+            return false;
+        NextToken();
+        return true;
     }
-}
+
+    void NeedToken(CToken token) {
+        if (!IfToken(token))
+            SyntaxError();
+    }
+
+    bool IfInteger(uint64_t &out_number) {
+        if (token != CT_INTEGER)
+            return false;
+        out_number = token_integer;
+        NextToken();
+        return true;
+    }
+
+    uint64_t NeedInteger() {
+        uint64_t result = 0;
+        if (!IfInteger(result))
+            SyntaxError();
+        return result;
+    }
+
+    bool IfToken(const char *string) {
+        if (0 != strncmp(token_data, string, token_size) || string[token_size] != 0)
+            return false;
+        NextToken();
+        return true;
+    }
+
+    void NeedToken(const char *string) {
+        if (!IfToken(string))
+            SyntaxError();
+    }
+
+    bool IfToken(const std::string &string) {
+        if (token_size != string.size() || 0 != memcmp(token_data, string.data(), token_size))
+            return false;
+        NextToken();
+        return true;
+    }
+
+    void NeedToken(const std::string &string) {
+        if (!IfToken(string))
+            SyntaxError();
+    }
+
+    bool IfString1(std::string &out_string);
+
+    void NeedString1(std::string &out_string) {
+        if (!IfString1(out_string))
+            SyntaxError();
+    }
+
+    bool IfString2(std::string &out_string);
+
+    void NeedString2(std::string &out_string) {
+        if (!IfString2(out_string))
+            SyntaxError();
+    }
+
+    bool IfIdent(std::string &out_string) {
+        if (token != CT_WORD)
+            return false;
+        out_string.assign(token_data, token_size);
+        NextToken();
+        return true;
+    }
+
+    void NeedIdent(std::string &out_string) {
+        if (!IfIdent(out_string))
+            SyntaxError();
+    }
+
+    bool IfToken(const std::vector<std::string> &strings, size_t &out_index);
+
+    size_t NeedToken(const std::vector<std::string> &strings) {
+        size_t index = 0;
+        if (!IfToken(strings, index))
+            SyntaxError();
+        return index;
+    }
+
+    bool IfToken(const char *const *strings, size_t &out_index);
+
+    void NeedToken(const char **strings, size_t &out_index) {
+        if (!IfToken(strings, out_index))
+            SyntaxError();
+    }
+
+    template <class T>
+    bool IfToken(const std::vector<T> &array, size_t &out_index) {
+        for (auto i = array.rbegin(); i != array.rend(); i++) {
+            if (IfToken(i->name)) {
+                out_index = array.size() - 1 - (i - array.rbegin());
+                return true;
+            }
+        }
+        return false;
+    }
+};
