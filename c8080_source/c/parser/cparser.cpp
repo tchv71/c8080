@@ -78,3 +78,26 @@ void CParser::ParseAll() {
     }
     programm.first_node = list.first;
 }
+
+void CParser::ParseAsmEqus(CString str) {
+    const char *p = str.c_str();
+    for (;;) {
+        if (isalnum(*p) || *p == '_') {
+            const char *line_start = p;
+            do {
+                p++;
+            } while (isalnum(*p) || *p == '_');
+            const char *is_end = p;
+            while (*p == ' ')
+                p++;
+            if (*p == '=' || *p == ':') {
+                std::string id(line_start, is_end - line_start);
+                programm.asm_names[id] = 1;
+            }
+        }
+        p = strchr(p, '\n');
+        if (p == NULL)
+            break;
+        p++;
+    }
+}

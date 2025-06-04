@@ -19,4 +19,4 @@
 
 #include <stdint.h>
 
-bool ConvertUtf8(uint32_t &output, const char *&input, const char *input_end);
+bool ParseUtf8(uint32_t &output, const char *&input, const char *input_end);

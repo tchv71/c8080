@@ -15,9 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "convertutf8.h"
+#include "parseutf8.h"
 
-bool ConvertUtf8(uint32_t &output, const char *&input, const char *input_end) {
+bool ParseUtf8(uint32_t &output, const char *&input, const char *input_end) {
     if (input == input_end)
         return false;
 

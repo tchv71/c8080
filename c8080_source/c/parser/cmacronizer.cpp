@@ -124,7 +124,6 @@ void CMacroizer::Enter(Macro *active_macro, const char *contents, const char *fi
     cursor = contents;
     line = 1;
     column = 1;
-    token_data = nullptr;  // Self test
 }
 
 bool CMacroizer::Leave() {
@@ -153,8 +152,6 @@ bool CMacroizer::Leave() {
 
     stack.pop_back();
 
-    token_data = nullptr;  // Self test
-
     return true;
 }
 
@@ -173,7 +170,7 @@ void CMacroizer::ReadDirective(std::string &result) {
         const char *start = cursor;
         NextToken2();
         if (token == CT_EOF || token == CT_EOL)
-            return;
+            break;
         if (token != CT_REMARK)
             result.append(start, cursor - start);
     }
