@@ -178,6 +178,15 @@ public:
         add(AC_ADD_HL_REG, reg);
     }
 
+    void assembler(CString string) {
+        AllRegistersChanged();
+        add(AC_ASSEMBLER, string);
+    }
+
+    void ret() {
+        add(AC_RET);
+    }
+
     // Simple commands
 
     void ld_bc_number(uint16_t number) {
