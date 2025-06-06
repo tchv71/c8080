@@ -22,9 +22,9 @@
 struct CStruct {
     std::string name;
     std::vector<CStructItemPtr> items;
-    uint64_t size_bytes = 0;
-    bool inited = false;
-    bool is_union = false;
+    uint64_t size_bytes{};
+    bool inited{};
+    bool is_union{};
 
     bool operator==(const CStruct &b) const;
 

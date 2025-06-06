@@ -15,11 +15,27 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "cparseasmequs.h"
 
-#include <stdint.h>
-#include <map>
-#include <string>
-#include "cstring.h"
-
-size_t Utf8To8Bit(const std::map<uint32_t, uint8_t> &codepage, CString utf8, std::string &result);
+void CParseAsmEqus(CString str, std::map<std::string, int>& out_values) {
+    const char *p = str.c_str();
+    for (;;) {
+        if (isalnum(*p) || *p == '_') {
+            const char *line_start = p;
+            do {
+                p++;
+            } while (isalnum(*p) || *p == '_');
+            const char *is_end = p;
+            while (*p == ' ')
+                p++;
+            if (*p == '=' || *p == ':') {
+                std::string id(line_start, is_end - line_start);
+                out_values[id] = 1;
+            }
+        }
+        p = strchr(p, '\n');
+        if (p == NULL)
+            break;
+        p++;
+    }
+}

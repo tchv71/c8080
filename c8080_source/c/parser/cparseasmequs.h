@@ -17,26 +17,8 @@
 
 #pragma once
 
-#include "../cprogramm.h"
+#include <map>
+#include <string>
 #include "../../tools/cstring.h"
 
-class CParser {
-public:
-    CProgramm &programm;
-    std::vector<std::string> include_dirs;
-    std::vector<std::string> default_defines;
-
-    CParser(CProgramm &p) : programm(p) {
-    }
-    void AddSourceFile(CString file_name);
-    bool GetFirstSourceFile(std::string &out_file_name);
-    void ParseAll();
-    const char *LoadFile(CString file_name, const char **out_file_name = nullptr);
-    bool FindGlobalIncludeFile(CString file_name, std::string &result);
-    bool FindAnyIncludeFile(CString file_name, CString local_path, std::string &result);
-
-private:
-    std::map<std::string, int> compile_queue_index;
-    std::vector<std::string> compile_queue;
-    std::map<std::string, std::string> loaded_files;
-};
+void CParseAsmEqus(CString str, std::map<std::string, int>& out_values);

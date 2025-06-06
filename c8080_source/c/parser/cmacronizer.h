@@ -52,7 +52,6 @@ private:
     bool Leave();
     void Enter(Macro *macro_index, const char *contents, const char *name);
     void ReadDirective(std::string &result);
-    void ReadMacroArgument(std::string &result, char terminator);
 
 public:
     std::function<const char *(const char *, size_t)> save_string;
@@ -71,6 +70,7 @@ public:
     void Throw(CString text);
 
     bool FindDirective(std::string &out);
+    void ReadRaw(std::string &result, char terminator);
 };
 
 inline CErrorPosition::CErrorPosition(const CMacroizer &lex) {

@@ -18,7 +18,7 @@
 #include "utf8to8bit.h"
 #include "parseutf8.h"
 
-bool Utf8To8Bit(const std::map<uint32_t, uint8_t> &codepage, CString utf8, std::string &result) {
+size_t Utf8To8Bit(const std::map<uint32_t, uint8_t> &codepage, CString utf8, std::string &result) {
     const size_t size = utf8.size();
     const char *utf8_begin = utf8.data();
     const char *utf8_iterator = utf8_begin;
@@ -28,24 +28,22 @@ bool Utf8To8Bit(const std::map<uint32_t, uint8_t> &codepage, CString utf8, std::
     char *result_begin = result.data();
     char *result_iterator = result_begin;
 
-    bool ok = true;
     while (utf8_iterator != utf8_end) {
         uint32_t unicode_char;
         if (!ParseUtf8(unicode_char, utf8_iterator, utf8_end)) {
-            *result_iterator++ = '?';
-            ok = false;
+            result.clear();
+            return result_iterator - result_begin;
+        }
+        auto i = codepage.find(unicode_char);
+        if (i != codepage.end()) {
+            *result_iterator++ = char(i->second);
+        } else if (unicode_char < 128) {
+            *result_iterator++ = char(unicode_char);
         } else {
-            auto i = codepage.find(unicode_char);
-            if (i != codepage.end()) {
-                *result_iterator++ = char(i->second);
-            } else if (unicode_char < 128) {
-                *result_iterator++ = char(unicode_char);
-            } else {
-                *result_iterator++ = '?';
-                ok = false;
-            }
+            result.clear();
+            return result_iterator - result_begin;
         }
     }
     result.resize(result_iterator - result_begin);
-    return ok;
+    return SIZE_MAX;
 }

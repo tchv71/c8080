@@ -16,7 +16,7 @@
  */
 
 #include "clex.h"
-#include "cdecodestring.h"
+#include "../tools/cdecodestring.h"
 
 bool CLex::IfString1(std::string &out_string) {
     if (token != CT_STRING1)

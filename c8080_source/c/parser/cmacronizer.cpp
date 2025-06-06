@@ -88,7 +88,7 @@ void CMacroizer::NextToken() {
 
                 for (size_t j = 0; j < m.args.size(); j++) {
                     std::string arg_body;
-                    ReadMacroArgument(arg_body, (j + 1) < m.args.size() ? ',' : ')');
+                    ReadRaw(arg_body, (j + 1) < m.args.size() ? ',' : ')');
                     AddMacro(m.args[j], arg_body.c_str(), arg_body.size());
                 }
             }
@@ -176,12 +176,14 @@ void CMacroizer::ReadDirective(std::string &result) {
     }
 }
 
-void CMacroizer::ReadMacroArgument(std::string &result, char terminator) {
+void CMacroizer::ReadRaw(std::string &result, char terminator) {
     for (;;) {
         const char *start = cursor;
         NextToken2();
         if (token == CT_EOF)
-            Throw("unterminated argument list invoking macro");
+            Throw(std::string("expected ‘") + terminator + "’ at end of input");
+        if (token_data[0] == '#') // MACRO(name #endif), asm { #endif }
+            Throw("сan't use # here");
         if (token_size == 1 && token_data[0] == terminator)
             return;
         if (token != CT_REMARK)

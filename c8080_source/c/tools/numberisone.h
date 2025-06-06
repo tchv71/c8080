@@ -17,9 +17,6 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <map>
-#include <string>
-#include "cstring.h"
+#include "../cnode.h"
 
-size_t Utf8To8Bit(const std::map<uint32_t, uint8_t> &codepage, CString utf8, std::string &result);
+bool NumberIsOne(CConstNodePtr node);

@@ -16,7 +16,8 @@
  */
 
 #include "c_parser_file.h"
-#include "ccalcconst.h"
+#include "cparseasmequs.h"
+#include "../tools/ccalcconst.h"
 #include "../tools/convert.h"
 #include "../tools/cthrow.h"
 
@@ -60,3 +61,129 @@ CVariablePtr CParserFile::BindLabel(CString name, CErrorPosition &e, bool is_got
     }
     return label;
 }
+
+void CParserFile::ParsePointerFlags(CPointer &pointer) {
+    for (;;) {
+        if (!pointer.flag_restrict && p.IfToken("__restrict")) {
+            pointer.flag_restrict = true;
+            continue;
+        }
+        if (!pointer.flag_const && p.IfToken("const")) {
+            pointer.flag_const = true;
+            continue;
+        }
+        if (!pointer.flag_volatile && p.IfToken("volatile")) {
+            pointer.flag_volatile = true;
+            continue;
+        }
+        break;
+    }
+}
+
+void CParserFile::IgnoreInsideBrackets(size_t level) {
+    for (;;) {
+        if (p.IfToken("(")) {
+            level++;
+            if (level == 0) // Incredible overflow
+                p.SyntaxError();
+            continue;
+        }
+        if (p.IfToken(")")) {
+            level--;
+            if (level == 0)
+                break;
+            continue;
+        }
+        p.NextToken();
+    }
+}
+
+void CParserFile::IgnoreAttributes() { // gcc compatibility
+    for (;;) {
+        if (p.IfToken("__asm__")) {
+            p.NeedToken("(");
+            IgnoreInsideBrackets(1);
+            continue;
+        }
+
+        if (p.IfToken("__attribute__")) {
+            p.NeedToken("(");
+            p.NeedToken("(");
+            IgnoreInsideBrackets(2);
+            continue;
+        }
+
+        break;
+    }
+}
+
+CNodePtr CParserFile::ParseAsm(CErrorPosition &e) {
+    std::string str;
+    if (p.IfToken("(")) {
+        p.NeedString2(str);
+        p.NeedToken(")");
+        p.NeedToken(";");
+    } else if (p.token_data[0] == '{') {
+        p.ReadRaw(str, '}');
+        p.NextToken();
+    } else {
+        p.SyntaxError();
+    }
+
+    CParseAsmEqus(str, programm_->asm_names);
+
+    return CNODE(CNT_ASM, text: str, e : e);
+}
+
+CStructPtr CParserFile::BindStructUnion(CString name, bool is_union, bool is_global) {
+    assert(!name.empty());
+
+    // Check unique name in view scope
+    auto &scope = is_union ? scope_unions : scope_structs;
+    for (auto i = scope.rbegin(); i != scope.rend(); i++) // TODO: Use map
+        if ((*i)->name == name)
+            return (*i);
+
+    // To check compatibility of types in different units
+    auto &global_map = is_union ? programm_->global_unions : programm_->global_structs;
+    if (is_global) {
+        auto i = global_map.find(name);
+        if (i != global_map.end())
+            return i->second;
+    }
+
+    // Allocate struct
+    CStructPtr s = std::make_shared<CStruct>();
+    s->is_union = is_union;
+    s->name = name;
+    scope.push_back(s);
+
+    // To check compatibility of types in different units
+    if (is_global)
+        global_map[name] = s;
+
+    return s;
+}
+
+CVariablePtr CParserFile::FindVariableCurrentScope(CString name) {
+    const size_t start = prev_scopes.empty() ? 0 : prev_scopes.back().variables_count;
+    for (size_t i = start; i < scope_variables.size(); i++) // TODO: Use map
+        if (scope_variables[i]->name == name)
+            return scope_variables[i];
+    return nullptr;
+}
+
+CTypedef *CParserFile::FindTypedefCurrentScope(CString name) {
+    const size_t start = prev_scopes.empty() ? 0 : prev_scopes.back().typedefs_count;
+    for (size_t i = start; i < scope_typedefs.size(); i++) // TODO: Use map
+        if (scope_typedefs[i].name == name)
+            return &scope_typedefs[i];
+    return nullptr;
+}
+
+void CParserFile::Utf8To8Bit(CString in, std::string& out) {
+    size_t pos = ::Utf8To8Bit(codepage_, in, out);
+    if (pos != SIZE_MAX)
+        p.Throw("unsupported symbol at position " + std::to_string(pos) + " in string \"" + in + "\"");
+}
+

@@ -21,10 +21,10 @@
 
 class CPointer {
 public:
-    uint64_t count = 0;
-    bool flag_const = false;
-    bool flag_volatile = false;
-    bool flag_restrict = false;
+    uint64_t count{};
+    bool flag_const{};
+    bool flag_volatile{};
+    bool flag_restrict{};
 
     bool operator==(const CPointer &b) const {
         return count == b.count && flag_const == b.flag_const && flag_volatile == b.flag_volatile &&
