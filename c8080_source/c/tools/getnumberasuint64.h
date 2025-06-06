@@ -15,16 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "reg.h"
-#include <array>
-#include <stdexcept>
+#pragma once
 
-const char *ToString(Reg value) {
-    static const char *strings[] = {"?", "a", "b", "c", "d", "e", "h", "l", "(hl)", "af", "bc", "de", "hl", "sp"};
+#include "../cnode.h"
 
-    if (value >= std::size(strings))
-        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " " + std::to_string(int(value)));
-
-    return strings[value];
-}
-
+uint64_t GetNumberAsUint64(CNodePtr node);

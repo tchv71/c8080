@@ -17,23 +17,16 @@
 
 #pragma once
 
-enum Reg {
-    REG_NONE,
-    R8_A,
-    R8_B,
-    R8_C,
-    R8_D,
-    R8_E,
-    R8_H,
-    R8_L,
-    R8_M,
-    R16_AF,
-    R16_BC,
-    R16_DE,
-    R16_HL,
-    R16_SP,
-    R32_DEHL,
-    REG_NO_ALT
+enum AsmJumpCondition {
+    JC_Z,
+    JC_NZ,
+    JC_C,
+    JC_NC,
+    JC_P,
+    JC_M,
+    JC_PE,
+    JC_PO,
 };
 
-const char *ToString(Reg value);
+bool InvertAsmJumpCondition(AsmJumpCondition &jump_condition);
+const char *ToString(AsmJumpCondition value);

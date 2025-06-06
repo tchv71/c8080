@@ -17,12 +17,10 @@
 
 #pragma once
 
-#include "cvariable.h"
+#include <vector>
 
-class AsmLabel;
-
-struct CNodeCompiler {
-    bool const_prepared{};
-    std::vector<CVariablePtr> used_variables;  // Only in CONST
-    AsmLabel *label{};
-};
+template <class T>
+static inline void FreeVector(std::vector<T> &a) {
+    std::vector<T> b;
+    a.swap(b);
+}

@@ -34,6 +34,7 @@ public:
     const char *LoadFile(CString file_name, const char **out_file_name = nullptr);
     bool FindGlobalIncludeFile(CString file_name, std::string &result);
     bool FindAnyIncludeFile(CString file_name, CString local_path, std::string &result);
+    const char *LoadGlobalIncludeFile(CString file_name);
 
 private:
     std::map<std::string, int> compile_queue_index;

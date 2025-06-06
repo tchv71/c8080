@@ -18,9 +18,12 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include "cconststringcomiler.h"
 
 struct CConstString {
     std::string text;
     CConstStringCompiler c;
 };
+
+typedef std::shared_ptr<CConstString> CConstStringPtr;

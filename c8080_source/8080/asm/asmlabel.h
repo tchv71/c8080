@@ -17,15 +17,13 @@
 
 #pragma once
 
-enum Alu {
-    ALU_XOR,
-    ALU_OR,
-    ALU_AND,
-    ALU_SUB,
-    ALU_ADD,
-    ALU_CMP,
-    ALU_ADC,
-    ALU_SBC,
+#include <stddef.h>
+
+class AsmLabel {
+public:
+    size_t number{};
+    size_t destination = SIZE_MAX;
+    size_t used{};
+    bool jump_back{};
 };
 
-const char *ToString(Alu value);

@@ -15,14 +15,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "asmregister.h"
+#include <array>
+#include <stdexcept>
 
-#include "cvariable.h"
+const char *ToString(AsmRegister value) {
+    static const char *strings[] = {"?", "a", "b", "c", "d", "e", "h", "l", "(hl)", "af", "bc", "de", "hl", "sp"};
 
-class AsmLabel;
+    if (value >= std::size(strings))
+        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " " + std::to_string(int(value)));
 
-struct CNodeCompiler {
-    bool const_prepared{};
-    std::vector<CVariablePtr> used_variables;  // Only in CONST
-    AsmLabel *label{};
-};
+    return strings[value];
+}
+

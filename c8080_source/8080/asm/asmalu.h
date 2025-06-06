@@ -17,16 +17,15 @@
 
 #pragma once
 
-enum JumpCondition {
-    JC_Z,
-    JC_NZ,
-    JC_C,
-    JC_NC,
-    JC_P,
-    JC_M,
-    JC_PE,
-    JC_PO,
+enum AsmAlu {
+    ALU_XOR,
+    ALU_OR,
+    ALU_AND,
+    ALU_SUB,
+    ALU_ADD,
+    ALU_CMP,
+    ALU_ADC,
+    ALU_SBC,
 };
 
-bool InvertJumpCondition(JumpCondition &jump_condition);
-const char *ToString(JumpCondition value);
+const char *ToString(AsmAlu value);

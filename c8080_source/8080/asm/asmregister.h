@@ -17,12 +17,23 @@
 
 #pragma once
 
-#include "cvariable.h"
-
-class AsmLabel;
-
-struct CNodeCompiler {
-    bool const_prepared{};
-    std::vector<CVariablePtr> used_variables;  // Only in CONST
-    AsmLabel *label{};
+enum AsmRegister {
+    REG_NONE,
+    R8_A,
+    R8_B,
+    R8_C,
+    R8_D,
+    R8_E,
+    R8_H,
+    R8_L,
+    R8_M,
+    R16_AF,
+    R16_BC,
+    R16_DE,
+    R16_HL,
+    R16_SP,
+    R32_DEHL,
+    REG_NO_ALT
 };
+
+const char *ToString(AsmRegister value);

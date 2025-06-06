@@ -48,6 +48,13 @@ bool CParser::FindGlobalIncludeFile(CString file_name, std::string &result) {
     return false;
 }
 
+const char *CParser::LoadGlobalIncludeFile(CString file_name) {
+    std::string full_file_name;
+    if (!FindGlobalIncludeFile(file_name, full_file_name))
+        throw std::runtime_error(std::string("file \"") + file_name + "\" not found");
+    return LoadFile(full_file_name);
+}
+
 void CParser::AddSourceFile(CString file_name) {
     if (compile_queue_index.find(file_name) == compile_queue_index.end()) {
         compile_queue_index[file_name] = 1;

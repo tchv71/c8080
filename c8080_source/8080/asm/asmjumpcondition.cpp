@@ -15,12 +15,37 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "alu.h"
+#include "asmjumpcondition.h"
 #include <array>
 #include <stdexcept>
 
-const char *ToString(Alu value) {
-    static const char *strings[] = {"xor", "or", "and", "sub", "add", "cp", "adc", "sbc"};
+bool InvertAsmJumpCondition(AsmJumpCondition &jump_condition) {
+    switch (jump_condition) {
+        case JC_Z:
+            jump_condition = JC_NZ;
+            return true;
+        case JC_NZ:
+            jump_condition = JC_Z;
+            return true;
+        case JC_C:
+            jump_condition = JC_NC;
+            return true;
+        case JC_NC:
+            jump_condition = JC_C;
+            return true;
+        case JC_P:
+            jump_condition = JC_M;
+            return true;
+        case JC_M:
+            jump_condition = JC_P;
+            return true;
+        default:
+            return false;
+    }
+}
+
+const char *ToString(AsmJumpCondition value) {
+    static const char *strings[] = {"z", "nz", "c", "nc", "p", "m", "pe", "po"};
 
     if (value >= std::size(strings))
         throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " " + std::to_string(int(value)));
