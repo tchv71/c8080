@@ -55,7 +55,7 @@ CStructItemPtr CStruct::FindItem(const char *name) {
     for (auto &i : items) {
         if (i->name.empty()) {
             if (i->type.pointers.empty() && i->type.base_type == CBT_STRUCT) {
-                std::shared_ptr<CStruct> &s = i->type.struct_object;
+                CStructPtr &s = i->type.struct_object;
                 if (s != nullptr) {
                     CStructItemPtr result = s->FindItem(name);
                     if (result != nullptr)

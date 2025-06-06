@@ -21,7 +21,9 @@
 #include <string>
 #include <stddef.h>
 #include <stdexcept>
+#include <assert.h>
 #include "asmlabel.h"
+#include "../../tools/cstring.h"
 
 enum AsmArgumentType { AAT_NONE = 0, AAT_REG, AAT_STRING, AAT_NUMBER, AAT_LABEL };
 
@@ -78,6 +80,7 @@ struct AsmArgument {
     }
 
     void Set(CString s) {
+        assert(!s.empty());
         type = AAT_STRING;
         string = s;
     }
@@ -90,5 +93,6 @@ struct AsmArgument {
     void Set(AsmLabel *l) {
         type = AAT_LABEL;
         label = l;
+        label->used++;
     }
 };

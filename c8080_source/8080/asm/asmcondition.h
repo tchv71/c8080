@@ -17,7 +17,7 @@
 
 #pragma once
 
-enum AsmJumpCondition {
+enum AsmCondition {
     JC_Z,
     JC_NZ,
     JC_C,
@@ -28,5 +28,5 @@ enum AsmJumpCondition {
     JC_PO,
 };
 
-bool InvertAsmJumpCondition(AsmJumpCondition &jump_condition);
-const char *ToString(AsmJumpCondition value);
+bool InvertAsmJumpCondition(AsmCondition &jump_condition);
+const char *ToString(AsmCondition value);

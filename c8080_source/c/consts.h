@@ -17,10 +17,14 @@
 
 #pragma once
 
+#include <limits.h>
+
 static const uint8_t C_SIZEOF_POINTER = 2;
 static const uint8_t C_SIZEOF_CHAR = 1;
 static const uint8_t C_SIZEOF_SHORT = 2;
 static const uint8_t C_SIZEOF_INT = 2;
+static const int16_t C_INT_MIN = SHRT_MIN;
+static const int16_t C_INT_MAX = SHRT_MAX;
 static const uint8_t C_SIZEOF_LONG = 4;
 static const uint8_t C_SIZEOF_LONG_LONG = 8;
 static const uint8_t C_SIZEOF_FLOAT = 4;

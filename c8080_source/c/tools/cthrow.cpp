@@ -28,7 +28,7 @@ void CThrow(CConstNodePtr node, CString text) {
 // Throw an exception including the position in the source code
 
 void CThrow(const CErrorPosition &position, CString text) {
-    throw std::runtime_error(position.ToString() + ": " + text);
+    throw std::runtime_error(position.ToString() + ": error: " + text);
 }
 
 // Throw an internal compiler error exception, including the position in the compiler source code

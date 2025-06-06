@@ -28,9 +28,9 @@ class CProgramm {
 public:
     CNodePtr first_node;
     std::map<std::string, std::shared_ptr<CConstString>> const_strings;
-    std::map<std::string, std::shared_ptr<CStruct>> global_structs;
-    std::map<std::string, std::shared_ptr<CStruct>> global_unions;
-    std::list<std::string> macro_bodies;
+    std::map<std::string, CStructPtr> global_structs;
+    std::map<std::string, CStructPtr> global_unions;
+    std::list<std::string> saved_strings;
     std::map<std::string, std::shared_ptr<CVariable>> global_variables;  // Кроме static
     std::vector<std::shared_ptr<CVariable>> all_top_variables;           // В том числе static
     std::map<std::string, int> used_output_names;
@@ -38,9 +38,11 @@ public:
     std::map<std::string, int> asm_names;         // Имена найденные в ASM блоках
     std::shared_ptr<CVariable> current_function;  // Убрать.
     bool cmm = false;                             // Язык CMM
+    bool error_flag{};
 
     CProgramm();
     std::shared_ptr<CVariable> FindVariable(const std::string &name);
     std::shared_ptr<CConstString> RegisterConstString(const std::string &text);
     void AddVariable(std::shared_ptr<CVariable> a);
+    void Error(const CErrorPosition& e, CString text);
 };

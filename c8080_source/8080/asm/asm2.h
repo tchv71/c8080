@@ -152,16 +152,12 @@ public:
     void label(AsmLabel *label) {
         if (measure_ == nullptr) {
             Add(AC_LABEL, label);
-            label->used++;
             label->destination = lines_.size();
         }
     }
 
     void jmp_label(AsmLabel *label) {
-        if (measure_ == nullptr) {
-            Add(AC_JMP, label);
-            label->used++;
-        }
+        Add(AC_JMP, label);
     }
 
     void jmp(CString string) {
@@ -260,12 +256,12 @@ public:
 
     void alu_a_reg(AsmAlu alu, AsmRegister reg) {
         ChangedReg(R8_A);
-        Add(AC_ALU_A_REG, alu, reg);
+        Add(AC_ALU_A_REG, reg, alu);
     }
 
-    void alu_a_string(AsmAlu alu, const std::string &string) {
+    void alu_a_string(AsmAlu alu, CString string) {
         ChangedReg(R8_A);
-        Add(AC_ALU_A_CONST, alu, string);
+        Add(AC_ALU_A_CONST, string, alu);
     }
 
     void alu_a_number(AsmAlu alu, uint8_t number) {
@@ -278,7 +274,7 @@ public:
             return;
         }
         ChangedReg(R8_A);
-        Add(AC_ALU_A_CONST, alu, number);
+        Add(AC_ALU_A_CONST, number, alu);
     }
 
     void ld_reg_number(AsmRegister reg, uint16_t number) {
@@ -300,6 +296,28 @@ public:
             else
                 Add(AC_LD_REG_CONST, reg, number);
         }
+    }
+
+    void ld_reg_string(AsmRegister reg, CString string) {
+        ChangedReg(reg);
+        Add(AC_LD_REG_CONST, reg, string);
+    }
+
+    void ret_condition(AsmCondition condition) {
+        Add(AC_RET_CONDITION, condition);
+    }
+
+    void jmp_condition(AsmCondition condition, CString name) {
+        Add(AC_JMP_CONDITION, name, condition);
+    }
+
+    void jmp_condition_label(AsmCondition condition, AsmLabel *label) {
+        Add(AC_JMP_CONDITION, label, condition);
+    }
+
+    void call2_condition(AsmCondition condition, CString name) {
+        AllRegistersChanged();
+        Add(AC_CALL_CONDITION, name, condition);
     }
 
     // Simple commands

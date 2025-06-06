@@ -15,11 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "asmjumpcondition.h"
+#include "asmcondition.h"
 #include <array>
 #include <stdexcept>
 
-bool InvertAsmJumpCondition(AsmJumpCondition &jump_condition) {
+bool InvertAsmJumpCondition(AsmCondition &jump_condition) {
     switch (jump_condition) {
         case JC_Z:
             jump_condition = JC_NZ;
@@ -44,7 +44,7 @@ bool InvertAsmJumpCondition(AsmJumpCondition &jump_condition) {
     }
 }
 
-const char *ToString(AsmJumpCondition value) {
+const char *ToString(AsmCondition value) {
     static const char *strings[] = {"z", "nz", "c", "nc", "p", "m", "pe", "po"};
 
     if (value >= std::size(strings))

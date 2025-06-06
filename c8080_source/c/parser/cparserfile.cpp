@@ -20,13 +20,16 @@
 #include "../tools/ccalcconst.h"
 #include "../tools/convert.h"
 #include "../tools/cthrow.h"
+#include "../consts.h"
 
 uint64_t CParserFile::ParseUint64() {
     static const CType uint64_ctype{CBT_UNSIGNED_LONG_LONG};
     CNodePtr value = Convert(uint64_ctype, ParseExpression());
     CCalcConst(value);
-    if (value->type != CNT_NUMBER)
-        CThrow(value, "Is not number");
+    if (value->type != CNT_NUMBER) {
+        programm_->Error(value->e, "Is not number");
+        return 0;
+    }
     assert(!value->ctype.IsPointer() && value->ctype.base_type == CBT_UNSIGNED_LONG_LONG);
     return value->number.u;
 }
@@ -35,8 +38,10 @@ int64_t CParserFile::ParseInt64() {
     static const CType int64_ctype{CBT_LONG_LONG};
     CNodePtr value = Convert(int64_ctype, ParseExpression());
     CCalcConst(value);
-    if (value->type != CNT_NUMBER)
-        CThrow(value, "Is not number");
+    if (value->type != CNT_NUMBER) {
+        programm_->Error(value->e, "Is not number");
+        return 0;
+    }
     assert(!value->ctype.IsPointer() && value->ctype.base_type == CBT_LONG_LONG);
     return value->number.i;
 }
@@ -56,7 +61,7 @@ CVariablePtr CParserFile::BindLabel(CString name, CErrorPosition &e, bool is_got
         label->label_call_count++;
     } else {
         if (!label->only_extern)
-            p.Throw("duplicate label '" + name + "'");  // gcc
+            programm_->Error(e, "duplicate label '" + name + "'");  // gcc
         label->only_extern = false;
     }
     return label;
@@ -181,8 +186,43 @@ CTypedef *CParserFile::FindTypedefCurrentScope(CString name) {
     return nullptr;
 }
 
-void CParserFile::Utf8To8Bit(CString in, std::string &out) {
+void CParserFile::Utf8To8Bit(const CErrorPosition& e, CString in, std::string &out) {
     size_t pos = ::Utf8To8Bit(codepage_, in, out);
     if (pos != SIZE_MAX)
-        p.Throw("unsupported symbol at position " + std::to_string(pos) + " in string \"" + in + "\"");
+        programm_->Error(e, "unsupported symbol at position " + std::to_string(pos) + " in string \"" + in + "\"");
+}
+
+void CParserFile::ParseEnum() {
+    // TODO: enum automatically increases the size of the type
+    int64_t value = 0;
+    for (;;) {
+        if (p.IfToken("}"))
+            break;
+
+        CErrorPosition e(p);
+        std::string name;
+        p.NeedIdent(name);
+        if (FindVariableCurrentScope(name) != nullptr)
+            programm_->Error(e, std::string("redefinition of ‘") + name + "’"); // gcc
+        if (p.IfToken("="))
+            value = ParseInt64();
+
+        if (value < C_INT_MIN || value > C_INT_MAX)
+            programm_->Error(e, "overflow in enumeration values"); // gcc
+
+        CVariablePtr v = std::make_shared<CVariable>();
+        v->type.base_type = CBT_INT;
+        v->type.flag_const = true;
+        v->name = name;
+        v->e = e;
+        v->body = CNODE(CNT_NUMBER, ctype : CType{CBT_INT});
+        v->body->number.i = value;
+
+        scope_variables.push_back(v);
+
+        if (p.IfToken("}"))
+            break;
+        p.NeedToken(",");
+        value++;
+    }
 }
