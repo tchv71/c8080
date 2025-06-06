@@ -98,14 +98,14 @@ public:
         add(AC_CPL);
     }
 
-    void call2(CString name) {
+    void call2(CString string) {
         AllRegistersChanged();
-        add(AC_CALL, name);
+        add(AC_CALL, string);
     }
 
-    void call2(uint16_t value) {
+    void call2(uint16_t number) {
         AllRegistersChanged();
-        add(AC_CALL, value);
+        add(AC_CALL, number);
     }
 
     void ld_pointer_a(CString string) {
@@ -132,13 +132,13 @@ public:
         add(AC_INC_REG, reg);
     }
 
-    void in(CString port) {
+    void in(CString string) {
         ChangedReg(R8_A);
-        add(AC_IN, port);
+        add(AC_IN, string);
     }
 
-    void out(CString port) {
-        add(AC_OUT, port);
+    void out(CString string) {
+        add(AC_OUT, string);
     }
 
     void Remark(CString string) {
@@ -316,7 +316,7 @@ public:
         ld_reg_reg(R8_M, reg);
     }
 
-    void ld_phl_const(const std::string &value) {
+    void ld_phl_const(CString value) {
         ld_reg_string(R8_M, value);
     }
 
@@ -352,19 +352,19 @@ public:
         alu_a_reg(ALU_CMP, R8_D);
     }
 
-    void cmp_a_string(const char *string) {
+    void cmp_a_string(CString string) {
         alu_a_string(ALU_CMP, string);
     }
 
-    void add_a_const(const std::string &string) {
+    void add_a_const(CString string) {
         alu_a_string(ALU_ADD, string);
     }
 
-    void sub_a_const(const char *string) {
+    void sub_a_const(CString string) {
         alu_a_string(ALU_SUB, string);
     }
 
-    void and_a_const(const char *string) {
+    void and_a_const(CString string) {
         alu_a_string(ALU_AND, string);
     }
 
@@ -372,11 +372,11 @@ public:
         alu_a_number(ALU_AND, number);
     }
 
-    void or_a_const(const char *string) {
+    void or_a_const(CString string) {
         alu_a_string(ALU_OR, string);
     }
 
-    void xor_a_const(const char *string) {
+    void xor_a_const(CString string) {
         alu_a_string(ALU_XOR, string);
     }
 
@@ -469,19 +469,19 @@ public:
         ld_reg_number(R8_L, number);
     }
 
-    void ld_d_offset(const char *name) {
-        ld_reg_string(R8_D, name);
+    void ld_d_offset(CString string) {
+        ld_reg_string(R8_D, string);
     }
 
-    void ld_bc_offset(const char *string) {
+    void ld_bc_offset(CString string) {
         ld_reg_string(R16_BC, string);
     }
 
-    void ld_de_offset(const char *string) {
+    void ld_de_offset(CString string) {
         ld_reg_string(R16_DE, string);
     }
 
-    void ld_hl_offset(const char *string) {
+    void ld_hl_offset(CString string) {
         ld_reg_string(R16_HL, string);
     }
 };
