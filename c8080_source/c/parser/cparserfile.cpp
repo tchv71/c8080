@@ -56,7 +56,7 @@ CVariablePtr CParserFile::BindLabel(CString name, CErrorPosition &e, bool is_got
         label->label_call_count++;
     } else {
         if (!label->only_extern)
-            p.Throw("duplicate label '" + name + "'"); // gcc
+            p.Throw("duplicate label '" + name + "'");  // gcc
         label->only_extern = false;
     }
     return label;
@@ -84,7 +84,7 @@ void CParserFile::IgnoreInsideBrackets(size_t level) {
     for (;;) {
         if (p.IfToken("(")) {
             level++;
-            if (level == 0) // Incredible overflow
+            if (level == 0)  // Incredible overflow
                 p.SyntaxError();
             continue;
         }
@@ -98,7 +98,7 @@ void CParserFile::IgnoreInsideBrackets(size_t level) {
     }
 }
 
-void CParserFile::IgnoreAttributes() { // gcc compatibility
+void CParserFile::IgnoreAttributes() {  // gcc compatibility
     for (;;) {
         if (p.IfToken("__asm__")) {
             p.NeedToken("(");
@@ -132,7 +132,7 @@ CNodePtr CParserFile::ParseAsm(CErrorPosition &e) {
 
     CParseAsmEqus(str, programm_->asm_names);
 
-    return CNODE(CNT_ASM, text: str, e : e);
+    return CNODE(CNT_ASM, text : str, e : e);
 }
 
 CStructPtr CParserFile::BindStructUnion(CString name, bool is_union, bool is_global) {
@@ -140,7 +140,7 @@ CStructPtr CParserFile::BindStructUnion(CString name, bool is_union, bool is_glo
 
     // Check unique name in view scope
     auto &scope = is_union ? scope_unions : scope_structs;
-    for (auto i = scope.rbegin(); i != scope.rend(); i++) // TODO: Use map
+    for (auto i = scope.rbegin(); i != scope.rend(); i++)  // TODO: Use map
         if ((*i)->name == name)
             return (*i);
 
@@ -167,7 +167,7 @@ CStructPtr CParserFile::BindStructUnion(CString name, bool is_union, bool is_glo
 
 CVariablePtr CParserFile::FindVariableCurrentScope(CString name) {
     const size_t start = prev_scopes.empty() ? 0 : prev_scopes.back().variables_count;
-    for (size_t i = start; i < scope_variables.size(); i++) // TODO: Use map
+    for (size_t i = start; i < scope_variables.size(); i++)  // TODO: Use map
         if (scope_variables[i]->name == name)
             return scope_variables[i];
     return nullptr;
@@ -175,15 +175,14 @@ CVariablePtr CParserFile::FindVariableCurrentScope(CString name) {
 
 CTypedef *CParserFile::FindTypedefCurrentScope(CString name) {
     const size_t start = prev_scopes.empty() ? 0 : prev_scopes.back().typedefs_count;
-    for (size_t i = start; i < scope_typedefs.size(); i++) // TODO: Use map
+    for (size_t i = start; i < scope_typedefs.size(); i++)  // TODO: Use map
         if (scope_typedefs[i].name == name)
             return &scope_typedefs[i];
     return nullptr;
 }
 
-void CParserFile::Utf8To8Bit(CString in, std::string& out) {
+void CParserFile::Utf8To8Bit(CString in, std::string &out) {
     size_t pos = ::Utf8To8Bit(codepage_, in, out);
     if (pos != SIZE_MAX)
         p.Throw("unsupported symbol at position " + std::to_string(pos) + " in string \"" + in + "\"");
 }
-

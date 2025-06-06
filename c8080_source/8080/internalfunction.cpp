@@ -26,4 +26,3 @@ const char *internal_function_names[IF_COUNT] = {
     "__o_mul_i32",    "__o_div_u32",  "__o_div_i32", "__o_mod_u32",  "__o_mod_i32", "__o_shl_32",  "__o_shr_u32",
     "__o_shr_i32",    "__o_minus_32", "__o_neg_32",
 };
-

@@ -26,4 +26,3 @@ public:
     size_t used{};
     bool jump_back{};
 };
-

@@ -21,4 +21,4 @@
 #include <string>
 #include "../../tools/cstring.h"
 
-void CParseAsmEqus(CString str, std::map<std::string, int>& out_values);
+void CParseAsmEqus(CString str, std::map<std::string, int> &out_values);

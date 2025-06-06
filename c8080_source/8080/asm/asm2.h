@@ -89,8 +89,8 @@ public:
     }
 
     void ld_sp_hl() {
-       ChangedReg(R16_SP);
-       Add(AC_LD_SP_HL);
+        ChangedReg(R16_SP);
+        Add(AC_LD_SP_HL);
     }
 
     void cpl() {

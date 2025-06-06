@@ -17,7 +17,7 @@
 
 #include "cparseasmequs.h"
 
-void CParseAsmEqus(CString str, std::map<std::string, int>& out_values) {
+void CParseAsmEqus(CString str, std::map<std::string, int> &out_values) {
     const char *p = str.c_str();
     for (;;) {
         if (isalnum(*p) || *p == '_') {

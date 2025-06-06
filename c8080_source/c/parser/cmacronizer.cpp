@@ -182,7 +182,7 @@ void CMacroizer::ReadRaw(std::string &result, char terminator) {
         NextToken2();
         if (token == CT_EOF)
             Throw(std::string("expected ‘") + terminator + "’ at end of input");
-        if (token_data[0] == '#') // MACRO(name #endif), asm { #endif }
+        if (token_data[0] == '#')  // MACRO(name #endif), asm { #endif }
             Throw("сan't use # here");
         if (token_size == 1 && token_data[0] == terminator)
             return;

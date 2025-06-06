@@ -27,4 +27,3 @@ const char *ToString(AsmRegister value) {
 
     return strings[value];
 }
-
