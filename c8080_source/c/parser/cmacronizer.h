@@ -55,14 +55,14 @@ private:
 
 public:
     std::function<const char *(const char *, size_t)> save_string;
-    std::function<void(std::string &)> preprocessor;
+    std::function<void(CString)> preprocessor;
     size_t endif_counter{};
     unsigned in_macro{};
     CErrorPosition error_position;  // Use only if in macro > 0
 
     void Open(const char *contents, const char *file_name);
     void Include(const char *contents, const char *file_name);
-    void AddMacro(CString name, const char *body, size_t size, const std::vector<std::string> *args = nullptr);
+    void AddMacro(CString name, const char *body = "", size_t size = 0, const std::vector<std::string> *args = nullptr);
     bool FindMacro(CString name);
     bool DeleteMacro(CString name);
     void NextToken();

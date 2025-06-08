@@ -39,5 +39,5 @@ public:
 private:
     std::map<std::string, int> compile_queue_index;
     std::vector<std::string> compile_queue;
-    std::map<std::string, std::string> loaded_files;
+    std::map<std::string, std::string> loaded_files; // TODO: Перенести в programm
 };

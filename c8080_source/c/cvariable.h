@@ -21,6 +21,7 @@
 #include "cerrorposition.h"
 #include "cnodeptr.h"
 #include "cvariablecompiler.h"
+#include "cattribute.h"
 
 struct CVariable {
     CType type;
@@ -37,14 +38,9 @@ struct CVariable {
     CErrorPosition e;
     uint64_t stack_offset{};
     size_t label_call_count{};
-
-    // __address(number) or __link(number) in programm
-    bool address_exists{};
-    uint64_t address_value{};
-
-    // __link(file_name) in programm
-    std::string auto_include_base_name;
-    std::string auto_include_name_for_path;
+    CAddressAttribute address_attribute;
+    CLinkAttribute link_attribute;
+    bool link_attribute_processed{};
 
     struct CVariableCompiler c;
 };

@@ -48,14 +48,14 @@ struct CNode {
 
     std::weak_ptr<CNode> case_link;              // Only in SWITCH and CASE. Linked list.
     std::weak_ptr<CNode> default_link;           // Only in SWITCH
-    std::shared_ptr<CStructItem> struct_item;    // Only in MOP_STRUCT_ITEM and MOP_STRUCT_ITEM_POINTER
+    CStructItemPtr struct_item;                  // Only in MOP_STRUCT_ITEM and MOP_STRUCT_ITEM_POINTER
     COperatorCode operator_code{};               // Only in OPERATOR
     CMonoOperatorCode mono_operator_code{};      // Only in MONO_OPERATOR
     CNodeNumber number{};                        // Only in NUMBER
-    std::shared_ptr<CConstString> const_string;  // Only in CONST_STRING
-    std::shared_ptr<CVariable> variable;         // Only in DECLARE_VARIABLE, LOAD_VARIABLE, FUNCTION_CALL*
+    CConstStringPtr const_string;                // Only in CONST_STRING
+    CVariablePtr variable;                       // Only in DECLARE_VARIABLE, LOAD_VARIABLE, FUNCTION_CALL*
     bool extern_flag{};                          // Only in DECLARE_VARIABLE
-    CIncludeAttribute include_attribute;         // Only in DECLARE_VARIABLE
+    CLinkAttribute link_attribute;               // Only in DECLARE_VARIABLE
     CAddressAttribute address_attribute;         // Only in DECLARE_VARIABLE
     std::string text;                            // Only in CONST or ASM
     CErrorPosition e;

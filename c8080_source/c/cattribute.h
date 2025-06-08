@@ -26,13 +26,29 @@
 struct CAddressAttribute {
     bool exists{};
     uint64_t value{};
+
+    bool operator == (const CAddressAttribute& b) const {
+        return exists == b.exists && value == b.value;
+    }
+
+    bool operator!=(const CAddressAttribute &b) const {
+        return !(*this == b);
+    }
 };
 
 // Example: __link("stdio/snprintf.c") int snprintf(char *buffer, size_t bufer_size, const char *format, ...);
 // TODO: __include
 
-struct CIncludeAttribute {
+struct CLinkAttribute {
     bool exists{};
     std::string base_name;
-    std::string name_for_path;
+    const char *name_for_path; // saved in programm objects
+
+    bool operator == (const CLinkAttribute& b) const {
+        return exists == b.exists && base_name == b.base_name && name_for_path == b.name_for_path;
+    }
+
+    bool operator!=(const CLinkAttribute &b) const {
+        return !(*this == b);
+    }
 };
