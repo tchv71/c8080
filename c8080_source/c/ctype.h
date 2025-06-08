@@ -80,6 +80,10 @@ public:
         return pointers.size() == 0 && base_type == CBT_VOID;
     }
 
+    bool IsFunction() const {
+        return pointers.size() == 0 && base_type == CBT_FUNCTION;
+    }
+
     uint64_t SizeOf(const CErrorPosition &e) const;
 
     uint64_t SizeOfBase(const CErrorPosition &e) const;

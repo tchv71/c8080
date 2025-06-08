@@ -161,32 +161,38 @@ CNodePtr CParserFile::ParseAsm(CErrorPosition &e) {
     return CNODE(CNT_ASM, text : str, e : e);
 }
 
-CStructPtr CParserFile::BindStructUnion(CString name, bool is_union, bool is_global) {
-    assert(!name.empty());
-
-    // Check unique name in view scope
+CStructPtr CParserFile::BindStructUnion(CString name, bool is_union, bool is_global, CErrorPosition& e) {
     auto &scope = is_union ? scope_unions : scope_structs;
-    for (auto i = scope.rbegin(); i != scope.rend(); i++)  // TODO: Use map
-        if ((*i)->name == name)
-            return (*i);
-
-    // To check compatibility of types in different units
     auto &global_map = is_union ? programm.global_unions : programm.global_structs;
-    if (is_global) {
-        auto i = global_map.find(name);
-        if (i != global_map.end())
-            return i->second;
+
+    if (!name.empty()) {
+        // Check unique name in view scope
+        for (auto i = scope.rbegin(); i != scope.rend(); i++)  // TODO: Use map
+            if ((*i)->name == name)
+                return (*i);
+
+        // To check compatibility of types in different units
+        if (is_global) {
+            auto i = global_map.find(name);
+            if (i != global_map.end())
+                return i->second;
+        }
     }
 
     // Allocate struct
     CStructPtr s = std::make_shared<CStruct>();
+    s->e = e;
     s->is_union = is_union;
-    s->name = name;
-    scope.push_back(s);
 
-    // To check compatibility of types in different units
-    if (is_global)
-        global_map[name] = s;
+    if (!name.empty()) {
+        s->name = name;
+
+        scope.push_back(s);
+
+        // To check compatibility of types in different units
+        if (is_global)
+            global_map[name] = s;
+    }
 
     return s;
 }
@@ -208,7 +214,7 @@ CTypedef *CParserFile::FindTypedefCurrentScope(CString name) {
 }
 
 void CParserFile::Utf8To8Bit(const CErrorPosition& e, CString in, std::string &out) {
-    size_t pos = ::Utf8To8Bit(codepage_, in, out);
+    size_t pos = ::Utf8To8Bit(codepage, in, out);
     if (pos != SIZE_MAX)
         programm.Error(e, "unsupported symbol at position " + std::to_string(pos) + " in string \"" + in + "\"");
 }
@@ -325,6 +331,11 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
         return nullptr;
     }
 
+    if (typedef_flag && base_type.flag_static) {
+        programm.Error(e, "multiple storage classes in declaration specifiers"); // gcc
+        base_type.flag_static = false;
+    }
+
     if (p.IfToken(";")) {
         if (typedef_flag || extern_flag)
             programm.Error(e, "useless storage class specifier in empty declaration"); // gcc
@@ -335,7 +346,18 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
     for (;;) {
         CType type;
         std::string name;
-        ParseTypeNameArray(base_type, &name, type);
+        ParseTypeNameArray(base_type, name, type);
+
+        if (typedef_flag) {
+            CNodePtr node = CNODE(CNT_TYPEDEF, ctype : type, e : e);
+            RegisterTypedef(node, name);
+
+            if (p.IfToken(";"))
+                break;
+
+            p.NeedToken(",");
+            continue;
+        }
 
         IgnoreAttributes();
 
@@ -353,7 +375,7 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
             CCalcConst(init);
         }
 
-        CVariablePtr v = RegisterVariable(typedef_flag, node->extern_flag, node, global, name, e);
+        CVariablePtr v = RegisterVariable(node->extern_flag, node, global, name);
 
         if (v) {
             node->variable = v;
@@ -403,24 +425,22 @@ void CParserFile::ParseTypePointers(CType &out_type) {
     }
 }
 
-void CParserFile::ParseTypeNameArray(CConstType base_type, std::string *out_name, CType& out_type) {
+void CParserFile::ParseTypeNameArray(CConstType base_type, std::string &out_name, CType& out_type) {
     CType type = base_type;
     ParseTypePointers(type);
 
-    if (out_name)
-        p.IfIdent(*out_name);
+    p.IfIdent(out_name);
 
     if (p.IfToken("(")) {
         CErrorPosition e(p);
-        if ((!out_name || out_name->empty()) && p.IfToken("*")) {
+        if (out_name.empty() && p.IfToken("*")) {
             std::vector<CPointer> pointers;
             do {
                 CPointer pointer;
                 ParsePointerFlags(pointer);
                 pointers.push_back(pointer);
             } while(p.IfToken("*"));
-            if (out_name)
-                p.IfIdent(*out_name);
+            p.IfIdent(out_name);
             p.NeedToken(")");
             if (p.IfToken("(")) {
                 ParseFunctionTypeArgs(e, type, &pointers, out_type);
@@ -449,6 +469,8 @@ void CParserFile::ParseTypeNameArray(CConstType base_type, std::string *out_name
 
 void CParserFile::ParseFunctionTypeArgs(CErrorPosition& e, CType& return_type, std::vector<CPointer> *fp, CType& out_type) {
     out_type.base_type = CBT_FUNCTION;
+    out_type.flag_static = return_type.flag_static;
+    return_type.flag_static = false;
     if (return_type.variables_mode != CVM_DEFAULT) {
         if (out_type.variables_mode != CVM_DEFAULT && out_type.variables_mode != return_type.variables_mode)
             programm.Error(e, "previous declaration is different");
@@ -485,7 +507,7 @@ void CParserFile::ParseFunctionTypeArgs(CErrorPosition& e, CType& return_type, s
             break;
         }
 
-        ParseTypeNameArray(pre_type, &arg.name, arg.type);
+        ParseTypeNameArray(pre_type, arg.name, arg.type);
 
         out_type.function_args.push_back(arg);
 
@@ -495,5 +517,246 @@ void CParserFile::ParseFunctionTypeArgs(CErrorPosition& e, CType& return_type, s
         }
 
         p.NeedToken(",");
+    }
+}
+
+void CParserFile::ParseStruct(CStruct &struct_object) {
+    CErrorPosition e(p);
+    while (!p.IfToken("}")) {
+        CType base_type;
+        ParseTypeWoPointers(&base_type);
+        do {
+            CStructItemPtr struct_item = std::make_shared<CStructItem>();
+            struct_item->type = base_type;
+            ParseTypeNameArray(base_type, struct_item->name, struct_item->type);
+            IgnoreAttributes();
+            struct_object.items.push_back(struct_item);
+        } while (p.IfToken(","));
+        p.NeedToken(";");
+    }
+    struct_object.CalcOffsets(e);
+}
+
+bool CParserFile::ParseType(CType *out_type, bool can_empty) {
+    if (!ParseTypeWoPointers(out_type, can_empty))
+        return false;
+    ParseTypePointers(*out_type);
+    return true;
+}
+
+void CParserFile::Enter() {
+    prev_scopes.push_back(Level{scope_variables.size(), scope_structs.size(), scope_unions.size(),
+                                scope_typedefs.size(), current_stack_size});
+}
+
+void CParserFile::Leave() {
+    if (prev_scopes.empty()) // TODO: Make special object scoped_map
+        p.Throw(std::string("Internal error in ") + __PRETTY_FUNCTION__);
+    Level &level = prev_scopes.back();
+    scope_variables.resize(level.variables_count);
+    scope_structs.resize(level.structs_count);
+    scope_unions.resize(level.unions_count);
+    scope_typedefs.resize(level.typedefs_count);
+    current_stack_size = level.stack_size;
+    prev_scopes.pop_back();
+}
+
+void CParserFile::ParseFunction(CNodePtr& node) {
+    if (!node->variable->only_extern) {
+        programm.Error(node->e, "redefinition of '" + node->variable->name + "'"); // gcc
+        programm.Note(node->variable->e, "previous definition of '" + node->variable->name + "'"); // gcc
+    }
+
+    node->extern_flag = false;
+    node->variable->only_extern = false;
+    node->variable->body = node;
+
+    // Init variables
+    current_function = node->variable;
+    scope_labels.clear();
+    current_stack_size = 0;
+    max_stack_size = 0;
+
+    Enter();
+
+    if (node->ctype.function_args.size() != current_function->function_arguments.size() + 1)
+        throw std::runtime_error(std::string("Internal error in ") + __PRETTY_FUNCTION__);
+
+    for (size_t i = 0; i < current_function->function_arguments.size(); i++) {
+        CVariablePtr& a = current_function->function_arguments[i];
+        a->name = node->ctype.function_args[i + 1u].name;
+        scope_variables.push_back(a);
+    }
+
+    CNodeList list;
+    while (!p.IfToken("}"))
+        list.PushBack(ParseFunctionBody());
+    node->a = list.first;
+
+    Leave();
+
+    current_function->function_stack_size = max_stack_size;
+
+    // Check labels
+    for (auto &l : scope_labels)
+        if (l.second->only_extern)
+            CThrow(l.second->e, "label '" + l.second->name + "'  used but not defined"); // gcc
+
+    // Self check
+    current_function = nullptr;
+}
+
+void CParserFile::AllocateObjectsForFunctionArgs(CNodePtr node) {
+    assert(node && node->variable);
+
+    CVariable& v = *node->variable;
+
+    if (!v.type.IsFunction())
+        return;
+
+    if (!v.function_arguments.empty())
+        return; // Already created
+
+    std::vector<CStructItem *> args;
+    if (v.type.GetVariableMode() == CVM_GLOBAL) {
+        for (size_t i = node->ctype.function_args.size(); i > 1; i--)
+            args.push_back(&node->ctype.function_args[i - 1]);
+    } else {
+        for (size_t i = 1; i < node->ctype.function_args.size(); i++)
+            args.push_back(&node->ctype.function_args[i]);
+    }
+
+    std::map<std::string, int> names;
+
+    uint64_t offset = 0;
+    for (auto &item : args) {
+        if (!names.try_emplace(item->name, 0).second)
+            programm.Error(node->e, std::string("redefinition of parameter '") + item->name + "'"); // gcc
+
+        CVariablePtr a = std::make_shared<CVariable>();
+        a->type = item->type;
+        a->name = item->name;
+        a->is_stack_variable = true;
+        a->is_function_argument = true;
+        a->e = node->e;
+
+        auto argument_size = a->type.SizeOf(a->e);
+        if (argument_size == 1)
+            offset++; // The stack is word aligned
+        a->stack_offset = offset;
+        offset += argument_size;
+
+        if (v.type.GetVariableMode() == CVM_GLOBAL)
+            v.function_arguments.insert(v.function_arguments.begin(), a);
+        else
+            v.function_arguments.push_back(a);
+    }
+}
+
+void CParserFile::RegisterTypedef(CNodePtr node, CString name) {
+    CTypedef *b = FindTypedefCurrentScope(name);
+    if (b != nullptr) {
+        if (b->type != node->ctype) {
+            programm.Error(node->e, "conflicting types for '" + name + "'; have '" + node->ctype.ToString() + "'"); // gcc
+            programm.Note(b->e, "previous declaration of '" + name + "' with type '" + b->type.ToString() + "'"); // gcc
+        }
+    } else {
+        scope_typedefs.push_back(CTypedef{node->ctype, name, e : node->e});
+    }
+}
+
+CVariablePtr CParserFile::RegisterVariable(bool extern_flag, CNodePtr node, bool global, CString name) {
+    CVariablePtr v = FindVariableCurrentScope(name);
+    if (v != nullptr) {
+        if (v->type != node->ctype) {
+            programm.Error(node->e, "conflicting types for '" + name + "'; have '" + node->ctype.ToString() + "'"); // gcc
+            programm.Note(v->e, "previous declaration of '" + name + "' with type '" + v->type.ToString() + "'"); // gcc
+        }
+        if (!extern_flag && !v->only_extern) {
+            programm.Error(node->e, "redefinition of '" + name + "'"); // gcc
+            programm.Note(v->e, "previous definition of '" + name + "'"); // gcc
+        }
+        if (!extern_flag)
+            v->only_extern = false;
+        // TODO: void test() { extern int a; int a; }
+        return v;
+    }
+
+    if (extern_flag)
+        global = true;
+
+    if (global && !node->ctype.flag_static) {
+        v = programm.global_variables[name];
+        if (v != nullptr) {
+            if (node->ctype != v->type) {
+                programm.Error(node->e, "conflicting types for '" + name + "'; have '" + node->ctype.ToString() + "'"); // gcc
+                programm.Note(v->e, "previous declaration of '" + name + "' with type '" + v->type.ToString() + "'"); // gcc
+            }
+            if (!extern_flag && !v->only_extern) {
+                programm.Error(node->e, "redefinition of '" + name + "'"); // gcc
+                programm.Note(v->e, "previous definition of '" + name + "'"); // gcc
+            }
+            if (!extern_flag)
+                v->only_extern = false;
+            scope_variables.push_back(v);
+            return v;
+        }
+    }
+
+    v = std::make_shared<CVariable>();
+    v->e = node->e;
+    v->type = node->ctype;
+    v->name = name;
+    v->only_extern = extern_flag;
+    v->address_attribute = node->address_attribute;
+    v->link_attribute = node->link_attribute;
+    if (global) {
+        if (!node->ctype.flag_static)
+            programm.global_variables[name] = v;
+        v->output_name = name;
+        programm.AddVariable(v);
+    } else if (node->ctype.flag_static) {
+        v->output_name = "__s_" + current_function->name + "_" + name;
+        programm.AddVariable(v);
+    } else {
+        v->is_stack_variable = true;
+        v->stack_offset = current_stack_size;
+
+        current_stack_size += v->type.SizeOf(v->e);
+        if (max_stack_size < current_stack_size)
+            max_stack_size = current_stack_size;
+    }
+    scope_variables.push_back(v);
+    return v;
+}
+
+void CParserFile::ParseTypeWoPointersStruct(CType *out_type, bool is_union, CErrorPosition& e) {
+    out_type->base_type = CBT_STRUCT;
+
+    std::string name;
+    if (p.IfIdent(name)) {
+        out_type->struct_object = BindStructUnion(name, is_union, true, e);
+        CStruct& s = *out_type->struct_object;
+
+        if (p.IfToken("{")) {
+            CStruct l;
+            l.is_union = is_union;
+            l.name = name;
+            l.e = e;
+            ParseStruct(l);
+
+            if (s.inited) {
+                if (s != l) {
+                    programm.Error(l.e, "conflicting types for '" + name + "'; have '" + l.ToString() + "'"); // gcc
+                    programm.Note(s.e, "previous declaration of '" + name + "' with type '" + s.ToString() + "'"); // gcc
+                }
+            } else {
+                s = l;
+            }
+        }
+    } else {
+        p.NeedToken("{");
+        out_type->struct_object = BindStructUnion("", is_union, true, e);
+        ParseStruct(*out_type->struct_object);
     }
 }

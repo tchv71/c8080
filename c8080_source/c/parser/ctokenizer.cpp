@@ -95,7 +95,7 @@ CToken CTokenizer::NextToken3() {
                 break;
             cursor++;
         }
-        return CT_WORD;
+        return CT_IDENT;
     }
 
     if (c >= '0' && c <= '9') {

@@ -28,7 +28,7 @@ public:
     uint64_t struct_item_offset{};
 
     bool operator==(const CStructItem &b) const {
-        return type == b.type && name == b.name;
+        return type == b.type && name == b.name && struct_item_offset == b.struct_item_offset;
     }
 
     bool operator!=(const CStructItem &b) const {

@@ -25,6 +25,7 @@ struct CStruct {
     uint64_t size_bytes{};
     bool inited{};
     bool is_union{};
+    CErrorPosition e;
 
     bool operator==(const CStruct &b) const;
 

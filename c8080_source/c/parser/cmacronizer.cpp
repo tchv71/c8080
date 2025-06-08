@@ -75,7 +75,7 @@ void CMacroizer::NextToken() {
             continue;
         }
 
-        if (token == CT_WORD) {
+        if (token == CT_IDENT) {
             auto mi = macro.find(CString(token_data, token_size));
             if (mi == macro.end() || mi->second->disabled)  // Macro should not call itself
                 break;

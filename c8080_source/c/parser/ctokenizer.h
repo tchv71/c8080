@@ -23,7 +23,7 @@
 enum CToken {
     CT_EOF,       // Eof of file
     CT_EOL,       // Eof of line
-    CT_WORD,      // Abc_def
+    CT_IDENT,      // Abc_def
     CT_INTEGER,   // 0 123
     CT_FLOAT,     // 1.0 1.2e-2
     CT_OPERATOR,  // + - += <<= ...

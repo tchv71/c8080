@@ -29,7 +29,6 @@ struct CVariable {
     bool is_stack_variable{};
     bool is_function_argument{};  // To select ARG_STACK_ADDRESS or STACK_ADDRESS
     bool is_label{};              // For all_top_variables
-    bool function_body_exists{};
     CNodePtr body;  // Function body or expression for initializing a variable
     std::string name;
     std::string output_name;
