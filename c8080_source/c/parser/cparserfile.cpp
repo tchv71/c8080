@@ -17,10 +17,11 @@
 
 #include "c_parser_file.h"
 #include "cparseasmequs.h"
+#include "../consts.h"
 #include "../tools/ccalcconst.h"
 #include "../tools/convert.h"
 #include "../tools/cthrow.h"
-#include "../consts.h"
+#include "../tools/makeoperator.h"
 
 void CParserFile::Compile(CNodeList &node_list, CString file_name) {
     p.save_string = [this](const char *data, size_t size) {
@@ -760,3 +761,202 @@ void CParserFile::ParseTypeWoPointersStruct(CType *out_type, bool is_union, CErr
         ParseStruct(*out_type->struct_object);
     }
 }
+
+CNodePtr CParserFile::ParseExpressionComma() {
+    CNodePtr result = ParseExpression();
+    for (;;) {
+        CErrorPosition e(p);
+        if (!p.IfToken(","))
+            return result;
+        result = MakeOperator(COP_COMMA, result, ParseExpression(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpression() {
+    CNodePtr a = ParseExpressionA();
+
+    CErrorPosition e(p);
+    if (p.IfToken("?")) {
+        CNodePtr b = ParseExpression();
+        p.NeedToken(":");
+        CNodePtr c = ParseExpression();
+        return MakeOperatorIf(a, b, c, e, programm.cmm);
+    }
+
+    static const char *const operators[] = {"=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", "&=", "^=", "|=", nullptr};
+    static const COperatorCode operator_codes[] = {COP_SET,     COP_SET_ADD, COP_SET_SUB, COP_SET_MUL,
+                                                   COP_SET_DIV, COP_SET_MOD, COP_SET_SHL, COP_SET_SHR,
+                                                   COP_SET_AND, COP_SET_XOR, COP_SET_OR};
+    size_t n = 0;
+    if (p.IfToken(operators, n))
+        return MakeOperator(operator_codes[n], a, ParseExpression(), e, programm.cmm);
+
+    return a;
+}
+
+CNodePtr CParserFile::ParseExpressionA() {
+    CNodePtr result = ParseExpressionB();
+    for (;;) {
+        CErrorPosition e(p);
+        if (!p.IfToken("||"))
+            return result;
+        result = MakeOperator(COP_LOR, result, ParseExpressionB(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpressionB() {
+    CNodePtr result = ParseExpressionC();
+    for (;;) {
+        CErrorPosition e(p);
+        if (!p.IfToken("&&"))
+            return result;
+        result = MakeOperator(COP_LAND, result, ParseExpressionC(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpressionC() {
+    CNodePtr result = ParseExpressionD();
+    for (;;) {
+        CErrorPosition e(p);
+        if (!p.IfToken("|"))
+            return result;
+        result = MakeOperator(COP_OR, result, ParseExpressionD(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpressionD() {
+    CNodePtr result = ParseExpressionE();
+    for (;;) {
+        CErrorPosition e(p);
+        if (!p.IfToken("^"))
+            return result;
+        result = MakeOperator(COP_XOR, result, ParseExpressionE(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpressionE() {
+    CNodePtr result = ParseExpressionF();
+    for (;;) {
+        CErrorPosition e(p);
+        if (!p.IfToken("&"))
+            return result;
+        result = MakeOperator(COP_AND, result, ParseExpressionF(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpressionF() {
+    static const char *const operators[] = {"==", "!=", nullptr};
+    static const COperatorCode operator_codes[] = {COP_CMP_E, COP_CMP_NE};
+    CNodePtr result = ParseExpressionG();
+    for (;;) {
+        size_t n = 0;
+        CErrorPosition e(p);
+        if (!p.IfToken(operators, n))
+            return result;
+        result = MakeOperator(operator_codes[n], result, ParseExpressionG(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpressionG() {
+    static const char *const operators[] = {"<", "<=", ">", ">=", nullptr};
+    static const COperatorCode operator_codes[] = {COP_CMP_L, COP_CMP_LE, COP_CMP_G, COP_CMP_GE};
+    CNodePtr result = ParseExpressionH();
+    for (;;) {
+        size_t n = 0;
+        CErrorPosition e(p);
+        if (!p.IfToken(operators, n))
+            return result;
+        result = MakeOperator(operator_codes[n], result, ParseExpressionH(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpressionH() {
+    static const char *const operators[] = {">>", "<<", nullptr};
+    static const COperatorCode operator_codes[] = {COP_SHR, COP_SHL};
+    CNodePtr result = ParseExpressionI();
+    for (;;) {
+        size_t n = 0;
+        CErrorPosition e(p);
+        if (!p.IfToken(operators, n))
+            return result;
+        result = MakeOperator(operator_codes[n], result, ParseExpressionI(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpressionI() {
+    static const char *const operators[] = {"+", "-", nullptr};
+    static const COperatorCode operator_codes[] = {COP_ADD, COP_SUB};
+    CNodePtr result = ParseExpressionJ();
+    for (;;) {
+        size_t n = 0;
+        CErrorPosition e(p);
+        if (!p.IfToken(operators, n))
+            return result;
+        result = MakeOperator(operator_codes[n], result, ParseExpressionJ(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpressionJ() {
+    static const char *const operators[] = {"*", "/", "%", nullptr};
+    static const COperatorCode operator_codes[] = {COP_MUL, COP_DIV, COP_MOD};
+    CNodePtr result = ParseExpressionK();
+    for (;;) {
+        size_t n = 0;
+        CErrorPosition e(p);
+        if (!p.IfToken(operators, n))
+            return result;
+        result = MakeOperator(operator_codes[n], result, ParseExpressionK(), e, programm.cmm);
+    }
+}
+
+CNodePtr CParserFile::ParseExpressionK() {
+    CErrorPosition e(p);
+    if (p.IfToken("(")) {
+        CType new_type;
+        if (ParseType(&new_type, true)) {
+            p.NeedToken(")");
+            return CNODE(CNT_CONVERT, a : ParseExpressionK(), ctype : new_type, e : e);
+        }
+        CNodePtr result = ParseExpressionComma();
+        p.NeedToken(")");
+        return ParseExpressionM(result);
+    }
+
+    static const char *const operators[] = {"++", "--", "+", "-", "!", "~", "*", "&", nullptr};
+    static const CMonoOperatorCode operator_codes[] = {MOP_INC, MOP_DEC, MOP_PLUS,   MOP_MINUS,
+                                                       MOP_NOT, MOP_NEG, MOP_DEADDR, MOP_ADDR};
+    size_t n = 0;
+    if (p.IfToken(operators, n)) {
+        CNodePtr a = ParseExpressionK();
+        CNodePtr result = CNODE(CNT_MONO_OPERATOR, a
+                                : a, ctype
+                                : a->ctype, mono_operator_code
+                                : operator_codes[n], e
+                                : e);
+        if (operator_codes[n] == MOP_DEADDR) {
+            if (result->ctype.pointers.empty()) {
+                if (!programm.cmm)
+                    programm.Error(e, "invalid type argument of unary '*' (have '" + result->ctype.ToString() + "')"); // gcc
+            } else {
+                result->ctype.pointers.pop_back();
+            }
+            return result;
+        }
+        if (operator_codes[n] == MOP_ADDR) {
+            result->ctype.pointers.push_back(CPointer{0});
+            return result;
+        }
+        if (operator_codes[n] == MOP_NOT) {
+            result->ctype = CType{CBT_BOOL};
+            return result;
+        }
+        return result;
+    }
+    return ParseExpressionL();
+}
+
+CNodePtr CParserFile::ParseExpressionL() {
+    CNodePtr result = ParseExpressionValue();
+    return CParserFile::ParseExpressionM(result);
+}
+
