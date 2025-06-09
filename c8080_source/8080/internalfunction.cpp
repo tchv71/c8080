@@ -26,3 +26,26 @@ const char *internal_function_names[IF_COUNT] = {
     "__o_mul_i32",    "__o_div_u32",  "__o_div_i32", "__o_mod_u32",  "__o_mod_i32", "__o_shl_32",  "__o_shr_u32",
     "__o_shr_i32",    "__o_minus_32", "__o_neg_32",
 };
+
+void InternalFunctionDependencies(bool *used) {
+    if (used[IF_MUL_I16]) {
+        used[IF_MUL_U16] = true;
+        used[IF_MINUS_16] = true;
+    }
+    if (used[IF_DIV_I16]) {
+        used[IF_DIV_U16] = true;
+        used[IF_MINUS_16] = true;
+    }
+    if (used[IF_MOD_U8])
+        used[IF_DIV_U8] = true;
+    if (used[IF_MOD_U16])
+        used[IF_DIV_U16] = true;
+    if (used[IF_MOD_U32])
+        used[IF_DIV_U32] = true;
+    if (used[IF_MOD_I8])
+        used[IF_DIV_I8] = true;
+    if (used[IF_MOD_I16])
+        used[IF_DIV_I16] = true;
+    if (used[IF_MOD_I32])
+        used[IF_DIV_I32] = true;
+}

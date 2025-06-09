@@ -923,31 +923,43 @@ CNodePtr CParserFile::ParseExpressionK() {
     static const char *const operators[] = {"++", "--", "+", "-", "!", "~", "*", "&", nullptr};
     static const CMonoOperatorCode operator_codes[] = {MOP_INC, MOP_DEC, MOP_PLUS,   MOP_MINUS,
                                                        MOP_NOT, MOP_NEG, MOP_DEADDR, MOP_ADDR};
+
     size_t n = 0;
     if (p.IfToken(operators, n)) {
+        const CMonoOperatorCode mo = operator_codes[n];
+
         CNodePtr a = ParseExpressionK();
+
         CNodePtr result = CNODE(CNT_MONO_OPERATOR, a
                                 : a, ctype
                                 : a->ctype, mono_operator_code
-                                : operator_codes[n], e
+                                : mo, e
                                 : e);
-        if (operator_codes[n] == MOP_DEADDR) {
-            if (result->ctype.pointers.empty()) {
-                if (!programm.cmm)
-                    programm.Error(
-                        e, "invalid type argument of unary '*' (have '" + result->ctype.ToString() + "')");  // gcc
-            } else {
-                result->ctype.pointers.pop_back();
-            }
-            return result;
-        }
-        if (operator_codes[n] == MOP_ADDR) {
-            result->ctype.pointers.push_back(CPointer{0});
-            return result;
-        }
-        if (operator_codes[n] == MOP_NOT) {
-            result->ctype = CType{CBT_BOOL};
-            return result;
+
+        switch (mo) {
+            case MOP_INC:
+                if (a->ctype.IsConst())
+                    programm.Error(e, "increment of read-only variable"); // gcc
+                break;
+            case MOP_DEC:
+                if (a->ctype.IsConst())
+                    programm.Error(e, "decrement of read-only variable"); // gcc
+                break;
+            case MOP_DEADDR:
+                if (result->ctype.pointers.empty()) {
+                    if (!programm.cmm)
+                        programm.Error(
+                            e, "invalid type argument of unary '*' (have '" + result->ctype.ToString() + "')");  // gcc
+                } else {
+                    result->ctype.pointers.pop_back();
+                }
+                break;
+            case MOP_ADDR:
+                result->ctype.pointers.push_back(CPointer{0});
+                break;
+            case MOP_NOT:
+                result->ctype = CType{CBT_BOOL};
+                break;
         }
         return result;
     }
@@ -1261,4 +1273,272 @@ CBaseType CParserFile::ParseBaseType() {
     }
     assert(false);
     return CBT_STRUCT;
+}
+
+CNodePtr CParserFile::ParseExpressionStructItem(CMonoOperatorCode mo, CNodePtr& a, CErrorPosition &e) {
+    std::string item_name;
+    p.NeedIdent(item_name);
+
+    if (a->ctype.pointers.size() != (mo == MOP_STRUCT_ITEM ? 0 : 1) || a->ctype.base_type != CBT_STRUCT) {
+        programm.Error(e, std::string("invalid type argument of '") + ToString(a->mono_operator_code) + "' (have '" + a->ctype.ToString() + "')"); // gcc
+        return a;
+    }
+
+    if (a->ctype.struct_object == nullptr)
+        p.Throw(std::string("Internal error in ") + __PRETTY_FUNCTION__);
+
+    CStructItemPtr struct_item = a->ctype.struct_object->FindItem(item_name);
+    if (struct_item == nullptr) {
+        programm.Error(e, std::string("'struct ") + a->ctype.struct_object->name + "' has no member named '" + item_name + "'"); // gcc
+        return a;
+    }
+
+    CNodePtr result = CNODE(CNT_MONO_OPERATOR, a : a, ctype : struct_item->type, struct_item : struct_item, mono_operator_code : mo, e : e);
+
+    if (result->a->ctype.flag_const)
+        result->ctype.flag_const = true;
+
+    return result;
+}
+
+CNodePtr CParserFile::ParseExpressionArrayElement(CNodePtr& a, CErrorPosition &e) {
+    CNodePtr result = CNODE(CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : MOP_ARRAY_ELEMENT, e : e);
+    result->b = Convert(CType{CBT_SIZE}, ParseExpressionComma(), programm.cmm);
+    p.NeedToken("]");
+    if (!result->ctype.pointers.empty()) {
+        result->ctype.pointers.pop_back();
+    } else if (!programm.cmm) {
+        programm.Error(e, "subscripted value is neither array nor pointer nor vector"); // gcc
+    }
+    return result;
+}
+
+CNodePtr CParserFile::ParseExpressionM(CNodePtr result) {
+    for (;;) {
+        CErrorPosition e(p);
+        if (p.IfToken("(")) {
+            result = ParseExpressionCall(result, e);
+            continue;
+        }
+
+        static const char *const operators[] = {"++", "--", ".", "->", "[", nullptr};
+        size_t n = 0;
+        if (!p.IfToken(operators, n))
+            break;
+
+        switch (n) {
+            case 0: // a++
+                if (result->ctype.IsConst())
+                    programm.Error(e, "increment of read-only variable"); // gcc
+                result = CNODE(CNT_MONO_OPERATOR, a : result, ctype : result->ctype, mono_operator_code : MOP_POST_INC, e : e);
+                break;
+            case 1: // a--
+                if (result->ctype.IsConst())
+                    programm.Error(e, "decrement of read-only variable"); // gcc
+                result = CNODE(CNT_MONO_OPERATOR, a : result, ctype : result->ctype, mono_operator_code : MOP_POST_DEC, e : e);
+                break;
+            case 2: // a.
+                result = ParseExpressionStructItem(MOP_STRUCT_ITEM, result, e);
+                break;
+            case 3: // a->
+                result = ParseExpressionStructItem(MOP_STRUCT_ITEM_POINTER, result, e);
+                break;
+            case 4: // a[
+                result = ParseExpressionArrayElement(result, e);
+                break;
+            default:
+                assert(false);
+        }
+    }
+    return result;
+}
+
+
+CNodePtr CParserFile::ParseFunctionBody() {
+    CErrorPosition e(p);
+    if (p.token == CT_IDENT && p.cursor[0] == ':' && 0 != memcmp(p.token_data, "default", p.token_size)) {
+        std::string label_name;
+        p.NeedIdent(label_name);
+        p.NeedToken(":");
+        return CNODE(CNT_LABEL, variable : BindLabel(label_name, e, false), e : e);
+    }
+    if (p.IfToken("goto")) {
+        std::string label_name;
+        p.NeedIdent(label_name);
+        p.NeedToken(";");
+        return CNODE(CNT_GOTO, variable : BindLabel(label_name, e, true), e : e);
+    }
+    if (p.IfToken("if")) {
+        p.NeedToken("(");
+        CNodePtr node = CNODE(CNT_IF, ParseExpressionComma(), e : e);
+        p.NeedToken(")");
+        node->b = ParseFunctionBody();
+        if (p.IfToken("else"))
+            node->c = ParseFunctionBody();
+        return node;
+    }
+    if (p.IfToken("while")) {
+        loop_level++;
+        p.NeedToken("(");
+        CNodePtr node = CNODE(CNT_WHILE, ParseExpressionComma(), e : e);
+        p.NeedToken(")");
+        node->b = ParseFunctionBody();
+        loop_level--;
+        return node;
+    }
+    if (p.IfToken("do")) {
+        loop_level++;
+        CNodePtr b = ParseFunctionBody();
+        p.NeedToken("while");
+        p.NeedToken("(");
+        CNodePtr node = CNODE(CNT_DO, ParseExpressionComma(), b : b, e : e);
+        p.NeedToken(")");
+        p.NeedToken(";");
+        loop_level--;
+        return node;
+    }
+    if (p.IfToken("break")) {
+        if (loop_level == 0 && last_switch == nullptr)
+            programm.Error(e, "break statement not within loop or switch");  // gcc
+        p.NeedToken(";");
+        return CNODE(CNT_BREAK, e : e);
+    }
+    if (p.IfToken("continue")) {
+        if (loop_level == 0)
+            programm.Error(e, "continue statement not within a loop");  // gcc
+        p.NeedToken(";");
+        return CNODE(CNT_CONTINUE, e : e);
+    }
+    if (p.IfToken("case")) {
+        CNodePtr node = CNODE(CNT_CASE, Convert(CType{CBT_INT}, ParseExpressionComma()), e : e);
+        CCalcConst(node->a);
+        p.NeedToken(":");
+        if (last_switch != nullptr) {
+            node->case_link = last_switch->case_link;
+            last_switch->case_link = node;
+        } else {
+            programm.Error(e, "case label not within a switch statement");  // gcc
+        }
+        return node;
+    }
+    if (p.IfToken("default")) {
+        CNodePtr node = CNODE(CNT_DEFAULT, e : e);
+        if (last_switch != nullptr) {
+            CNodePtr default_link = last_switch->default_link.lock();
+            if (default_link != nullptr)
+                p.Throw("multiple default labels in one switch");  // gcc
+            last_switch->default_link = node;
+        } else {
+            programm.Error(e, "case label not within a switch statement");  // gcc
+        }
+        p.NeedToken(":");
+        return node;
+    }
+    if (p.IfToken("switch")) {
+        CNodePtr saved_switch = last_switch;
+        p.NeedToken("(");
+        auto value = ParseExpressionComma();
+        if (value->ctype.SizeOf(value->e) != 1)
+            value = Convert(CType{CBT_UNSIGNED_INT}, value);
+        auto node = CNODE(CNT_SWITCH, value);
+        last_switch = node;
+        node->e = e;
+        p.NeedToken(")");
+        Enter();
+        p.NeedToken("{");
+        CNodeList body;
+        while (!p.IfToken("}"))
+            body.PushBack(ParseFunctionBody());
+        // Преобразование в 16 бит
+        if (value->ctype.SizeOf(value->e) == 1) {
+            bool is8 = true;
+            for (CNodePtr j = node->case_link.lock(); j != nullptr; j = j->case_link.lock()) {
+                if (j->a->number.u > 0xFF) {
+                    is8 = false;
+                    break;
+                }
+            }
+            if (!is8) {
+                value = Convert(CType{CBT_UNSIGNED_INT}, value);
+            }
+        }
+        Leave();
+        node->b = body.first;
+        last_switch = saved_switch;
+        return node;
+    }
+    if (p.IfToken("for")) {
+        loop_level++;
+        p.NeedToken("(");
+        auto a = ParseFunctionBody2();
+        // Always ends by ;
+        CNodePtr b;
+        if (!p.IfToken(";")) {
+            b = ParseExpressionComma();
+            p.NeedToken(";");
+        }
+        CNodePtr c;
+        if (!p.IfToken(")")) {
+            c = ParseExpressionComma();
+            p.NeedToken(")");
+        }
+        auto d = ParseFunctionBody();
+        loop_level--;
+        return CNODE(CNT_FOR, a, b, c, d, e : e);
+    }
+    if (p.IfToken("{")) {
+        Enter();
+        CNodeList list;
+        while (!p.IfToken("}"))
+            list.PushBack(ParseFunctionBody());
+        Leave();
+        return CNODE(CNT_LEVEL, list.first, e : e);
+    }
+    if (p.IfToken("return")) {
+        const std::vector<CStructItem> &fa = current_function->type.function_args;
+        CNodePtr return_value;
+        if (p.IfToken(";")) {
+            if (fa.size() >= 1 && !fa[0].type.IsVoid() && !programm.cmm)
+                programm.Error(e, "'return' with no value, in function returning non-void"); // gcc
+        } else {
+            return_value = ParseExpressionComma();
+            p.NeedToken(";");
+
+            if (fa.size() >= 1 && !fa[0].type.IsVoid())
+                return_value = Convert(fa[0].type, return_value, programm.cmm);
+            else if (!programm.cmm)
+                programm.Error(e, "'return' with a value, in function returning void"); // gcc
+        }
+        return CNODE(CNT_RETURN, return_value, e : e);
+    }
+    if (programm.cmm && p.IfToken("push_pop")) {
+        p.NeedToken("(");
+        CNodeList regs;
+        if (!p.IfToken(")")) {
+            for (;;) {
+                regs.PushBack(ParseExpression());
+                if (p.IfToken(")"))
+                    break;
+                p.NeedToken(",");
+            }
+        }
+        p.NeedToken("{");
+        CNodeList body;
+        while (!p.IfToken("}"))
+            body.PushBack(ParseFunctionBody());
+        return CNODE(CNT_PUSH_POP, a : regs.first, b : body.first, e : e);
+    }
+    return ParseFunctionBody2();
+}
+
+CNodePtr CParserFile::ParseFunctionBody2() {
+    if (p.IfToken(";"))
+        return nullptr;
+    bool empty = false;
+    CNodePtr node = CompileLine(&empty, false);
+    if (!empty)
+        return node;
+    node = ParseExpressionComma();
+    p.NeedToken(";");
+    return node;
 }

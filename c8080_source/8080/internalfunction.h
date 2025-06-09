@@ -67,3 +67,5 @@ enum InternalFunction {
 };
 
 extern const char *internal_function_names[IF_COUNT];
+
+void InternalFunctionDependencies(bool *used);

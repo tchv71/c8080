@@ -17,7 +17,10 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
 #include "cstructitem.h"
+#include "cerrorposition.h"
 
 struct CStruct {
     std::string name;
@@ -35,7 +38,7 @@ struct CStruct {
 
     std::string ToString() const;
     void CalcOffsets(const CErrorPosition &e);
-    CStructItemPtr FindItem(const char *name);
+    CStructItemPtr FindItem(CString name);
 };
 
 typedef std::shared_ptr<CStruct> CStructPtr;

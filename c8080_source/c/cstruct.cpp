@@ -51,7 +51,7 @@ void CStruct::CalcOffsets(const CErrorPosition &e) {
     inited = true;
 }
 
-CStructItemPtr CStruct::FindItem(const char *name) {
+CStructItemPtr CStruct::FindItem(CString name) {
     for (auto &i : items) {
         if (i->name.empty()) {
             if (i->type.pointers.empty() && i->type.base_type == CBT_STRUCT) {
