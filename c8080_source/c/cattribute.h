@@ -27,7 +27,7 @@ struct CAddressAttribute {
     bool exists{};
     uint64_t value{};
 
-    bool operator == (const CAddressAttribute& b) const {
+    bool operator==(const CAddressAttribute &b) const {
         return exists == b.exists && value == b.value;
     }
 
@@ -42,9 +42,9 @@ struct CAddressAttribute {
 struct CLinkAttribute {
     bool exists{};
     std::string base_name;
-    const char *name_for_path; // saved in programm objects
+    const char *name_for_path;  // saved in programm objects
 
-    bool operator == (const CLinkAttribute& b) const {
+    bool operator==(const CLinkAttribute &b) const {
         return exists == b.exists && base_name == b.base_name && name_for_path == b.name_for_path;
     }
 

@@ -44,7 +44,7 @@ public:
     std::shared_ptr<CVariable> FindVariable(const std::string &name);
     std::shared_ptr<CConstString> RegisterConstString(const std::string &text);
     void AddVariable(std::shared_ptr<CVariable> a);
-    void Error(const CErrorPosition& e, CString text);
-    void Note(const CErrorPosition& e, CString text);
-    const char* SaveString(const char *data, size_t size);
+    void Error(const CErrorPosition &e, CString text);
+    void Note(const CErrorPosition &e, CString text);
+    const char *SaveString(const char *data, size_t size);
 };

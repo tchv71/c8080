@@ -205,23 +205,23 @@ static bool CalcConvertInt(A &to, CNodePtr &node) {
         case CBT_SHORT:
         case CBT_INT:
         case CBT_LONG:
-        case CBT_LONG_LONG: // TODO: Вывести предупреждение
+        case CBT_LONG_LONG:  // TODO: Вывести предупреждение
             to = static_cast<T>(node->number.i);
             return true;
         case CBT_UNSIGNED_CHAR:
         case CBT_UNSIGNED_SHORT:
         case CBT_UNSIGNED_INT:
         case CBT_UNSIGNED_LONG:
-        case CBT_UNSIGNED_LONG_LONG: // TODO: Вывести предупреждение
+        case CBT_UNSIGNED_LONG_LONG:  // TODO: Вывести предупреждение
             to = static_cast<T>(node->number.u);
             return true;
-        case CBT_FLOAT: // TODO: Вывести предупреждение
+        case CBT_FLOAT:  // TODO: Вывести предупреждение
             to = static_cast<T>(node->number.f);
             return true;
-        case CBT_DOUBLE: // TODO: Вывести предупреждение
+        case CBT_DOUBLE:  // TODO: Вывести предупреждение
             to = static_cast<T>(node->number.d);
             return true;
-        case CBT_LONG_DOUBLE: // TODO: Вывести предупреждение
+        case CBT_LONG_DOUBLE:  // TODO: Вывести предупреждение
             to = static_cast<T>(node->number.ld);
             return true;
     }
