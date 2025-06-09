@@ -84,6 +84,10 @@ public:
         return pointers.size() == 0 && base_type == CBT_FUNCTION;
     }
 
+    bool IsFuncitonPointer() const {
+        return pointers.size() == 1 && base_type == CBT_FUNCTION;
+    }
+
     uint64_t SizeOf(const CErrorPosition &e) const;
 
     uint64_t SizeOfBase(const CErrorPosition &e) const;

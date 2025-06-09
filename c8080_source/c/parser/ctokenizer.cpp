@@ -112,6 +112,9 @@ CToken CTokenizer::NextToken3() {
                 Throw("number out of range");
             return CT_FLOAT;
         }
+
+        // TODO: U UL...
+
         return CT_INTEGER;
     }
 

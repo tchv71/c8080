@@ -55,6 +55,14 @@ public:
         return true;
     }
 
+    bool IfFloat(long double &out_number) {
+        if (token != CT_FLOAT)
+            return false;
+        out_number = token_float;
+        NextToken();
+        return true;
+    }
+
     void NeedToken(const char *string) {
         if (!IfToken(string))
             SyntaxError();

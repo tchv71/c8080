@@ -24,6 +24,7 @@ enum OutputFormat {
     OF_CPM,
 };
 
+bool ParseOutputFormat(enum OutputFormat &result, const char *str);
 void RegisterInternalNames8080(CProgramm &programm);
 void Compile8080_(CParser &c, CProgramm &programm, OutputFormat output_format, const std::string &output_file_bin,
                   CString asm_file_name);

@@ -260,6 +260,7 @@ CNodePtr CParserFile::ErrorContinue(CErrorPosition &e, CString text)  // TODO: M
 }
 
 void CParserFile::ParseAttributes(CNode &n) {
+    assert(n.variable);
     for (;;) {
         CErrorPosition e(p);
         if (p.IfToken("__address")) {
@@ -271,13 +272,10 @@ void CParserFile::ParseAttributes(CNode &n) {
 
             a.exists = true;
 
-            if ((n.address_attribute.exists && n.address_attribute != a) ||
-                (n.variable && n.variable->address_attribute.exists && n.variable->address_attribute != a))
+            if (n.variable->address_attribute.exists && n.variable->address_attribute != a)
                 programm.Error(e, "previous declaration is different");
 
-            n.address_attribute = a;
-            if (n.variable)
-                n.variable->address_attribute = a;
+            n.variable->address_attribute = a;
             continue;
         }
         if (p.IfToken("__link")) {
@@ -290,13 +288,10 @@ void CParserFile::ParseAttributes(CNode &n) {
             a.name_for_path = p.file_name;
             a.exists = true;
 
-            if ((n.link_attribute.exists && n.link_attribute != a) ||
-                (n.variable && n.variable->link_attribute.exists && n.variable->link_attribute != a))
+            if (n.variable->link_attribute.exists && n.variable->link_attribute != a)
                 programm.Error(e, "previous declaration is different");
 
-            n.link_attribute = a;
-            if (n.variable)
-                n.variable->link_attribute = a;
+            n.variable->link_attribute = a;
             continue;
         }
         break;
@@ -377,12 +372,10 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
 
         CVariablePtr v = RegisterVariable(node->extern_flag, node, global, name);
 
-        if (v) {
-            node->variable = v;
-            AllocateObjectsForFunctionArgs(node);
-            if (init)
-                v->body = init;
-        }
+        node->variable = v;
+        AllocateObjectsForFunctionArgs(node);
+        if (init)
+            v->body = init;
 
         ParseAttributes(*node);
 
@@ -715,8 +708,6 @@ CVariablePtr CParserFile::RegisterVariable(bool extern_flag, CNodePtr node, bool
     v->type = node->ctype;
     v->name = name;
     v->only_extern = extern_flag;
-    v->address_attribute = node->address_attribute;
-    v->link_attribute = node->link_attribute;
     if (global) {
         if (!node->ctype.flag_static)
             programm.global_variables[name] = v;
@@ -966,4 +957,308 @@ CNodePtr CParserFile::ParseExpressionK() {
 CNodePtr CParserFile::ParseExpressionL() {
     CNodePtr result = ParseExpressionValue();
     return CParserFile::ParseExpressionM(result);
+}
+
+CNodePtr CParserFile::ParseExpressionCall(CNodePtr &f, CErrorPosition &e) {
+    // Type check
+    if (!f->ctype.IsFunction() && !f->ctype.IsFuncitonPointer() && !programm.cmm)
+        programm.Error(e, "called type '" + f->ctype.ToString() + "' is not a function or function pointer");  // gcc
+
+    // Parse arguments
+    const std::vector<CStructItem> &fa = f->ctype.function_args;
+    CNodeList args;
+    size_t args_count = 1;
+    if (!p.IfToken(")")) {
+        do {
+            CNodePtr arg = ParseExpression();
+            if (args_count < fa.size() && !programm.cmm)
+                arg = Convert(fa[args_count].type, arg);
+            args.PushBack(arg);
+            args_count++;
+        } while (p.IfToken(","));
+        p.NeedToken(")");
+    }
+
+    // Type check
+    if (args_count < fa.size() && !programm.cmm)
+        programm.Error(e, "too few arguments");  // gcc
+    if (!f->ctype.many_function_args && args_count > fa.size() && !programm.cmm)
+        programm.Error(e, "too many arguments");  // gcc
+
+    // Make object
+    CNodePtr call;
+    if (f->type == CNT_MONO_OPERATOR && f->mono_operator_code == MOP_ADDR && f->a->type == CNT_LOAD_VARIABLE) {
+        call = CNODE(CNT_FUNCTION_CALL, a : args.first, variable : f->a->variable, e : e);
+    } else {
+        call = CNODE(CNT_FUNCTION_CALL_ADDR, a : args.first, b : f, e : e);
+    }
+
+    if (fa.empty())
+        call->ctype = CType{CBT_CHAR};
+    else
+        call->ctype = fa[0].type;
+
+    return call;
+}
+
+CNodePtr CParserFile::ParseExpressionValue() {
+    size_t n = 0;
+    CErrorPosition e(p);
+    if (p.IfTokenP(scope_variables, n)) {
+        auto &v = scope_variables[n];
+        CNodePtr result = CNODE(CNT_LOAD_VARIABLE, ctype : v->type, variable : v, e : e);
+
+        if (v->link_attribute.exists && !v->link_attribute_processed) {
+            std::string full_file_name;
+            if (!cparser.FindAnyIncludeFile(v->link_attribute.base_name, v->link_attribute.name_for_path,
+                                            full_file_name))
+                p.Throw("file \"" + v->link_attribute.base_name + "\" not found, local path \"" +
+                        v->link_attribute.name_for_path + "\"");
+            cparser.AddSourceFile(full_file_name);
+            v->link_attribute_processed = true;
+        }
+
+        if (result->ctype.IsFunction()) {
+            CType type2 = v->type;
+            type2.pointers.push_back(CPointer{0});
+            return CNODE(CNT_MONO_OPERATOR, result, ctype : type2, mono_operator_code : MOP_ADDR, e : e);
+        }
+        return result;
+    }
+
+    if (p.IfToken("sizeof")) {
+        p.NeedToken("(");
+        CNodePtr result = CNODE(CNT_NUMBER, ctype : CType{CBT_SIZE}, e : e);
+
+        CType type;
+        if (ParseType(&type, true))
+            result->a = CNODE(CNT_SIZEOF_TYPE, ctype : type, e : e);
+        else
+            result->a = ParseExpression();
+
+        result->number.u = result->a->ctype.SizeOf(e);
+        p.NeedToken(")");
+        return result;
+    }
+
+    std::string str;
+    if (p.IfString2(str)) {
+        std::string translated_string;
+        Utf8To8Bit(e, str, translated_string);
+        CNodePtr result = CNODE(CNT_CONST_STRING, e : e);
+        result->ctype.base_type = CBT_CHAR;
+        result->ctype.flag_const = true;
+        result->ctype.pointers.push_back(CPointer{translated_string.size() + 1});
+        result->const_string = programm.RegisterConstString(translated_string);
+        return result;
+    }
+
+    if (p.IfString1(str)) {
+        std::string translated_string;
+        Utf8To8Bit(e, str, translated_string);
+        if (translated_string.size() == 0)
+            programm.Error(e, "empty character constant");  // gcc
+        if (translated_string.size() != 1)
+            programm.Error(e, "empty-character character constant");  // gcc
+        return CNODE(CNT_NUMBER, ctype : {CBT_CHAR}, number : {i : translated_string[0]}, e : e);
+    }
+
+    uint64_t number = 0;
+    if (p.IfInteger(number)) {
+        CNodePtr node = CNODE(CNT_NUMBER, e : e);
+        if (number <= INT16_MAX) {
+            node->number.i = int16_t(number);
+            node->ctype.base_type = CBT_SHORT;
+        } else if (number <= INT32_MAX) {
+            node->number.i = int32_t(number);
+            node->ctype.base_type = CBT_LONG;
+        } else if (number <= INT64_MAX) {
+            node->number.i = int64_t(number);
+            node->ctype.base_type = CBT_LONG_LONG;
+        } else {
+            node->number.u = number;
+            node->ctype.base_type = CBT_UNSIGNED_LONG_LONG;
+        }
+        return node;
+    }
+
+    long double f = 0;
+    if (p.IfFloat(f)) {
+        CNodePtr node = CNODE(CNT_NUMBER, e : e);
+        node->number.ld = f;
+        node->ctype.base_type = CBT_LONG_DOUBLE;
+        return node;
+    }
+
+    p.SyntaxError();
+    return nullptr;
+}
+
+bool CParserFile::ParseTypeWoPointers(CType *out_type, bool can_empty_inital) {
+    bool can_empty = can_empty_inital;
+
+    for (;;) {
+        if (p.IfToken("register"))  // gcc ignore
+            continue;
+        if (p.IfToken("__extension__"))  // gcc ignore
+            continue;
+        if (!out_type->flag_const && p.IfToken("const")) {
+            out_type->flag_const = true;
+            can_empty = false;
+            continue;
+        }
+        if (!out_type->flag_volatile && p.IfToken("volatile")) {
+            out_type->flag_volatile = true;
+            can_empty = false;
+            continue;
+        }
+        if (!out_type->flag_static && p.IfToken("static")) {
+            out_type->flag_static = true;
+            can_empty = false;
+            continue;
+        }
+        break;
+    }
+
+    CErrorPosition e(p);
+
+    if (p.IfToken("struct")) {
+        ParseTypeWoPointersStruct(out_type, false, e);
+        return true;
+    }
+
+    if (p.IfToken("union")) {
+        ParseTypeWoPointersStruct(out_type, true, e);
+        return true;
+    }
+
+    if (p.IfToken("enum")) {
+        if (p.IfToken(CT_IDENT)) {  // TODO: enum type support
+            if (p.IfToken("{"))
+                ParseEnum();
+        } else {
+            p.NeedToken("{");
+            ParseEnum();
+        }
+        out_type->base_type = CBT_INT;
+        return true;
+    }
+
+    size_t n = 0;
+    if (p.IfToken(scope_typedefs, n)) {
+        CType flags = *out_type;
+        *out_type = scope_typedefs[n].type;
+        out_type->flag_const = flags.flag_const;
+        out_type->flag_static = flags.flag_static;
+        out_type->flag_volatile = flags.flag_volatile;
+        out_type->variables_mode = flags.variables_mode;
+        return true;
+    }
+
+    out_type->base_type = ParseBaseType();
+    if (out_type->base_type != CBT_STRUCT)
+        return true;
+
+    if (!can_empty)
+        p.SyntaxError();
+
+    return false;
+}
+
+CBaseType CParserFile::ParseBaseType() {
+    static const char *const strings0[] = {
+        "void", "char", "short", "int", "long", "float", "double", "__builtin_va_list", "signed", "unsigned", nullptr};
+    size_t n = 0;
+    if (!p.IfToken(strings0, n))
+        return CBT_STRUCT;
+
+    static const char *const strings1[] = {"char", "short", "int", "long", nullptr};
+    static const char *const strings2[] = {"double", "long", "unsigned", "signed", "int", nullptr};
+
+    switch (n) {
+        case 0:               // void
+            return CBT_VOID;  // "void"
+        case 1:               // char
+            return CBT_CHAR;  // "char"
+        case 2:               // short
+            if (p.IfToken("unsigned")) {
+                p.IfToken("int");           // "short unsigned int"
+                return CBT_UNSIGNED_SHORT;  // "short unsigned"
+            }
+            p.IfToken("signed");  // "short signed"
+            p.IfToken("int");     // "short int", "short signed int"
+            return CBT_SHORT;     // "short"
+        case 3:                   // int
+            return CBT_INT;
+        case 4:  // long
+            if (!p.IfToken(strings2, n))
+                return CBT_LONG;  // "long"
+            switch (n) {
+                case 0:                      // double
+                    return CBT_LONG_DOUBLE;  // "long double"
+                case 1:                      // long
+                    if (p.IfToken("unsigned")) {
+                        p.IfToken("int");               // "long long unsigned int"
+                        return CBT_UNSIGNED_LONG_LONG;  // "long long unsigned"
+                    }
+                    p.IfToken("int");          // "long long int"
+                    return CBT_LONG_LONG;      // "long long"
+                case 2:                        // unsigned
+                    p.IfToken("int");          // "long unsigned int"
+                    return CBT_UNSIGNED_LONG;  // "long unsigned"
+                case 3:                        // signed
+                    p.IfToken("int");          // "long signed int"
+                    return CBT_LONG;           // "long signed"
+                case 4:                        // int
+                    return CBT_LONG;           // "long int"
+            }
+            assert(false);
+            break;
+        case 5:
+            return CBT_FLOAT;  // "float"
+        case 6:
+            return CBT_DOUBLE;  // "double"
+        case 7:
+            return CBT_VA_LIST;  // "__builtin_va_list"
+        case 8:                  // signed
+            if (!p.IfToken(strings1, n))
+                return CBT_INT;  // "signed"
+            switch (n) {
+                case 0:                      // char
+                    return CBT_SIGNED_CHAR;  // "signed char"
+                case 1:                      // short
+                    p.IfToken("int");        // "signed short int"
+                    return CBT_SHORT;        // "signed short"
+                case 2:                      // int
+                    return CBT_INT;          // "signed int"
+                case 3:                      // long
+                    p.IfToken("int");        // "signed long int"
+                    return CBT_LONG;         // "signed long"
+            }
+            assert(false);
+            break;
+        case 9:  // unsigned
+            if (!p.IfToken(strings1, n))
+                return CBT_UNSIGNED_INT;  // "unsigned"
+            switch (n) {
+                case 0:                         // char
+                    return CBT_UNSIGNED_CHAR;   // "unsigned char"
+                case 1:                         // short
+                    p.IfToken("int");           // "unsigned short int"
+                    return CBT_UNSIGNED_SHORT;  // "unsigned short"
+                case 2:                         // int
+                    return CBT_UNSIGNED_INT;    // "unsigned int"
+                case 3:                         // long
+                    if (p.IfToken("long")) {
+                        p.IfToken("int");               // "unsigned long long int"
+                        return CBT_UNSIGNED_LONG_LONG;  // "unsigned long long"
+                    }
+                    p.IfToken("int");          // "unsigned long int"
+                    return CBT_UNSIGNED_LONG;  // "unsigned long"
+            }
+            assert(false);
+            break;
+    }
+    assert(false);
+    return CBT_STRUCT;
 }

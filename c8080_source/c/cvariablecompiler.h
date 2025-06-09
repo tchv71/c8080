@@ -38,6 +38,7 @@ struct CVariableCompiler {
         bool call;
     };
     std::vector<CalledBy> called_by;  // Заполняется при расчете стека
+    bool called_by_processed{};       // Заполняется при расчете стека
     size_t call_count{};              // Заполняется при расчете стека
     size_t internal_cmm_id{};         // Used when compiling CMM
 

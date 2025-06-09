@@ -17,7 +17,7 @@
 
 #include "cnodetype.h"
 
-const char *ToString(CNodeType type) {
+std::string ToString(CNodeType type) {
     switch (type) {
         case CNT_STACK_ADDRESS:
             return "STACK_ADDRESS";
@@ -86,5 +86,5 @@ const char *ToString(CNodeType type) {
         case CNT_SET:
             return "SET";
     }
-    return "?";
+    return "CNT_" + std::to_string(int(type));
 }

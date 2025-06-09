@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <string>
+
 enum CNodeType {
     CNT_NUMBER,              // Exmaple: 12
     CNT_LOAD_VARIABLE,       // Exmaple: a
@@ -57,4 +59,4 @@ enum CNodeType {
     CNT_SET,  // Example: a = b
 };
 
-const char *ToString(CNodeType type);
+std::string ToString(CNodeType type);

@@ -33,3 +33,15 @@ void Compile8080_(CParser &c, CProgramm &programm, OutputFormat output_format, c
     Compile8080 compile8080;
     compile8080.Compile(c, programm, output_format, output_file_bin, asm_file_name);
 }
+
+bool ParseOutputFormat(enum OutputFormat &result, const char *str) {
+    if (0 == strcasecmp(str, "i1080")) {
+        result = OF_I1080;
+        return true;
+    }
+    if (0 == strcasecmp(str, "cpm")) {
+        result = OF_CPM;
+        return true;
+    }
+    return false;
+}

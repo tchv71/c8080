@@ -55,8 +55,6 @@ struct CNode {
     CConstStringPtr const_string;            // Only in CONST_STRING
     CVariablePtr variable;                   // Only in DECLARE_VARIABLE, LOAD_VARIABLE, FUNCTION_CALL*
     bool extern_flag{};                      // Only in DECLARE_VARIABLE
-    CLinkAttribute link_attribute;           // Only in DECLARE_VARIABLE
-    CAddressAttribute address_attribute;     // Only in DECLARE_VARIABLE
     std::string text;                        // Only in CONST or ASM
     CErrorPosition e;
 
