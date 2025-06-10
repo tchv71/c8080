@@ -81,7 +81,7 @@ void CParser::ParseAll() {
     for (size_t i = 0; i < compile_queue.size(); i++) {
         std::string name_copy = compile_queue[i];  // vector<string> compile_queue can be chagned
         CParserFile c(*this);
-        c.Compile(list, name_copy.c_str());
+        c.Parse(list, name_copy.c_str());
     }
     programm.first_node = list.first;
 }

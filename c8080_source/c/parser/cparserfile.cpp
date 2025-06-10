@@ -22,8 +22,9 @@
 #include "../tools/convert.h"
 #include "../tools/cthrow.h"
 #include "../tools/makeoperator.h"
+#include "../tools/cprepareargs.h"
 
-void CParserFile::Compile(CNodeList &node_list, CString file_name) {
+void CParserFile::Parse(CNodeList &node_list, CString file_name) {
     p.save_string = [this](const char *data, size_t size) { return programm.SaveString(data, size); };
     p.preprocessor = [this](CString directive) { Preprocessor(directive); };
     p.on_error = [this](CErrorPosition &p, CString text) { programm.Error(p, text); };
@@ -376,7 +377,7 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
         CVariablePtr v = RegisterVariable(node->extern_flag, node, global, name);
 
         node->variable = v;
-        AllocateObjectsForFunctionArgs(node);
+        CPrepareArgs(node);
         if (init)
             v->body = init;
 
@@ -485,6 +486,8 @@ void CParserFile::ParseFunctionTypeArgs(CErrorPosition &e, CType &return_type, s
         return;
     }
 
+    std::map<std::string, int> names;
+
     for (;;) {
         if (p.IfToken("...")) {
             p.NeedToken(")");
@@ -506,6 +509,9 @@ void CParserFile::ParseFunctionTypeArgs(CErrorPosition &e, CType &return_type, s
         }
 
         ParseTypeNameArray(pre_type, arg.name, arg.type);
+
+        if (!arg.name.empty() && !names.try_emplace(arg.name, 0).second)
+            programm.Error(e, std::string("redefinition of parameter '") + arg.name + "'");  // gcc
 
         out_type.function_args.push_back(arg);
 
@@ -602,53 +608,6 @@ void CParserFile::ParseFunction(CNodePtr &node) {
 
     // Self check
     current_function = nullptr;
-}
-
-void CParserFile::AllocateObjectsForFunctionArgs(CNodePtr node) {
-    assert(node && node->variable);
-
-    CVariable &v = *node->variable;
-
-    if (!v.type.IsFunction())
-        return;
-
-    if (!v.function_arguments.empty())
-        return;  // Already created
-
-    std::vector<CStructItem *> args;
-    if (v.type.GetVariableMode() == CVM_GLOBAL) {
-        for (size_t i = node->ctype.function_args.size(); i > 1; i--)
-            args.push_back(&node->ctype.function_args[i - 1]);
-    } else {
-        for (size_t i = 1; i < node->ctype.function_args.size(); i++)
-            args.push_back(&node->ctype.function_args[i]);
-    }
-
-    std::map<std::string, int> names;
-
-    uint64_t offset = 0;
-    for (auto &item : args) {
-        if (!names.try_emplace(item->name, 0).second)
-            programm.Error(node->e, std::string("redefinition of parameter '") + item->name + "'");  // gcc
-
-        CVariablePtr a = std::make_shared<CVariable>();
-        a->type = item->type;
-        a->name = item->name;
-        a->is_stack_variable = true;
-        a->is_function_argument = true;
-        a->e = node->e;
-
-        auto argument_size = a->type.SizeOf(a->e);
-        if (argument_size == 1)
-            offset++;  // The stack is word aligned
-        a->stack_offset = offset;
-        offset += argument_size;
-
-        if (v.type.GetVariableMode() == CVM_GLOBAL)
-            v.function_arguments.insert(v.function_arguments.begin(), a);
-        else
-            v.function_arguments.push_back(a);
-    }
 }
 
 void CParserFile::RegisterTypedef(CNodePtr node, CString name) {
@@ -1379,7 +1338,7 @@ CNodePtr CParserFile::ParseFunctionBody() {
     if (p.IfToken("goto")) {
         std::string label_name;
         p.NeedIdent(label_name);
-        p.NeedToken(";");
+        p.CloseToken(";", ";");
         return CNODE(CNT_GOTO, variable : BindLabel(label_name, e, true), e : e);
     }
     if (p.IfToken("if")) {
@@ -1407,20 +1366,20 @@ CNodePtr CParserFile::ParseFunctionBody() {
         p.NeedToken("(");
         CNodePtr node = CNODE(CNT_DO, ParseExpressionComma(), b : b, e : e);
         p.NeedToken(")");
-        p.NeedToken(";");
+        p.CloseToken(";", ";");
         loop_level--;
         return node;
     }
     if (p.IfToken("break")) {
         if (loop_level == 0 && last_switch == nullptr)
             programm.Error(e, "break statement not within loop or switch");  // gcc
-        p.NeedToken(";");
+        p.CloseToken(";", ";");
         return CNODE(CNT_BREAK, e : e);
     }
     if (p.IfToken("continue")) {
         if (loop_level == 0)
             programm.Error(e, "continue statement not within a loop");  // gcc
-        p.NeedToken(";");
+        p.CloseToken(";", ";");
         return CNODE(CNT_CONTINUE, e : e);
     }
     if (p.IfToken("case")) {
@@ -1516,7 +1475,7 @@ CNodePtr CParserFile::ParseFunctionBody() {
                 programm.Error(e, "'return' with no value, in function returning non-void");  // gcc
         } else {
             return_value = ParseExpressionComma();
-            p.NeedToken(";");
+            p.CloseToken(";", ";");
 
             if (fa.size() >= 1 && !fa[0].type.IsVoid())
                 return_value = Convert(fa[0].type, return_value, programm.cmm);
