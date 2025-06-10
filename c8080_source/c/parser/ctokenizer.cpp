@@ -72,14 +72,14 @@ void CTokenizer::NextToken2() {
             case '\t':
                 column = Tab(column);
                 break;
-            case ' ':
-                column++;
-                break;
             case '\r':
                 break;
             case '\n':
                 line++;
                 column = 1;
+                break;
+            default:
+                column++;
                 break;
         }
     }

@@ -25,19 +25,19 @@
 #include "../tools/cprepareargs.h"
 
 void CParserFile::Parse(CNodeList &node_list, CString file_name) {
-    p.save_string = [this](const char *data, size_t size) { return programm.SaveString(data, size); };
-    p.preprocessor = [this](CString directive) { Preprocessor(directive); };
-    p.on_error = [this](CErrorPosition &p, CString text) { programm.Error(p, text); };
+    l.save_string = [this](const char *data, size_t size) { return programm.SaveString(data, size); };
+    l.preprocessor = [this]() { Preprocessor(); };
+    l.on_error = [this](CErrorPosition &l, CString text) { programm.Error(l, text); };
 
     const char *name = "";
     const char *contents = cparser.LoadFile(file_name, &name);
-    p.Open(contents, name);
-    p.AddMacro("__C8080_COMPILER", "", 0);
+    l.Open(contents, name);
+    l.AddMacro("__C8080_COMPILER", "", 0);
     for (auto &i : cparser.default_defines)
-        p.AddMacro(i);  // TODO: value
-    p.NextToken();
+        l.AddMacro(i);  // TODO: value
+    l.NextToken();
 
-    while (!p.IfToken(CT_EOF))
+    while (!l.IfToken(CT_EOF))
         node_list.PushBack(CompileLine(nullptr, true));
 }
 
@@ -88,15 +88,15 @@ CVariablePtr CParserFile::BindLabel(CString name, CErrorPosition &e, bool is_got
 
 void CParserFile::ParsePointerFlags(CPointer &pointer) {
     for (;;) {
-        if (!pointer.flag_restrict && p.IfToken("__restrict")) {
+        if (!pointer.flag_restrict && l.IfToken("__restrict")) {
             pointer.flag_restrict = true;
             continue;
         }
-        if (!pointer.flag_const && p.IfToken("const")) {
+        if (!pointer.flag_const && l.IfToken("const")) {
             pointer.flag_const = true;
             continue;
         }
-        if (!pointer.flag_volatile && p.IfToken("volatile")) {
+        if (!pointer.flag_volatile && l.IfToken("volatile")) {
             pointer.flag_volatile = true;
             continue;
         }
@@ -106,33 +106,33 @@ void CParserFile::ParsePointerFlags(CPointer &pointer) {
 
 void CParserFile::IgnoreInsideBrackets(size_t level) {
     for (;;) {
-        if (p.IfToken("(")) {
+        if (l.IfToken("(")) {
             level++;
             if (level == 0)  // Incredible overflow
-                p.ThrowSyntaxError();
+                l.ThrowSyntaxError();
             continue;
         }
-        if (p.IfToken(")")) {
+        if (l.IfToken(")")) {
             level--;
             if (level == 0)
                 break;
             continue;
         }
-        p.NextToken();
+        l.NextToken();
     }
 }
 
 void CParserFile::IgnoreAttributes() {  // gcc compatibility
     for (;;) {
-        if (p.IfToken("__asm__")) {
-            if (p.WantToken("("))
+        if (l.IfToken("__asm__")) {
+            if (l.WantToken("("))
                 IgnoreInsideBrackets(1);
             continue;
         }
 
-        if (p.IfToken("__attribute__")) {
-            p.NeedToken("(");
-            p.NeedToken("(");
+        if (l.IfToken("__attribute__")) {
+            l.NeedToken("(");
+            l.NeedToken("(");
             IgnoreInsideBrackets(2);
             continue;
         }
@@ -143,15 +143,15 @@ void CParserFile::IgnoreAttributes() {  // gcc compatibility
 
 CNodePtr CParserFile::ParseAsm(CErrorPosition &e) {
     std::string str;
-    if (p.IfToken("(")) {
-        p.NeedString2(str);
-        p.NeedToken(")");
-        p.NeedToken(";");
-    } else if (p.token_data[0] == '{') {
-        p.ReadRaw(str, '}');
-        p.NextToken();
+    if (l.IfToken("(")) {
+        l.NeedString2(str);
+        l.NeedToken(")");
+        l.NeedToken(";");
+    } else if (l.token_data[0] == '{') {
+        l.ReadRaw(str, '}');
+        l.NextToken();
     } else {
-        p.ThrowSyntaxError();
+        l.ThrowSyntaxError();
     }
 
     CParseAsmEqus(str, programm.asm_names);
@@ -221,15 +221,15 @@ void CParserFile::ParseEnum() {
     // TODO: enum automatically increases the size of the type
     int64_t value = 0;
     for (;;) {
-        if (p.IfToken("}"))
+        if (l.IfToken("}"))
             break;
 
-        CErrorPosition e(p);
+        CErrorPosition e(l);
         std::string name;
-        p.NeedIdent(name);
+        l.NeedIdent(name);
         if (FindVariableCurrentScope(name) != nullptr)
             programm.Error(e, std::string("redefinition of ‘") + name + "’");  // gcc
-        if (p.IfToken("="))
+        if (l.IfToken("="))
             value = ParseInt64();
 
         if (value < C_INT_MIN || value > C_INT_MAX)
@@ -245,9 +245,9 @@ void CParserFile::ParseEnum() {
 
         scope_variables.push_back(v);
 
-        if (p.IfToken("}"))
+        if (l.IfToken("}"))
             break;
-        p.NeedToken(",");
+        l.NeedToken(",");
         value++;
     }
 }
@@ -255,21 +255,21 @@ void CParserFile::ParseEnum() {
 CNodePtr CParserFile::ErrorContinue(CErrorPosition &e, CString text)  // TODO: Move to parser
 {
     programm.Error(e, text);
-    while (!p.IfToken(";"))
-        p.NextToken();
+    while (!l.IfToken(";"))
+        l.NextToken();
     return nullptr;
 }
 
 void CParserFile::ParseAttributes(CNode &n) {
     assert(n.variable);
     for (;;) {
-        CErrorPosition e(p);
-        if (p.IfToken("__address")) {
+        CErrorPosition e(l);
+        if (l.IfToken("__address")) {
             CAddressAttribute a;
 
-            if (p.WantToken("(")) {
+            if (l.WantToken("(")) {
                 a.value = ParseUint64();
-                p.CloseToken(")", ")");
+                l.CloseToken(")", ")");
             }
 
             a.exists = true;
@@ -280,15 +280,15 @@ void CParserFile::ParseAttributes(CNode &n) {
             n.variable->address_attribute = a;
             continue;
         }
-        if (p.IfToken("__link")) {
+        if (l.IfToken("__link")) {
             CLinkAttribute a;
 
-            if (p.WantToken("(")) {
-                p.NeedString2(a.base_name);
-                p.CloseToken(")", ")");
+            if (l.WantToken("(")) {
+                l.NeedString2(a.base_name);
+                l.CloseToken(")", ")");
             }
 
-            a.name_for_path = p.file_name;
+            a.name_for_path = l.file_name;
             a.exists = true;
 
             if (n.variable->link_attribute.exists && n.variable->link_attribute != a)
@@ -302,16 +302,16 @@ void CParserFile::ParseAttributes(CNode &n) {
 }
 
 CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
-    CErrorPosition e(p);
+    CErrorPosition e(l);
 
-    if (p.IfToken(";"))
+    if (l.IfToken(";"))
         return nullptr;
 
-    if (p.IfToken("asm"))
+    if (l.IfToken("asm"))
         return ParseAsm(e);
 
-    bool typedef_flag = p.IfToken("typedef");
-    bool extern_flag = p.IfToken("extern");
+    bool typedef_flag = l.IfToken("typedef");
+    bool extern_flag = l.IfToken("extern");
 
     if (typedef_flag && extern_flag) {
         programm.Error(e, "multiple storage classes in declaration specifiers");  // gcc
@@ -331,7 +331,7 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
         base_type.flag_static = false;
     }
 
-    if (p.IfToken(";")) {
+    if (l.IfToken(";")) {
         if (typedef_flag || extern_flag)
             programm.Error(e, "useless storage class specifier in empty declaration");  // gcc
         return nullptr;                                                                 // new struct, union, enum
@@ -347,10 +347,10 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
             CNodePtr node = CNODE(CNT_TYPEDEF, ctype : type, e : e);
             RegisterTypedef(node, name);
 
-            if (p.IfToken(";"))
+            if (l.IfToken(";"))
                 break;
 
-            p.NeedToken(",");
+            l.NeedToken(",");
             continue;
         }
 
@@ -366,9 +366,9 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
             node->extern_flag = true;  // Function prototype is always "extern"
 
         CNodePtr init;
-        if (p.IfToken("=")) {
+        if (l.IfToken("=")) {
             if (typedef_flag || is_function)
-                p.ThrowSyntaxError();
+                l.ThrowSyntaxError();
             init = CompileInitBlock(node->ctype, true);
             if (init)
                 CCalcConst(init);
@@ -385,19 +385,19 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
 
         node_list.PushBack(node);
 
-        if (p.IfToken("{")) {
+        if (l.IfToken("{")) {
             if (!is_function || typedef_flag)
-                p.ThrowSyntaxError();
+                l.ThrowSyntaxError();
             if (!global)
-                p.Throw("nested functions are not supported");  // TODO
+                l.Throw("nested functions are not supported");  // TODO
             ParseFunction(node);
             break;
         }
 
-        if (p.IfToken(";"))
+        if (l.IfToken(";"))
             break;
 
-        if (!p.CloseToken(",", ";"))
+        if (!l.CloseToken(",", ";"))
             break;
     }
 
@@ -405,17 +405,17 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
 }
 
 void CParserFile::ParseTypePointers(CType &out_type) {
-    while (p.IfToken("*")) {
+    while (l.IfToken("*")) {
         CPointer pointer;
         ParsePointerFlags(pointer);
         out_type.pointers.push_back(pointer);
     }
     for (;;) {
-        if (out_type.variables_mode == CVM_DEFAULT && p.IfToken("__global")) {
+        if (out_type.variables_mode == CVM_DEFAULT && l.IfToken("__global")) {
             out_type.variables_mode = CVM_GLOBAL;
             continue;
         }
-        if (out_type.variables_mode == CVM_DEFAULT && p.IfToken("__stack")) {
+        if (out_type.variables_mode == CVM_DEFAULT && l.IfToken("__stack")) {
             out_type.variables_mode = CVM_STACK;
             continue;
         }
@@ -427,20 +427,20 @@ void CParserFile::ParseTypeNameArray(CConstType base_type, std::string &out_name
     CType type = base_type;
     ParseTypePointers(type);
 
-    p.IfIdent(out_name);
+    l.IfIdent(out_name);
 
-    if (p.IfToken("(")) {
-        CErrorPosition e(p);
-        if (out_name.empty() && p.IfToken("*")) {
+    if (l.IfToken("(")) {
+        CErrorPosition e(l);
+        if (out_name.empty() && l.IfToken("*")) {
             std::vector<CPointer> pointers;
             do {
                 CPointer pointer;
                 ParsePointerFlags(pointer);
                 pointers.push_back(pointer);
-            } while (p.IfToken("*"));
-            p.IfIdent(out_name);
-            p.NeedToken(")");
-            if (p.IfToken("(")) {
+            } while (l.IfToken("*"));
+            l.IfIdent(out_name);
+            l.NeedToken(")");
+            if (l.IfToken("(")) {
                 ParseFunctionTypeArgs(e, type, &pointers, out_type);
                 return;
             }
@@ -452,11 +452,11 @@ void CParserFile::ParseTypeNameArray(CConstType base_type, std::string &out_name
     }
 
     std::vector<size_t> addrs;
-    while (p.IfToken("[")) {
+    while (l.IfToken("[")) {
         uint64_t size = 1;
-        if (!p.IfToken("]")) {
+        if (!l.IfToken("]")) {
             size = ParseUint64();
-            p.NeedToken("]");
+            l.NeedToken("]");
         }
         addrs.push_back(size);
     }
@@ -481,7 +481,7 @@ void CParserFile::ParseFunctionTypeArgs(CErrorPosition &e, CType &return_type, s
             out_type.pointers.push_back(i);
     out_type.function_args.push_back(CStructItem{return_type});
 
-    if (p.IfToken(")")) {
+    if (l.IfToken(")")) {
         out_type.many_function_args = true;
         return;
     }
@@ -489,13 +489,13 @@ void CParserFile::ParseFunctionTypeArgs(CErrorPosition &e, CType &return_type, s
     std::map<std::string, int> names;
 
     for (;;) {
-        if (p.IfToken("...")) {
-            p.NeedToken(")");
+        if (l.IfToken("...")) {
+            l.NeedToken(")");
             out_type.many_function_args = true;
             break;
         }
 
-        CErrorPosition e(p);
+        CErrorPosition e(l);
         CStructItem arg;
         CType pre_type;
         ParseType(&pre_type);
@@ -503,7 +503,7 @@ void CParserFile::ParseFunctionTypeArgs(CErrorPosition &e, CType &return_type, s
         if (pre_type.IsVoid()) {
             if (out_type.function_args.size() != 1)
                 programm.Error(e, "'void' must be the only parameter");  // gcc
-            p.NeedToken(")");
+            l.NeedToken(")");
             out_type.many_function_args = false;
             break;
         }
@@ -515,18 +515,18 @@ void CParserFile::ParseFunctionTypeArgs(CErrorPosition &e, CType &return_type, s
 
         out_type.function_args.push_back(arg);
 
-        if (p.IfToken(")")) {
+        if (l.IfToken(")")) {
             out_type.many_function_args = false;
             break;
         }
 
-        p.NeedToken(",");
+        l.NeedToken(",");
     }
 }
 
 void CParserFile::ParseStruct(CStruct &struct_object) {
-    CErrorPosition e(p);
-    while (!p.IfToken("}")) {
+    CErrorPosition e(l);
+    while (!l.IfToken("}")) {
         CType base_type;
         ParseTypeWoPointers(&base_type);
         do {
@@ -535,8 +535,8 @@ void CParserFile::ParseStruct(CStruct &struct_object) {
             ParseTypeNameArray(base_type, struct_item->name, struct_item->type);
             IgnoreAttributes();
             struct_object.items.push_back(struct_item);
-        } while (p.IfToken(","));
-        p.NeedToken(";");
+        } while (l.IfToken(","));
+        l.NeedToken(";");
     }
     struct_object.CalcOffsets(e);
 }
@@ -555,7 +555,7 @@ void CParserFile::Enter() {
 
 void CParserFile::Leave() {
     if (prev_scopes.empty())  // TODO: Make special object scoped_map
-        p.Throw(std::string("Internal error in ") + __PRETTY_FUNCTION__);
+        l.Throw(std::string("Internal error in ") + __PRETTY_FUNCTION__);
     Level &level = prev_scopes.back();
     scope_variables.resize(level.variables_count);
     scope_structs.resize(level.structs_count);
@@ -593,7 +593,7 @@ void CParserFile::ParseFunction(CNodePtr &node) {
     }
 
     CNodeList list;
-    while (!p.IfToken("}"))
+    while (!l.IfToken("}"))
         list.PushBack(ParseFunctionBody());
     node->a = list.first;
 
@@ -695,11 +695,11 @@ void CParserFile::ParseTypeWoPointersStruct(CType *out_type, bool is_union, CErr
     out_type->base_type = CBT_STRUCT;
 
     std::string name;
-    if (p.IfIdent(name)) {
+    if (l.IfIdent(name)) {
         out_type->struct_object = BindStructUnion(name, is_union, true, e);
         CStruct &s = *out_type->struct_object;
 
-        if (p.IfToken("{")) {
+        if (l.IfToken("{")) {
             CStruct l;
             l.is_union = is_union;
             l.name = name;
@@ -717,7 +717,7 @@ void CParserFile::ParseTypeWoPointersStruct(CType *out_type, bool is_union, CErr
             }
         }
     } else {
-        p.NeedToken("{");
+        l.NeedToken("{");
         out_type->struct_object = BindStructUnion("", is_union, true, e);
         ParseStruct(*out_type->struct_object);
     }
@@ -726,8 +726,8 @@ void CParserFile::ParseTypeWoPointersStruct(CType *out_type, bool is_union, CErr
 CNodePtr CParserFile::ParseExpressionComma() {
     CNodePtr result = ParseExpression();
     for (;;) {
-        CErrorPosition e(p);
-        if (!p.IfToken(","))
+        CErrorPosition e(l);
+        if (!l.IfToken(","))
             return result;
         result = MakeOperator(COP_COMMA, result, ParseExpression(), e, programm.cmm);
     }
@@ -736,10 +736,10 @@ CNodePtr CParserFile::ParseExpressionComma() {
 CNodePtr CParserFile::ParseExpression() {
     CNodePtr a = ParseExpressionA();
 
-    CErrorPosition e(p);
-    if (p.IfToken("?")) {
+    CErrorPosition e(l);
+    if (l.IfToken("?")) {
         CNodePtr b = ParseExpression();
-        p.NeedToken(":");
+        l.NeedToken(":");
         CNodePtr c = ParseExpression();
         return MakeOperatorIf(a, b, c, e, programm.cmm);
     }
@@ -749,7 +749,7 @@ CNodePtr CParserFile::ParseExpression() {
                                                    COP_SET_DIV, COP_SET_MOD, COP_SET_SHL, COP_SET_SHR,
                                                    COP_SET_AND, COP_SET_XOR, COP_SET_OR};
     size_t n = 0;
-    if (p.IfToken(operators, n))
+    if (l.IfToken(operators, n))
         return MakeOperator(operator_codes[n], a, ParseExpression(), e, programm.cmm);
 
     return a;
@@ -758,8 +758,8 @@ CNodePtr CParserFile::ParseExpression() {
 CNodePtr CParserFile::ParseExpressionA() {
     CNodePtr result = ParseExpressionB();
     for (;;) {
-        CErrorPosition e(p);
-        if (!p.IfToken("||"))
+        CErrorPosition e(l);
+        if (!l.IfToken("||"))
             return result;
         result = MakeOperator(COP_LOR, result, ParseExpressionB(), e, programm.cmm);
     }
@@ -768,8 +768,8 @@ CNodePtr CParserFile::ParseExpressionA() {
 CNodePtr CParserFile::ParseExpressionB() {
     CNodePtr result = ParseExpressionC();
     for (;;) {
-        CErrorPosition e(p);
-        if (!p.IfToken("&&"))
+        CErrorPosition e(l);
+        if (!l.IfToken("&&"))
             return result;
         result = MakeOperator(COP_LAND, result, ParseExpressionC(), e, programm.cmm);
     }
@@ -778,8 +778,8 @@ CNodePtr CParserFile::ParseExpressionB() {
 CNodePtr CParserFile::ParseExpressionC() {
     CNodePtr result = ParseExpressionD();
     for (;;) {
-        CErrorPosition e(p);
-        if (!p.IfToken("|"))
+        CErrorPosition e(l);
+        if (!l.IfToken("|"))
             return result;
         result = MakeOperator(COP_OR, result, ParseExpressionD(), e, programm.cmm);
     }
@@ -788,8 +788,8 @@ CNodePtr CParserFile::ParseExpressionC() {
 CNodePtr CParserFile::ParseExpressionD() {
     CNodePtr result = ParseExpressionE();
     for (;;) {
-        CErrorPosition e(p);
-        if (!p.IfToken("^"))
+        CErrorPosition e(l);
+        if (!l.IfToken("^"))
             return result;
         result = MakeOperator(COP_XOR, result, ParseExpressionE(), e, programm.cmm);
     }
@@ -798,8 +798,8 @@ CNodePtr CParserFile::ParseExpressionD() {
 CNodePtr CParserFile::ParseExpressionE() {
     CNodePtr result = ParseExpressionF();
     for (;;) {
-        CErrorPosition e(p);
-        if (!p.IfToken("&"))
+        CErrorPosition e(l);
+        if (!l.IfToken("&"))
             return result;
         result = MakeOperator(COP_AND, result, ParseExpressionF(), e, programm.cmm);
     }
@@ -811,8 +811,8 @@ CNodePtr CParserFile::ParseExpressionF() {
     CNodePtr result = ParseExpressionG();
     for (;;) {
         size_t n = 0;
-        CErrorPosition e(p);
-        if (!p.IfToken(operators, n))
+        CErrorPosition e(l);
+        if (!l.IfToken(operators, n))
             return result;
         result = MakeOperator(operator_codes[n], result, ParseExpressionG(), e, programm.cmm);
     }
@@ -824,8 +824,8 @@ CNodePtr CParserFile::ParseExpressionG() {
     CNodePtr result = ParseExpressionH();
     for (;;) {
         size_t n = 0;
-        CErrorPosition e(p);
-        if (!p.IfToken(operators, n))
+        CErrorPosition e(l);
+        if (!l.IfToken(operators, n))
             return result;
         result = MakeOperator(operator_codes[n], result, ParseExpressionH(), e, programm.cmm);
     }
@@ -837,8 +837,8 @@ CNodePtr CParserFile::ParseExpressionH() {
     CNodePtr result = ParseExpressionI();
     for (;;) {
         size_t n = 0;
-        CErrorPosition e(p);
-        if (!p.IfToken(operators, n))
+        CErrorPosition e(l);
+        if (!l.IfToken(operators, n))
             return result;
         result = MakeOperator(operator_codes[n], result, ParseExpressionI(), e, programm.cmm);
     }
@@ -850,8 +850,8 @@ CNodePtr CParserFile::ParseExpressionI() {
     CNodePtr result = ParseExpressionJ();
     for (;;) {
         size_t n = 0;
-        CErrorPosition e(p);
-        if (!p.IfToken(operators, n))
+        CErrorPosition e(l);
+        if (!l.IfToken(operators, n))
             return result;
         result = MakeOperator(operator_codes[n], result, ParseExpressionJ(), e, programm.cmm);
     }
@@ -863,23 +863,23 @@ CNodePtr CParserFile::ParseExpressionJ() {
     CNodePtr result = ParseExpressionK();
     for (;;) {
         size_t n = 0;
-        CErrorPosition e(p);
-        if (!p.IfToken(operators, n))
+        CErrorPosition e(l);
+        if (!l.IfToken(operators, n))
             return result;
         result = MakeOperator(operator_codes[n], result, ParseExpressionK(), e, programm.cmm);
     }
 }
 
 CNodePtr CParserFile::ParseExpressionK() {
-    CErrorPosition e(p);
-    if (p.IfToken("(")) {
+    CErrorPosition e(l);
+    if (l.IfToken("(")) {
         CType new_type;
         if (ParseType(&new_type, true)) {
-            p.NeedToken(")");
+            l.NeedToken(")");
             return CNODE(CNT_CONVERT, a : ParseExpressionK(), ctype : new_type, e : e);
         }
         CNodePtr result = ParseExpressionComma();
-        p.NeedToken(")");
+        l.NeedToken(")");
         return ParseExpressionM(result);
     }
 
@@ -888,7 +888,7 @@ CNodePtr CParserFile::ParseExpressionK() {
                                                        MOP_NOT, MOP_NEG, MOP_DEADDR, MOP_ADDR};
 
     size_t n = 0;
-    if (p.IfToken(operators, n)) {
+    if (l.IfToken(operators, n)) {
         const CMonoOperatorCode mo = operator_codes[n];
 
         CNodePtr a = ParseExpressionK();
@@ -939,15 +939,15 @@ CNodePtr CParserFile::ParseExpressionCall(CNodePtr &f, CErrorPosition &e) {
     const std::vector<CStructItem> &fa = f->ctype.function_args;
     CNodeList args;
     size_t args_count = 1;
-    if (!p.IfToken(")")) {
+    if (!l.IfToken(")")) {
         do {
             CNodePtr arg = ParseExpression();
             if (args_count < fa.size() && !programm.cmm)
                 arg = Convert(fa[args_count].type, arg);
             args.PushBack(arg);
             args_count++;
-        } while (p.IfToken(","));
-        p.NeedToken(")");
+        } while (l.IfToken(","));
+        l.NeedToken(")");
     }
 
     // Type check
@@ -974,8 +974,8 @@ CNodePtr CParserFile::ParseExpressionCall(CNodePtr &f, CErrorPosition &e) {
 
 CNodePtr CParserFile::ParseExpressionValue() {
     size_t n = 0;
-    CErrorPosition e(p);
-    if (p.IfTokenP(scope_variables, n)) {
+    CErrorPosition e(l);
+    if (l.IfTokenP(scope_variables, n)) {
         auto &v = scope_variables[n];
         CNodePtr result = CNODE(CNT_LOAD_VARIABLE, ctype : v->type, variable : v, e : e);
 
@@ -983,7 +983,7 @@ CNodePtr CParserFile::ParseExpressionValue() {
             std::string full_file_name;
             if (!cparser.FindAnyIncludeFile(v->link_attribute.base_name, v->link_attribute.name_for_path,
                                             full_file_name))
-                p.Throw("file \"" + v->link_attribute.base_name + "\" not found, local path \"" +
+                l.Throw("file \"" + v->link_attribute.base_name + "\" not found, local path \"" +
                         v->link_attribute.name_for_path + "\"");
             cparser.AddSourceFile(full_file_name);
             v->link_attribute_processed = true;
@@ -997,8 +997,8 @@ CNodePtr CParserFile::ParseExpressionValue() {
         return result;
     }
 
-    if (p.IfToken("sizeof")) {
-        p.NeedToken("(");
+    if (l.IfToken("sizeof")) {
+        l.NeedToken("(");
         CNodePtr result = CNODE(CNT_NUMBER, ctype : CType{CBT_SIZE}, e : e);
 
         CType type;
@@ -1008,12 +1008,12 @@ CNodePtr CParserFile::ParseExpressionValue() {
             result->a = ParseExpression();
 
         result->number.u = result->a->ctype.SizeOf(e);
-        p.NeedToken(")");
+        l.NeedToken(")");
         return result;
     }
 
     std::string str;
-    if (p.IfString2(str)) {
+    if (l.IfString2(str)) {
         std::string translated_string;
         Utf8To8Bit(e, str, translated_string);
         CNodePtr result = CNODE(CNT_CONST_STRING, e : e);
@@ -1024,7 +1024,7 @@ CNodePtr CParserFile::ParseExpressionValue() {
         return result;
     }
 
-    if (p.IfString1(str)) {
+    if (l.IfString1(str)) {
         std::string translated_string;
         Utf8To8Bit(e, str, translated_string);
         if (translated_string.size() == 0)
@@ -1035,7 +1035,7 @@ CNodePtr CParserFile::ParseExpressionValue() {
     }
 
     uint64_t number = 0;
-    if (p.IfInteger(number)) {
+    if (l.IfInteger(number)) {
         CNodePtr node = CNODE(CNT_NUMBER, e : e);
         if (number <= INT16_MAX) {
             node->number.i = int16_t(number);
@@ -1054,14 +1054,14 @@ CNodePtr CParserFile::ParseExpressionValue() {
     }
 
     long double f = 0;
-    if (p.IfFloat(f)) {
+    if (l.IfFloat(f)) {
         CNodePtr node = CNODE(CNT_NUMBER, e : e);
         node->number.ld = f;
         node->ctype.base_type = CBT_LONG_DOUBLE;
         return node;
     }
 
-    p.ThrowSyntaxError();
+    l.ThrowSyntaxError();
     return nullptr;
 }
 
@@ -1069,21 +1069,21 @@ bool CParserFile::ParseTypeWoPointers(CType *out_type, bool can_empty_inital) {
     bool can_empty = can_empty_inital;
 
     for (;;) {
-        if (p.IfToken("register"))  // gcc ignore
+        if (l.IfToken("register"))  // gcc ignore
             continue;
-        if (p.IfToken("__extension__"))  // gcc ignore
+        if (l.IfToken("__extension__"))  // gcc ignore
             continue;
-        if (!out_type->flag_const && p.IfToken("const")) {
+        if (!out_type->flag_const && l.IfToken("const")) {
             out_type->flag_const = true;
             can_empty = false;
             continue;
         }
-        if (!out_type->flag_volatile && p.IfToken("volatile")) {
+        if (!out_type->flag_volatile && l.IfToken("volatile")) {
             out_type->flag_volatile = true;
             can_empty = false;
             continue;
         }
-        if (!out_type->flag_static && p.IfToken("static")) {
+        if (!out_type->flag_static && l.IfToken("static")) {
             out_type->flag_static = true;
             can_empty = false;
             continue;
@@ -1091,24 +1091,24 @@ bool CParserFile::ParseTypeWoPointers(CType *out_type, bool can_empty_inital) {
         break;
     }
 
-    CErrorPosition e(p);
+    CErrorPosition e(l);
 
-    if (p.IfToken("struct")) {
+    if (l.IfToken("struct")) {
         ParseTypeWoPointersStruct(out_type, false, e);
         return true;
     }
 
-    if (p.IfToken("union")) {
+    if (l.IfToken("union")) {
         ParseTypeWoPointersStruct(out_type, true, e);
         return true;
     }
 
-    if (p.IfToken("enum")) {
-        if (p.IfToken(CT_IDENT)) {  // TODO: enum type support
-            if (p.IfToken("{"))
+    if (l.IfToken("enum")) {
+        if (l.IfToken(CT_IDENT)) {  // TODO: enum type support
+            if (l.IfToken("{"))
                 ParseEnum();
         } else {
-            p.NeedToken("{");
+            l.NeedToken("{");
             ParseEnum();
         }
         out_type->base_type = CBT_INT;
@@ -1116,7 +1116,7 @@ bool CParserFile::ParseTypeWoPointers(CType *out_type, bool can_empty_inital) {
     }
 
     size_t n = 0;
-    if (p.IfToken(scope_typedefs, n)) {
+    if (l.IfToken(scope_typedefs, n)) {
         CType flags = *out_type;
         *out_type = scope_typedefs[n].type;
         out_type->flag_const = flags.flag_const;
@@ -1131,7 +1131,7 @@ bool CParserFile::ParseTypeWoPointers(CType *out_type, bool can_empty_inital) {
         return true;
 
     if (!can_empty)
-        p.ThrowSyntaxError();
+        l.ThrowSyntaxError();
 
     return false;
 }
@@ -1140,7 +1140,7 @@ CBaseType CParserFile::ParseBaseType() {
     static const char *const strings0[] = {
         "void", "char", "short", "int", "long", "float", "double", "__builtin_va_list", "signed", "unsigned", nullptr};
     size_t n = 0;
-    if (!p.IfToken(strings0, n))
+    if (!l.IfToken(strings0, n))
         return CBT_STRUCT;
 
     static const char *const strings1[] = {"char", "short", "int", "long", nullptr};
@@ -1152,33 +1152,33 @@ CBaseType CParserFile::ParseBaseType() {
         case 1:               // char
             return CBT_CHAR;  // "char"
         case 2:               // short
-            if (p.IfToken("unsigned")) {
-                p.IfToken("int");           // "short unsigned int"
+            if (l.IfToken("unsigned")) {
+                l.IfToken("int");           // "short unsigned int"
                 return CBT_UNSIGNED_SHORT;  // "short unsigned"
             }
-            p.IfToken("signed");  // "short signed"
-            p.IfToken("int");     // "short int", "short signed int"
+            l.IfToken("signed");  // "short signed"
+            l.IfToken("int");     // "short int", "short signed int"
             return CBT_SHORT;     // "short"
         case 3:                   // int
             return CBT_INT;
         case 4:  // long
-            if (!p.IfToken(strings2, n))
+            if (!l.IfToken(strings2, n))
                 return CBT_LONG;  // "long"
             switch (n) {
                 case 0:                      // double
                     return CBT_LONG_DOUBLE;  // "long double"
                 case 1:                      // long
-                    if (p.IfToken("unsigned")) {
-                        p.IfToken("int");               // "long long unsigned int"
+                    if (l.IfToken("unsigned")) {
+                        l.IfToken("int");               // "long long unsigned int"
                         return CBT_UNSIGNED_LONG_LONG;  // "long long unsigned"
                     }
-                    p.IfToken("int");          // "long long int"
+                    l.IfToken("int");          // "long long int"
                     return CBT_LONG_LONG;      // "long long"
                 case 2:                        // unsigned
-                    p.IfToken("int");          // "long unsigned int"
+                    l.IfToken("int");          // "long unsigned int"
                     return CBT_UNSIGNED_LONG;  // "long unsigned"
                 case 3:                        // signed
-                    p.IfToken("int");          // "long signed int"
+                    l.IfToken("int");          // "long signed int"
                     return CBT_LONG;           // "long signed"
                 case 4:                        // int
                     return CBT_LONG;           // "long int"
@@ -1192,39 +1192,39 @@ CBaseType CParserFile::ParseBaseType() {
         case 7:
             return CBT_VA_LIST;  // "__builtin_va_list"
         case 8:                  // signed
-            if (!p.IfToken(strings1, n))
+            if (!l.IfToken(strings1, n))
                 return CBT_INT;  // "signed"
             switch (n) {
                 case 0:                      // char
                     return CBT_SIGNED_CHAR;  // "signed char"
                 case 1:                      // short
-                    p.IfToken("int");        // "signed short int"
+                    l.IfToken("int");        // "signed short int"
                     return CBT_SHORT;        // "signed short"
                 case 2:                      // int
                     return CBT_INT;          // "signed int"
                 case 3:                      // long
-                    p.IfToken("int");        // "signed long int"
+                    l.IfToken("int");        // "signed long int"
                     return CBT_LONG;         // "signed long"
             }
             assert(false);
             break;
         case 9:  // unsigned
-            if (!p.IfToken(strings1, n))
+            if (!l.IfToken(strings1, n))
                 return CBT_UNSIGNED_INT;  // "unsigned"
             switch (n) {
                 case 0:                         // char
                     return CBT_UNSIGNED_CHAR;   // "unsigned char"
                 case 1:                         // short
-                    p.IfToken("int");           // "unsigned short int"
+                    l.IfToken("int");           // "unsigned short int"
                     return CBT_UNSIGNED_SHORT;  // "unsigned short"
                 case 2:                         // int
                     return CBT_UNSIGNED_INT;    // "unsigned int"
                 case 3:                         // long
-                    if (p.IfToken("long")) {
-                        p.IfToken("int");               // "unsigned long long int"
+                    if (l.IfToken("long")) {
+                        l.IfToken("int");               // "unsigned long long int"
                         return CBT_UNSIGNED_LONG_LONG;  // "unsigned long long"
                     }
-                    p.IfToken("int");          // "unsigned long int"
+                    l.IfToken("int");          // "unsigned long int"
                     return CBT_UNSIGNED_LONG;  // "unsigned long"
             }
             assert(false);
@@ -1236,7 +1236,7 @@ CBaseType CParserFile::ParseBaseType() {
 
 CNodePtr CParserFile::ParseExpressionStructItem(CMonoOperatorCode mo, CNodePtr &a, CErrorPosition &e) {
     std::string item_name;
-    p.NeedIdent(item_name);
+    l.NeedIdent(item_name);
 
     if (a->ctype.pointers.size() != (mo == MOP_STRUCT_ITEM ? 0 : 1) || a->ctype.base_type != CBT_STRUCT) {
         programm.Error(e, std::string("invalid type argument of '") + ToString(a->mono_operator_code) + "' (have '" +
@@ -1245,7 +1245,7 @@ CNodePtr CParserFile::ParseExpressionStructItem(CMonoOperatorCode mo, CNodePtr &
     }
 
     if (a->ctype.struct_object == nullptr)
-        p.Throw(std::string("Internal error in ") + __PRETTY_FUNCTION__);
+        l.Throw(std::string("Internal error in ") + __PRETTY_FUNCTION__);
 
     CStructItemPtr struct_item = a->ctype.struct_object->FindItem(item_name);
     if (struct_item == nullptr) {
@@ -1270,7 +1270,7 @@ CNodePtr CParserFile::ParseExpressionStructItem(CMonoOperatorCode mo, CNodePtr &
 CNodePtr CParserFile::ParseExpressionArrayElement(CNodePtr &a, CErrorPosition &e) {
     CNodePtr result = CNODE(CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : MOP_ARRAY_ELEMENT, e : e);
     result->b = Convert(CType{CBT_SIZE}, ParseExpressionComma(), programm.cmm);
-    p.NeedToken("]");
+    l.NeedToken("]");
     if (!result->ctype.pointers.empty()) {
         result->ctype.pointers.pop_back();
     } else if (!programm.cmm) {
@@ -1281,15 +1281,15 @@ CNodePtr CParserFile::ParseExpressionArrayElement(CNodePtr &a, CErrorPosition &e
 
 CNodePtr CParserFile::ParseExpressionM(CNodePtr result) {
     for (;;) {
-        CErrorPosition e(p);
-        if (p.IfToken("(")) {
+        CErrorPosition e(l);
+        if (l.IfToken("(")) {
             result = ParseExpressionCall(result, e);
             continue;
         }
 
         static const char *const operators[] = {"++", "--", ".", "->", "[", nullptr};
         size_t n = 0;
-        if (!p.IfToken(operators, n))
+        if (!l.IfToken(operators, n))
             break;
 
         switch (n) {
@@ -1328,64 +1328,64 @@ CNodePtr CParserFile::ParseExpressionM(CNodePtr result) {
 }
 
 CNodePtr CParserFile::ParseFunctionBody() {
-    CErrorPosition e(p);
-    if (p.token == CT_IDENT && p.cursor[0] == ':' && 0 != memcmp(p.token_data, "default", p.token_size)) {
+    CErrorPosition e(l);
+    if (l.token == CT_IDENT && l.cursor[0] == ':' && 0 != memcmp(l.token_data, "default", l.token_size)) {
         std::string label_name;
-        p.NeedIdent(label_name);
-        p.NeedToken(":");
+        l.NeedIdent(label_name);
+        l.NeedToken(":");
         return CNODE(CNT_LABEL, variable : BindLabel(label_name, e, false), e : e);
     }
-    if (p.IfToken("goto")) {
+    if (l.IfToken("goto")) {
         std::string label_name;
-        p.NeedIdent(label_name);
-        p.CloseToken(";", ";");
+        l.NeedIdent(label_name);
+        l.CloseToken(";", ";");
         return CNODE(CNT_GOTO, variable : BindLabel(label_name, e, true), e : e);
     }
-    if (p.IfToken("if")) {
-        p.NeedToken("(");
+    if (l.IfToken("if")) {
+        l.NeedToken("(");
         CNodePtr node = CNODE(CNT_IF, ParseExpressionComma(), e : e);
-        p.NeedToken(")");
+        l.NeedToken(")");
         node->b = ParseFunctionBody();
-        if (p.IfToken("else"))
+        if (l.IfToken("else"))
             node->c = ParseFunctionBody();
         return node;
     }
-    if (p.IfToken("while")) {
+    if (l.IfToken("while")) {
         loop_level++;
-        p.NeedToken("(");
+        l.NeedToken("(");
         CNodePtr node = CNODE(CNT_WHILE, ParseExpressionComma(), e : e);
-        p.NeedToken(")");
+        l.NeedToken(")");
         node->b = ParseFunctionBody();
         loop_level--;
         return node;
     }
-    if (p.IfToken("do")) {
+    if (l.IfToken("do")) {
         loop_level++;
         CNodePtr b = ParseFunctionBody();
-        p.NeedToken("while");
-        p.NeedToken("(");
+        l.NeedToken("while");
+        l.NeedToken("(");
         CNodePtr node = CNODE(CNT_DO, ParseExpressionComma(), b : b, e : e);
-        p.NeedToken(")");
-        p.CloseToken(";", ";");
+        l.NeedToken(")");
+        l.CloseToken(";", ";");
         loop_level--;
         return node;
     }
-    if (p.IfToken("break")) {
+    if (l.IfToken("break")) {
         if (loop_level == 0 && last_switch == nullptr)
             programm.Error(e, "break statement not within loop or switch");  // gcc
-        p.CloseToken(";", ";");
+        l.CloseToken(";", ";");
         return CNODE(CNT_BREAK, e : e);
     }
-    if (p.IfToken("continue")) {
+    if (l.IfToken("continue")) {
         if (loop_level == 0)
             programm.Error(e, "continue statement not within a loop");  // gcc
-        p.CloseToken(";", ";");
+        l.CloseToken(";", ";");
         return CNODE(CNT_CONTINUE, e : e);
     }
-    if (p.IfToken("case")) {
+    if (l.IfToken("case")) {
         CNodePtr node = CNODE(CNT_CASE, Convert(CType{CBT_INT}, ParseExpressionComma()), e : e);
         CCalcConst(node->a);
-        p.NeedToken(":");
+        l.NeedToken(":");
         if (last_switch != nullptr) {
             node->case_link = last_switch->case_link;
             last_switch->case_link = node;
@@ -1394,7 +1394,7 @@ CNodePtr CParserFile::ParseFunctionBody() {
         }
         return node;
     }
-    if (p.IfToken("default")) {
+    if (l.IfToken("default")) {
         CNodePtr node = CNODE(CNT_DEFAULT, e : e);
         if (last_switch != nullptr) {
             CNodePtr default_link = last_switch->default_link.lock();
@@ -1404,23 +1404,23 @@ CNodePtr CParserFile::ParseFunctionBody() {
         } else {
             programm.Error(e, "case label not within a switch statement");  // gcc
         }
-        p.NeedToken(":");
+        l.NeedToken(":");
         return node;
     }
-    if (p.IfToken("switch")) {
+    if (l.IfToken("switch")) {
         CNodePtr saved_switch = last_switch;
-        p.NeedToken("(");
+        l.NeedToken("(");
         auto value = ParseExpressionComma();
         if (value->ctype.SizeOf(value->e) != 1)
             value = Convert(CType{CBT_UNSIGNED_INT}, value);
         auto node = CNODE(CNT_SWITCH, value);
         last_switch = node;
         node->e = e;
-        p.NeedToken(")");
+        l.NeedToken(")");
         Enter();
-        p.NeedToken("{");
+        l.NeedToken("{");
         CNodeList body;
-        while (!p.IfToken("}"))
+        while (!l.IfToken("}"))
             body.PushBack(ParseFunctionBody());
         // Преобразование в 16 бит
         if (value->ctype.SizeOf(value->e) == 1) {
@@ -1440,42 +1440,42 @@ CNodePtr CParserFile::ParseFunctionBody() {
         last_switch = saved_switch;
         return node;
     }
-    if (p.IfToken("for")) {
+    if (l.IfToken("for")) {
         loop_level++;
-        p.NeedToken("(");
+        l.NeedToken("(");
         auto a = ParseFunctionBody2();
         // Always ends by ;
         CNodePtr b;
-        if (!p.IfToken(";")) {
+        if (!l.IfToken(";")) {
             b = ParseExpressionComma();
-            p.NeedToken(";");
+            l.NeedToken(";");
         }
         CNodePtr c;
-        if (!p.IfToken(")")) {
+        if (!l.IfToken(")")) {
             c = ParseExpressionComma();
-            p.NeedToken(")");
+            l.NeedToken(")");
         }
         auto d = ParseFunctionBody();
         loop_level--;
         return CNODE(CNT_FOR, a, b, c, d, e : e);
     }
-    if (p.IfToken("{")) {
+    if (l.IfToken("{")) {
         Enter();
         CNodeList list;
-        while (!p.IfToken("}"))
+        while (!l.IfToken("}"))
             list.PushBack(ParseFunctionBody());
         Leave();
         return CNODE(CNT_LEVEL, list.first, e : e);
     }
-    if (p.IfToken("return")) {
+    if (l.IfToken("return")) {
         const std::vector<CStructItem> &fa = current_function->type.function_args;
         CNodePtr return_value;
-        if (p.IfToken(";")) {
+        if (l.IfToken(";")) {
             if (fa.size() >= 1 && !fa[0].type.IsVoid() && !programm.cmm)
                 programm.Error(e, "'return' with no value, in function returning non-void");  // gcc
         } else {
             return_value = ParseExpressionComma();
-            p.CloseToken(";", ";");
+            l.CloseToken(";", ";");
 
             if (fa.size() >= 1 && !fa[0].type.IsVoid())
                 return_value = Convert(fa[0].type, return_value, programm.cmm);
@@ -1484,20 +1484,20 @@ CNodePtr CParserFile::ParseFunctionBody() {
         }
         return CNODE(CNT_RETURN, return_value, e : e);
     }
-    if (programm.cmm && p.IfToken("push_pop")) {
-        p.NeedToken("(");
+    if (programm.cmm && l.IfToken("push_pop")) {
+        l.NeedToken("(");
         CNodeList regs;
-        if (!p.IfToken(")")) {
+        if (!l.IfToken(")")) {
             for (;;) {
                 regs.PushBack(ParseExpression());
-                if (p.IfToken(")"))
+                if (l.IfToken(")"))
                     break;
-                p.NeedToken(",");
+                l.NeedToken(",");
             }
         }
-        p.NeedToken("{");
+        l.NeedToken("{");
         CNodeList body;
-        while (!p.IfToken("}"))
+        while (!l.IfToken("}"))
             body.PushBack(ParseFunctionBody());
         return CNODE(CNT_PUSH_POP, a : regs.first, b : body.first, e : e);
     }
@@ -1505,36 +1505,36 @@ CNodePtr CParserFile::ParseFunctionBody() {
 }
 
 CNodePtr CParserFile::ParseFunctionBody2() {
-    if (p.IfToken(";"))
+    if (l.IfToken(";"))
         return nullptr;
     bool empty = false;
     CNodePtr node = CompileLine(&empty, false);
     if (!empty)
         return node;
     node = ParseExpressionComma();
-    p.CloseToken(";", ";");
+    l.CloseToken(";", ";");
     return node;
 }
 
 CNodePtr CParserFile::CompileInitBlock(CType &type, bool can_change_size) {
     if (!type.pointers.empty() && type.pointers.back().count != 0u) {
         // List
-        if (p.IfToken("{")) {
+        if (l.IfToken("{")) {
             CType element_type = type;
             element_type.pointers.pop_back();
             CNodeList init;
             size_t items_count = 0;
             for (;;) {
-                if (p.IfToken("}"))
+                if (l.IfToken("}"))
                     break;
                 CNodePtr i = CompileInitBlock(element_type, false);
                 if (i) {
                     init.PushBack(i);
                     items_count++;
                 }
-                if (p.IfToken("}"))
+                if (l.IfToken("}"))
                     break;
-                if (!p.CloseToken(",", "}"))
+                if (!l.CloseToken(",", "}"))
                     break;
             }
             if (can_change_size && type.pointers.back().count == 1 && items_count != 0)
@@ -1547,7 +1547,7 @@ CNodePtr CParserFile::CompileInitBlock(CType &type, bool can_change_size) {
         }
 
         // String
-        CErrorPosition e(p);
+        CErrorPosition e(l);
         if (type.pointers.size() == 1 && type.SizeOfBase(e) == 1 && type.pointers.back().count > 0) {
             CNodePtr init = ParseExpression();
             if (init->type != CNT_CONST_STRING || init->ctype.pointers.size() != 1) {
@@ -1566,29 +1566,29 @@ CNodePtr CParserFile::CompileInitBlock(CType &type, bool can_change_size) {
             return init;
         }
 
-        p.ErrorSyntaxError();
+        l.SyntaxError();
         return nullptr;
     }
 
     // Struct
     if (type.pointers.empty() && type.base_type == CBT_STRUCT) {
-        if (!p.WantToken("{"))
+        if (!l.WantToken("{"))
             return nullptr;
 
         CNodeList init;
         bool stop = false;
         for (auto &i : type.struct_object->items) {
-            CErrorPosition e(p);
+            CErrorPosition e(l);
             if (stop) {
                 init.PushBack(CNODE(CNT_IMMEDIATE_STRING, ctype : i->type, e : e));
             } else {
                 CNodePtr e = CompileInitBlock(i->type, false);
                 if (e)
                     init.PushBack(e);
-                stop = !p.IfToken(",");
+                stop = !l.IfToken(",");
             }
         }
-        p.CloseToken("}", "}");
+        l.CloseToken("}", "}");
         return init.first;
     }
 

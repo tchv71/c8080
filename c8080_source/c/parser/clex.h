@@ -17,9 +17,9 @@
 
 #pragma once
 
-#include "cmacronizer.h"
+#include "ccondcompilation.h"
 
-class CLex : public CMacroizer {
+class CLex : public CCondCompilation {
 public:
     bool IfToken(CToken t) {
         if (token != t)
@@ -31,6 +31,14 @@ public:
     void NeedToken(CToken token) {
         if (!IfToken(token))
             ThrowSyntaxError();
+    }
+
+    bool WantToken(CToken token) {
+        if (!IfToken(token)) {
+            SyntaxError();
+            return false;
+        }
+        return true;
     }
 
     bool IfInteger(uint64_t &out_number) {
@@ -70,7 +78,7 @@ public:
 
     bool WantToken(const char *string) {
         if (!IfToken(string)) {
-            ErrorSyntaxError();
+            SyntaxError();
             return false;
         }
         return true;
@@ -79,7 +87,7 @@ public:
     bool CloseToken(const char *string, const char *close) {
         if (IfToken(string))
             return true;
-        ErrorSyntaxError();
+        SyntaxError();
         do {
             NextToken();
         } while (!IfToken(close) && !IfToken(CT_EOF));
@@ -105,6 +113,14 @@ public:
             ThrowSyntaxError();
     }
 
+    bool WantString1(std::string &string) {
+        if (!IfString1(string)) {
+            SyntaxError();
+            return false;
+        }
+        return true;
+    }
+
     bool IfString2(std::string &out_string);
 
     void NeedString2(std::string &out_string) {
@@ -123,6 +139,13 @@ public:
     void NeedIdent(std::string &out_string) {
         if (!IfIdent(out_string))
             ThrowSyntaxError();
+    }
+
+    bool WantIdent(std::string &out_string) {
+        if (IfIdent(out_string))
+            return true;
+        SyntaxError();
+        return false;
     }
 
     bool IfToken(const std::vector<std::string> &strings, size_t &out_index);

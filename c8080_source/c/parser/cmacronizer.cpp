@@ -48,7 +48,7 @@ void CMacroizer::ThrowSyntaxError() {
     Throw(std::string("syntax error, unexpected '") + std::string(token_data, token_size) + "'");
 }
 
-void CMacroizer::ErrorSyntaxError() {
+void CMacroizer::SyntaxError() {
     Error(std::string("syntax error, unexpected '") + std::string(token_data, token_size) + "'");
 }
 
@@ -77,15 +77,6 @@ void CMacroizer::NextToken() {
 
         if (token == CT_REMARK || token == CT_EOL)
             continue;
-
-        if (token_data[0] == '#' && preprocessor) {
-            if (in_macro != 0)
-                Throw("# in macro");  // TODO
-            std::string directive;
-            ReadDirective(directive);
-            preprocessor(directive);
-            continue;
-        }
 
         if (token == CT_IDENT) {
             auto mi = macro.find(CString(token_data, token_size));
@@ -131,16 +122,18 @@ void CMacroizer::Enter(Macro *active_macro, const char *contents, const char *fi
     s->line = line;
     s->cursor = cursor;
     s->file_name = file_name;
+    s->endif_counter = endif_counter;
     s->active_macro = active_macro;
     file_name = file_name_;
     cursor = contents;
     line = 1;
     column = 1;
+    endif_counter = 0;
 }
 
 bool CMacroizer::Leave() {
     if (endif_counter != 0)
-        Throw("unterminated #if");  // gcc
+        Error("unterminated #if");  // gcc
 
     if (in_macro > 0)
         in_macro--;
@@ -157,6 +150,7 @@ bool CMacroizer::Leave() {
         s.active_macro->disabled = false;
     }
 
+    endif_counter = s.endif_counter;
     file_name = s.file_name;
     cursor = s.cursor;
     line = s.line;

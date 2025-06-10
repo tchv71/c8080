@@ -29,7 +29,7 @@
 #include "ctokenizer.h"
 
 class CMacroizer : public CTokenizer {
-private:
+protected:
     struct Macro {
         std::string name;
         const char *body{};
@@ -43,20 +43,20 @@ private:
         size_t line{};
         size_t column{};
         const char *file_name{};
+        size_t endif_counter{};
         Macro *active_macro{};  // Macro should not call itself
     };
 
     std::map<CString, std::shared_ptr<Macro>> macro;
     std::list<Stack> stack;
 
-    bool Leave();
     void Enter(Macro *macro_index, const char *contents, const char *name);
     void ReadDirective(std::string &result);
+    bool Leave();
 
 public:
     std::function<void(CErrorPosition &, CString)> on_error;
     std::function<const char *(const char *, size_t)> save_string;
-    std::function<void(CString)> preprocessor;
     size_t endif_counter{};
     unsigned in_macro{};
     CErrorPosition error_position;  // Use only if in macro > 0
@@ -68,10 +68,9 @@ public:
     bool DeleteMacro(CString name);
     void NextToken();
     void ThrowSyntaxError();
-    void ErrorSyntaxError();
+    void SyntaxError();
     void Throw(CString text);
     void Error(CString text);
-
     bool FindDirective(std::string &out);
     void ReadRaw(std::string &result, char terminator);
 };
@@ -80,9 +79,9 @@ inline CErrorPosition::CErrorPosition(const CMacroizer &lex) {
     if (lex.in_macro > 0) {
         *this = lex.error_position;
     } else {
-        line = lex.line;
-        column = lex.column;
-        cursor = lex.cursor;
+        line = lex.token_line;
+        column = lex.token_column;
+        cursor = lex.token_data;
         file_name = lex.file_name;
     }
 }
