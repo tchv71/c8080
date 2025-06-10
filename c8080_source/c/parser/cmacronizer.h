@@ -54,6 +54,7 @@ private:
     void ReadDirective(std::string &result);
 
 public:
+    std::function<void(CErrorPosition &, CString)> on_error;
     std::function<const char *(const char *, size_t)> save_string;
     std::function<void(CString)> preprocessor;
     size_t endif_counter{};
@@ -66,8 +67,10 @@ public:
     bool FindMacro(CString name);
     bool DeleteMacro(CString name);
     void NextToken();
-    void SyntaxError();
+    void ThrowSyntaxError();
+    void ErrorSyntaxError();
     void Throw(CString text);
+    void Error(CString text);
 
     bool FindDirective(std::string &out);
     void ReadRaw(std::string &result, char terminator);

@@ -25,8 +25,8 @@
 
 void CParserFile::Compile(CNodeList &node_list, CString file_name) {
     p.save_string = [this](const char *data, size_t size) { return programm.SaveString(data, size); };
-
     p.preprocessor = [this](CString directive) { Preprocessor(directive); };
+    p.on_error = [this](CErrorPosition &p, CString text) { programm.Error(p, text); };
 
     const char *name = "";
     const char *contents = cparser.LoadFile(file_name, &name);
@@ -108,7 +108,7 @@ void CParserFile::IgnoreInsideBrackets(size_t level) {
         if (p.IfToken("(")) {
             level++;
             if (level == 0)  // Incredible overflow
-                p.SyntaxError();
+                p.ThrowSyntaxError();
             continue;
         }
         if (p.IfToken(")")) {
@@ -124,8 +124,8 @@ void CParserFile::IgnoreInsideBrackets(size_t level) {
 void CParserFile::IgnoreAttributes() {  // gcc compatibility
     for (;;) {
         if (p.IfToken("__asm__")) {
-            p.NeedToken("(");
-            IgnoreInsideBrackets(1);
+            if (p.WantToken("("))
+                IgnoreInsideBrackets(1);
             continue;
         }
 
@@ -150,7 +150,7 @@ CNodePtr CParserFile::ParseAsm(CErrorPosition &e) {
         p.ReadRaw(str, '}');
         p.NextToken();
     } else {
-        p.SyntaxError();
+        p.ThrowSyntaxError();
     }
 
     CParseAsmEqus(str, programm.asm_names);
@@ -266,9 +266,10 @@ void CParserFile::ParseAttributes(CNode &n) {
         if (p.IfToken("__address")) {
             CAddressAttribute a;
 
-            p.NeedToken("(");
-            a.value = ParseUint64();
-            p.NeedToken(")");
+            if (p.WantToken("(")) {
+                a.value = ParseUint64();
+                p.CloseToken(")", ")");
+            }
 
             a.exists = true;
 
@@ -281,9 +282,10 @@ void CParserFile::ParseAttributes(CNode &n) {
         if (p.IfToken("__link")) {
             CLinkAttribute a;
 
-            p.NeedToken("(");
-            p.NeedString2(a.base_name);
-            p.NeedToken(")");
+            if (p.WantToken("(")) {
+                p.NeedString2(a.base_name);
+                p.CloseToken(")", ")");
+            }
 
             a.name_for_path = p.file_name;
             a.exists = true;
@@ -365,9 +367,10 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
         CNodePtr init;
         if (p.IfToken("=")) {
             if (typedef_flag || is_function)
-                p.SyntaxError();
-            init = CompileInitBlock(node->ctype);
-            CCalcConst(init);
+                p.ThrowSyntaxError();
+            init = CompileInitBlock(node->ctype, true);
+            if (init)
+                CCalcConst(init);
         }
 
         CVariablePtr v = RegisterVariable(node->extern_flag, node, global, name);
@@ -383,7 +386,7 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
 
         if (p.IfToken("{")) {
             if (!is_function || typedef_flag)
-                p.SyntaxError();
+                p.ThrowSyntaxError();
             if (!global)
                 p.Throw("nested functions are not supported");  // TODO
             ParseFunction(node);
@@ -393,7 +396,8 @@ CNodePtr CParserFile::CompileLine(bool *out_break, bool global) {
         if (p.IfToken(";"))
             break;
 
-        p.NeedToken(",");
+        if (!p.CloseToken(",", ";"))
+            break;
     }
 
     return node_list.first;
@@ -594,7 +598,7 @@ void CParserFile::ParseFunction(CNodePtr &node) {
     // Check labels
     for (auto &l : scope_labels)
         if (l.second->only_extern)
-            CThrow(l.second->e, "label '" + l.second->name + "'  used but not defined");  // gcc
+            programm.Error(l.second->e, "label '" + l.second->name + "'  used but not defined");  // gcc
 
     // Self check
     current_function = nullptr;
@@ -930,20 +934,16 @@ CNodePtr CParserFile::ParseExpressionK() {
 
         CNodePtr a = ParseExpressionK();
 
-        CNodePtr result = CNODE(CNT_MONO_OPERATOR, a
-                                : a, ctype
-                                : a->ctype, mono_operator_code
-                                : mo, e
-                                : e);
+        CNodePtr result = CNODE(CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : mo, e : e);
 
         switch (mo) {
             case MOP_INC:
                 if (a->ctype.IsConst())
-                    programm.Error(e, "increment of read-only variable"); // gcc
+                    programm.Error(e, "increment of read-only variable");  // gcc
                 break;
             case MOP_DEC:
                 if (a->ctype.IsConst())
-                    programm.Error(e, "decrement of read-only variable"); // gcc
+                    programm.Error(e, "decrement of read-only variable");  // gcc
                 break;
             case MOP_DEADDR:
                 if (result->ctype.pointers.empty()) {
@@ -1102,7 +1102,7 @@ CNodePtr CParserFile::ParseExpressionValue() {
         return node;
     }
 
-    p.SyntaxError();
+    p.ThrowSyntaxError();
     return nullptr;
 }
 
@@ -1172,7 +1172,7 @@ bool CParserFile::ParseTypeWoPointers(CType *out_type, bool can_empty_inital) {
         return true;
 
     if (!can_empty)
-        p.SyntaxError();
+        p.ThrowSyntaxError();
 
     return false;
 }
@@ -1275,12 +1275,13 @@ CBaseType CParserFile::ParseBaseType() {
     return CBT_STRUCT;
 }
 
-CNodePtr CParserFile::ParseExpressionStructItem(CMonoOperatorCode mo, CNodePtr& a, CErrorPosition &e) {
+CNodePtr CParserFile::ParseExpressionStructItem(CMonoOperatorCode mo, CNodePtr &a, CErrorPosition &e) {
     std::string item_name;
     p.NeedIdent(item_name);
 
     if (a->ctype.pointers.size() != (mo == MOP_STRUCT_ITEM ? 0 : 1) || a->ctype.base_type != CBT_STRUCT) {
-        programm.Error(e, std::string("invalid type argument of '") + ToString(a->mono_operator_code) + "' (have '" + a->ctype.ToString() + "')"); // gcc
+        programm.Error(e, std::string("invalid type argument of '") + ToString(a->mono_operator_code) + "' (have '" +
+                              a->ctype.ToString() + "')");  // gcc
         return a;
     }
 
@@ -1289,11 +1290,17 @@ CNodePtr CParserFile::ParseExpressionStructItem(CMonoOperatorCode mo, CNodePtr& 
 
     CStructItemPtr struct_item = a->ctype.struct_object->FindItem(item_name);
     if (struct_item == nullptr) {
-        programm.Error(e, std::string("'struct ") + a->ctype.struct_object->name + "' has no member named '" + item_name + "'"); // gcc
+        programm.Error(e, std::string("'struct ") + a->ctype.struct_object->name + "' has no member named '" +
+                              item_name + "'");  // gcc
         return a;
     }
 
-    CNodePtr result = CNODE(CNT_MONO_OPERATOR, a : a, ctype : struct_item->type, struct_item : struct_item, mono_operator_code : mo, e : e);
+    CNodePtr result = CNODE(CNT_MONO_OPERATOR, a
+                            : a, ctype
+                            : struct_item->type, struct_item
+                            : struct_item, mono_operator_code
+                            : mo, e
+                            : e);
 
     if (result->a->ctype.flag_const)
         result->ctype.flag_const = true;
@@ -1301,14 +1308,14 @@ CNodePtr CParserFile::ParseExpressionStructItem(CMonoOperatorCode mo, CNodePtr& 
     return result;
 }
 
-CNodePtr CParserFile::ParseExpressionArrayElement(CNodePtr& a, CErrorPosition &e) {
+CNodePtr CParserFile::ParseExpressionArrayElement(CNodePtr &a, CErrorPosition &e) {
     CNodePtr result = CNODE(CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : MOP_ARRAY_ELEMENT, e : e);
     result->b = Convert(CType{CBT_SIZE}, ParseExpressionComma(), programm.cmm);
     p.NeedToken("]");
     if (!result->ctype.pointers.empty()) {
         result->ctype.pointers.pop_back();
     } else if (!programm.cmm) {
-        programm.Error(e, "subscripted value is neither array nor pointer nor vector"); // gcc
+        programm.Error(e, "subscripted value is neither array nor pointer nor vector");  // gcc
     }
     return result;
 }
@@ -1327,23 +1334,31 @@ CNodePtr CParserFile::ParseExpressionM(CNodePtr result) {
             break;
 
         switch (n) {
-            case 0: // a++
+            case 0:  // a++
                 if (result->ctype.IsConst())
-                    programm.Error(e, "increment of read-only variable"); // gcc
-                result = CNODE(CNT_MONO_OPERATOR, a : result, ctype : result->ctype, mono_operator_code : MOP_POST_INC, e : e);
+                    programm.Error(e, "increment of read-only variable");  // gcc
+                result = CNODE(CNT_MONO_OPERATOR, a
+                               : result, ctype
+                               : result->ctype, mono_operator_code
+                               : MOP_POST_INC, e
+                               : e);
                 break;
-            case 1: // a--
+            case 1:  // a--
                 if (result->ctype.IsConst())
-                    programm.Error(e, "decrement of read-only variable"); // gcc
-                result = CNODE(CNT_MONO_OPERATOR, a : result, ctype : result->ctype, mono_operator_code : MOP_POST_DEC, e : e);
+                    programm.Error(e, "decrement of read-only variable");  // gcc
+                result = CNODE(CNT_MONO_OPERATOR, a
+                               : result, ctype
+                               : result->ctype, mono_operator_code
+                               : MOP_POST_DEC, e
+                               : e);
                 break;
-            case 2: // a.
+            case 2:  // a.
                 result = ParseExpressionStructItem(MOP_STRUCT_ITEM, result, e);
                 break;
-            case 3: // a->
+            case 3:  // a->
                 result = ParseExpressionStructItem(MOP_STRUCT_ITEM_POINTER, result, e);
                 break;
-            case 4: // a[
+            case 4:  // a[
                 result = ParseExpressionArrayElement(result, e);
                 break;
             default:
@@ -1352,7 +1367,6 @@ CNodePtr CParserFile::ParseExpressionM(CNodePtr result) {
     }
     return result;
 }
-
 
 CNodePtr CParserFile::ParseFunctionBody() {
     CErrorPosition e(p);
@@ -1426,7 +1440,7 @@ CNodePtr CParserFile::ParseFunctionBody() {
         if (last_switch != nullptr) {
             CNodePtr default_link = last_switch->default_link.lock();
             if (default_link != nullptr)
-                p.Throw("multiple default labels in one switch");  // gcc
+                programm.Error(e, "multiple default labels in one switch");  // gcc
             last_switch->default_link = node;
         } else {
             programm.Error(e, "case label not within a switch statement");  // gcc
@@ -1499,7 +1513,7 @@ CNodePtr CParserFile::ParseFunctionBody() {
         CNodePtr return_value;
         if (p.IfToken(";")) {
             if (fa.size() >= 1 && !fa[0].type.IsVoid() && !programm.cmm)
-                programm.Error(e, "'return' with no value, in function returning non-void"); // gcc
+                programm.Error(e, "'return' with no value, in function returning non-void");  // gcc
         } else {
             return_value = ParseExpressionComma();
             p.NeedToken(";");
@@ -1507,7 +1521,7 @@ CNodePtr CParserFile::ParseFunctionBody() {
             if (fa.size() >= 1 && !fa[0].type.IsVoid())
                 return_value = Convert(fa[0].type, return_value, programm.cmm);
             else if (!programm.cmm)
-                programm.Error(e, "'return' with a value, in function returning void"); // gcc
+                programm.Error(e, "'return' with a value, in function returning void");  // gcc
         }
         return CNODE(CNT_RETURN, return_value, e : e);
     }
@@ -1539,6 +1553,86 @@ CNodePtr CParserFile::ParseFunctionBody2() {
     if (!empty)
         return node;
     node = ParseExpressionComma();
-    p.NeedToken(";");
+    p.CloseToken(";", ";");
     return node;
+}
+
+CNodePtr CParserFile::CompileInitBlock(CType &type, bool can_change_size) {
+    if (!type.pointers.empty() && type.pointers.back().count != 0u) {
+        // List
+        if (p.IfToken("{")) {
+            CType element_type = type;
+            element_type.pointers.pop_back();
+            CNodeList init;
+            size_t items_count = 0;
+            for (;;) {
+                if (p.IfToken("}"))
+                    break;
+                CNodePtr i = CompileInitBlock(element_type, false);
+                if (i) {
+                    init.PushBack(i);
+                    items_count++;
+                }
+                if (p.IfToken("}"))
+                    break;
+                if (!p.CloseToken(",", "}"))
+                    break;
+            }
+            if (can_change_size && type.pointers.back().count == 1 && items_count != 0)
+                type.pointers.back().count = items_count;
+
+            if (items_count > type.pointers.back().count && init.last != nullptr)
+                programm.Error(init.last->e, "excess elements in array initializer");  // gcc
+
+            return init.first;
+        }
+
+        // String
+        CErrorPosition e(p);
+        if (type.pointers.size() == 1 && type.SizeOfBase(e) == 1 && type.pointers.back().count > 0) {
+            CNodePtr init = ParseExpression();
+            if (init->type != CNT_CONST_STRING || init->ctype.pointers.size() != 1) {
+                programm.Error(init->e, "only const string or array");
+                return nullptr;
+            }
+            const size_t items_count = init->ctype.pointers[0].count;
+
+            if (can_change_size && type.pointers.back().count == 1 && items_count != 0)
+                type.pointers.back().count = items_count;
+
+            // Constant strings can be truncated
+
+            init->type = CNT_IMMEDIATE_STRING;
+            init->ctype = type;  // signed char <-> unsigned char
+            return init;
+        }
+
+        p.ErrorSyntaxError();
+        return nullptr;
+    }
+
+    // Struct
+    if (type.pointers.empty() && type.base_type == CBT_STRUCT) {
+        if (!p.WantToken("{"))
+            return nullptr;
+
+        CNodeList init;
+        bool stop = false;
+        for (auto &i : type.struct_object->items) {
+            CErrorPosition e(p);
+            if (stop) {
+                init.PushBack(CNODE(CNT_IMMEDIATE_STRING, ctype : i->type, e : e));
+            } else {
+                CNodePtr e = CompileInitBlock(i->type, false);
+                if (e)
+                    init.PushBack(e);
+                stop = !p.IfToken(",");
+            }
+        }
+        p.CloseToken("}", "}");
+        return init.first;
+    }
+
+    // Value
+    return Convert(type, ParseExpression(), programm.cmm);
 }

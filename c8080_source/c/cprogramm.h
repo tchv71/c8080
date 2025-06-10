@@ -39,6 +39,7 @@ public:
     std::shared_ptr<CVariable> current_function;  // Убрать.
     bool cmm = false;                             // Язык CMM
     bool error_flag{};
+    std::string last_error;
 
     CProgramm();
     std::shared_ptr<CVariable> FindVariable(const std::string &name);

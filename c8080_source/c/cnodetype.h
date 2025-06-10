@@ -46,7 +46,7 @@ enum CNodeType {
     CNT_ASM,                 // Example: asm { a }
     CNT_LABEL,               // Example: a:
     CNT_GOTO,                // Example: goto a
-    CNT_STRUCT_STRING,       // TODO
+    CNT_IMMEDIATE_STRING,    // Example: const char str[4] = "HELP";
 
     // Optimizer replaces CNT_LOAD_VARIABLE with
     CNT_CONST,               // Expression for asm file

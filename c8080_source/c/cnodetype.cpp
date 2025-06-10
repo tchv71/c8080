@@ -57,8 +57,8 @@ std::string ToString(CNodeType type) {
             return "TYPEDEF";
         case CNT_CONST_STRING:
             return "CONST_STRING";
-        case CNT_STRUCT_STRING:
-            return "STRUCT_STRING";
+        case CNT_IMMEDIATE_STRING:
+            return "IMMEDIATE_STRING";
         case CNT_FOR:
             return "FOR";
         case CNT_CONVERT:

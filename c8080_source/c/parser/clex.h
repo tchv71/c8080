@@ -30,7 +30,7 @@ public:
 
     void NeedToken(CToken token) {
         if (!IfToken(token))
-            SyntaxError();
+            ThrowSyntaxError();
     }
 
     bool IfInteger(uint64_t &out_number) {
@@ -44,7 +44,7 @@ public:
     uint64_t NeedInteger() {
         uint64_t result = 0;
         if (!IfInteger(result))
-            SyntaxError();
+            ThrowSyntaxError();
         return result;
     }
 
@@ -65,7 +65,25 @@ public:
 
     void NeedToken(const char *string) {
         if (!IfToken(string))
-            SyntaxError();
+            ThrowSyntaxError();
+    }
+
+    bool WantToken(const char *string) {
+        if (!IfToken(string)) {
+            ErrorSyntaxError();
+            return false;
+        }
+        return true;
+    }
+
+    bool CloseToken(const char *string, const char *close) {
+        if (IfToken(string))
+            return true;
+        ErrorSyntaxError();
+        do {
+            NextToken();
+        } while (!IfToken(close) && !IfToken(CT_EOF));
+        return false;
     }
 
     bool IfToken(const std::string &string) {
@@ -77,21 +95,21 @@ public:
 
     void NeedToken(const std::string &string) {
         if (!IfToken(string))
-            SyntaxError();
+            ThrowSyntaxError();
     }
 
     bool IfString1(std::string &out_string);
 
     void NeedString1(std::string &out_string) {
         if (!IfString1(out_string))
-            SyntaxError();
+            ThrowSyntaxError();
     }
 
     bool IfString2(std::string &out_string);
 
     void NeedString2(std::string &out_string) {
         if (!IfString2(out_string))
-            SyntaxError();
+            ThrowSyntaxError();
     }
 
     bool IfIdent(std::string &out_string) {
@@ -104,7 +122,7 @@ public:
 
     void NeedIdent(std::string &out_string) {
         if (!IfIdent(out_string))
-            SyntaxError();
+            ThrowSyntaxError();
     }
 
     bool IfToken(const std::vector<std::string> &strings, size_t &out_index);
@@ -112,7 +130,7 @@ public:
     size_t NeedToken(const std::vector<std::string> &strings) {
         size_t index = 0;
         if (!IfToken(strings, index))
-            SyntaxError();
+            ThrowSyntaxError();
         return index;
     }
 
@@ -120,7 +138,7 @@ public:
 
     void NeedToken(const char **strings, size_t &out_index) {
         if (!IfToken(strings, out_index))
-            SyntaxError();
+            ThrowSyntaxError();
     }
 
     template <class T>

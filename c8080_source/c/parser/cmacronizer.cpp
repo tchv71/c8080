@@ -44,13 +44,25 @@ void CMacroizer::Include(const char *contents, const char *file_name) {
     Enter(nullptr, contents, file_name);
 }
 
-void CMacroizer::SyntaxError() {
+void CMacroizer::ThrowSyntaxError() {
     Throw(std::string("syntax error, unexpected '") + std::string(token_data, token_size) + "'");
+}
+
+void CMacroizer::ErrorSyntaxError() {
+    Error(std::string("syntax error, unexpected '") + std::string(token_data, token_size) + "'");
 }
 
 void CMacroizer::Throw(CString text) {
     CErrorPosition p(*this);
     CThrow(p, text);
+}
+
+void CMacroizer::Error(CString text) {
+    CErrorPosition p(*this);
+    if (on_error)
+        on_error(p, text);
+    else
+        CThrow(p, text);
 }
 
 void CMacroizer::NextToken() {
@@ -84,7 +96,7 @@ void CMacroizer::NextToken() {
             if (m.args.size() > 0) {
                 NextToken();
                 if (token_size != 1 || token_data[0] != '(')
-                    SyntaxError();
+                    ThrowSyntaxError();
 
                 for (size_t j = 0; j < m.args.size(); j++) {
                     std::string arg_body;
