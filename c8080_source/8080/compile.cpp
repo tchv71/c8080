@@ -20,10 +20,11 @@
 #include "8080_prepare.h"
 
 void RegisterInternalNames8080(CProgramm &programm) {
-    programm.used_output_names["__begin"] = 1;
-    programm.used_output_names["__entry"] = 1;
-    programm.used_output_names["__bss"] = 1;
-    programm.used_output_names["__end"] = 1;
+    programm.output_names["__begin"] = 1;
+    programm.output_names["__entry"] = 1;
+    programm.output_names["__bss"] = 1;
+    programm.output_names["__end"] = 1;
+    // TODO: Зарезервированные имена ассемблера
 }
 
 void Compile8080_(CParser &c, CProgramm &programm, OutputFormat output_format, const std::string &output_file_bin,

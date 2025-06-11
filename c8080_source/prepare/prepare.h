@@ -15,19 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "prepareint.h"
+#pragma once
 
-// Replace *&x with x
+#include "../c/cprogramm.h"
 
-bool PrepareAddrDeaddr(CNodePtr &node) {
-    if (node->type == CNT_MONO_OPERATOR && node->mono_operator_code == MOP_ADDR) {
-        assert(node->a != nullptr);
-        if (node->a->type == CNT_MONO_OPERATOR && node->a->mono_operator_code == MOP_DEADDR) {
-            assert(node->ctype.GetAsmType() == node->a->a->ctype.GetAsmType());
-            node->a = node->a->a;
-            DeleteNodeSaveType(node, 'a');
-            return true;
-        }
-    }
-    return false;
-}
+void Prepare(CProgramm &c);
+bool PrepareAddrDeaddr(CNodePtr &node);

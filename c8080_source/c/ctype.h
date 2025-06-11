@@ -121,3 +121,5 @@ public:
 };
 
 typedef const CType &CConstType;
+
+const extern CType CTYPE_SIZE;

@@ -21,6 +21,8 @@
 #include "tools/cthrow.h"
 #include <stdexcept>
 
+const CType CTYPE_SIZE{CBT_SIZE};
+
 bool CType::CompareNoStatic(const CType &b) const {
     if (base_type != b.base_type || flag_const != b.flag_const || flag_volatile != b.flag_volatile ||
         GetVariableMode() != b.GetVariableMode() || pointers != b.pointers)

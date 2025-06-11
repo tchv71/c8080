@@ -30,3 +30,4 @@ static const uint8_t C_SIZEOF_LONG_LONG = 8;
 static const uint8_t C_SIZEOF_FLOAT = 4;
 static const uint8_t C_SIZEOF_DOUBLE = 8;
 static const uint8_t C_SIZEOF_LONG_DOUBLE = 16;
+static const uint16_t C_SIZE_MAX = USHRT_MAX;
