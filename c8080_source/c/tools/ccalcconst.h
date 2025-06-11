@@ -19,4 +19,4 @@
 
 #include "../cnode.h"
 
-void CCalcConst(CNodePtr &node);
+bool CCalcConst(CNodePtr &node);

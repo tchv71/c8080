@@ -18,7 +18,7 @@
 #include "cnode.h"
 #include <stdexcept>
 
-void DeleteNode(CNodePtr &node, char c) {
+bool DeleteNode(CNodePtr &node, char c) {
     assert(node != nullptr);
     CNodePtr saved_child;
     switch (c) {
@@ -41,6 +41,7 @@ void DeleteNode(CNodePtr &node, char c) {
     CNodePtr saved_next_node = node->next_node;
     *node = *saved_child;
     node->next_node = saved_next_node;
+    return true;
 }
 
 CNodePtr CopyNode(CNodePtr source) {

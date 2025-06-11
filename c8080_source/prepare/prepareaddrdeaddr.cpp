@@ -15,42 +15,19 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "prepareint.h"
 
-enum COperatorCode {
-    COP_CMP_L,
-    COP_CMP_G,
-    COP_CMP_LE,
-    COP_CMP_GE,
-    COP_CMP_E,
-    COP_CMP_NE,
-    COP_ADD,
-    COP_SUB,
-    COP_MUL,
-    COP_DIV,
-    COP_MOD,
-    COP_SHR,
-    COP_SHL,
-    COP_AND,
-    COP_OR,
-    COP_XOR,
-    COP_LAND,
-    COP_LOR,
-    COP_SET,
-    COP_SET_ADD,
-    COP_SET_SUB,
-    COP_SET_MUL,
-    COP_SET_DIV,
-    COP_SET_MOD,
-    COP_SET_SHR,
-    COP_SET_SHL,
-    COP_SET_AND,
-    COP_SET_OR,
-    COP_SET_XOR,
-    COP_IF,
-    COP_COMMA,
-};
+// Replace *&x with x
 
-bool IsSetOperator(COperatorCode code);
-bool IsCompareOperator(COperatorCode code);
-const char *ToString(COperatorCode code);
+bool PrepareAddrDeaddr(CNodePtr &node) {
+    if (node->type == CNT_MONO_OPERATOR && node->mono_operator_code == MOP_ADDR) {
+        assert(node->a != nullptr);
+        if (node->a->type == CNT_MONO_OPERATOR && node->a->mono_operator_code == MOP_DEADDR) {
+            assert(node->ctype.GetAsmType() == node->a->a->ctype.GetAsmType());
+            DeleteNode(node, 'a');
+            DeleteNode(node, 'a');
+            return true;
+        }
+    }
+    return false;
+}

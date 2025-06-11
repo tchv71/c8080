@@ -15,42 +15,21 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "prepareint.h"
 
-enum COperatorCode {
-    COP_CMP_L,
-    COP_CMP_G,
-    COP_CMP_LE,
-    COP_CMP_GE,
-    COP_CMP_E,
-    COP_CMP_NE,
-    COP_ADD,
-    COP_SUB,
-    COP_MUL,
-    COP_DIV,
-    COP_MOD,
-    COP_SHR,
-    COP_SHL,
-    COP_AND,
-    COP_OR,
-    COP_XOR,
-    COP_LAND,
-    COP_LOR,
-    COP_SET,
-    COP_SET_ADD,
-    COP_SET_SUB,
-    COP_SET_MUL,
-    COP_SET_DIV,
-    COP_SET_MOD,
-    COP_SET_SHR,
-    COP_SET_SHL,
-    COP_SET_AND,
-    COP_SET_OR,
-    COP_SET_XOR,
-    COP_IF,
-    COP_COMMA,
-};
+// The C parser stores the initialization of local variables as:
+// DECLARE_VARIABLE(variable)
+// Must be replaced with:
+// OPERATOR.SET(LOAD_VARIABLE(variable), variable->body)
 
-bool IsSetOperator(COperatorCode code);
-bool IsCompareOperator(COperatorCode code);
-const char *ToString(COperatorCode code);
+bool PrepareLocalVariablesInit(CNodePtr &node) {
+    if (node->type == CNT_DECLARE_VARIABLE && node->variable->body != NULL && !node->variable->type.flag_static) {
+        node->type = CNT_OPERATOR;
+        node->operator_code = COP_SET;
+        node->a = CNODE(CNT_LOAD_VARIABLE, ctype : node->ctype, variable : node->variable, e : node->e);
+        node->b = node->variable->body;
+        node->variable->body = nullptr;
+        return true;
+    }
+    return false;
+}

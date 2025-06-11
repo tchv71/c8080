@@ -17,40 +17,10 @@
 
 #pragma once
 
-enum COperatorCode {
-    COP_CMP_L,
-    COP_CMP_G,
-    COP_CMP_LE,
-    COP_CMP_GE,
-    COP_CMP_E,
-    COP_CMP_NE,
-    COP_ADD,
-    COP_SUB,
-    COP_MUL,
-    COP_DIV,
-    COP_MOD,
-    COP_SHR,
-    COP_SHL,
-    COP_AND,
-    COP_OR,
-    COP_XOR,
-    COP_LAND,
-    COP_LOR,
-    COP_SET,
-    COP_SET_ADD,
-    COP_SET_SUB,
-    COP_SET_MUL,
-    COP_SET_DIV,
-    COP_SET_MOD,
-    COP_SET_SHR,
-    COP_SET_SHL,
-    COP_SET_AND,
-    COP_SET_OR,
-    COP_SET_XOR,
-    COP_IF,
-    COP_COMMA,
-};
+#include "../c/cprogramm.h"
 
-bool IsSetOperator(COperatorCode code);
-bool IsCompareOperator(COperatorCode code);
-const char *ToString(COperatorCode code);
+bool PrepareLocalVariablesInit(CNodePtr &node);
+bool PrepareReplaceDivMul(CNodePtr &node);
+bool PrepareUselessOperations(CNodePtr &node);
+bool PrepareStructItem(CNodePtr &node);
+bool PrepareArrayElement(CNodePtr &node);

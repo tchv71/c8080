@@ -65,7 +65,7 @@ struct CNode {
     }
 };
 
-void DeleteNode(CNodePtr &node, char c);
+bool DeleteNode(CNodePtr &node, char c);
 CNodePtr CopyNode(CNodePtr a);
 
 #define CNODE(...) (std::make_shared<CNode>(CNode{__VA_ARGS__}))

@@ -27,7 +27,7 @@ void CParserFile::Preprocessor() {
             return PreprocessorPragmaCodepage();
         if (l.IfToken("once"))
             return PreprocessorPragmaOnce();
-        // TODO: #pragma pack
+        // TODO: #pragma pack ...
         l.Error("invalid preprocessing directive #pragma " + std::string(l.token_data, l.token_size));  // gcc
         l.PreprocessorLeave();
         return;
