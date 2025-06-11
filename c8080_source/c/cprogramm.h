@@ -27,25 +27,25 @@
 class CProgramm {
 public:
     CNodePtr first_node;
-    std::map<std::string, std::shared_ptr<CConstString>> const_strings;
-    std::map<std::string, CStructPtr> global_structs;
-    std::map<std::string, CStructPtr> global_unions;
-    std::list<std::string> saved_strings;
-    std::map<std::string, std::shared_ptr<CVariable>> global_variables;  // Кроме static
-    std::vector<std::shared_ptr<CVariable>> all_top_variables;           // В том числе static
-    std::map<std::string, int> used_output_names;
-    std::shared_ptr<CVariable> static_stack;
-    std::map<std::string, int> asm_names;         // Имена найденные в ASM блоках
-    std::shared_ptr<CVariable> current_function;  // Убрать.
-    bool cmm = false;                             // Язык CMM
-    bool error_flag{};
+    std::map<std::string, CConstStringPtr> const_strings;
+    std::map<std::string, CStructPtr> structs;
+    std::map<std::string, CStructPtr> unions;
+    std::list<std::string> saved_strings;           // TODO: Remove
+    std::map<std::string, CVariablePtr> variables;  // no static
+    std::vector<CVariablePtr> all_top_variables;    // with static
+    std::map<std::string, int> output_names;
+    CVariablePtr static_stack;
+    std::map<std::string, int> asm_names;
+    bool cmm{};  // cmm language mode
+    bool error{};
     std::string last_error;
 
-    CProgramm();
-    std::shared_ptr<CVariable> FindVariable(const std::string &name);
-    std::shared_ptr<CConstString> RegisterConstString(const std::string &text);
-    void AddVariable(std::shared_ptr<CVariable> a);
-    void Error(const CErrorPosition &e, CString text);
+    CVariablePtr compiler_function;  // TODO: Remove
+
+    CVariablePtr FindVariable(CString name);
+    void AddVariable(CVariablePtr a);
+    CConstStringPtr RegisterConstString(CString text);
+    void Error(const CErrorPosition &e, CString text, const char *type = "error");
     void Note(const CErrorPosition &e, CString text);
     const char *SaveString(const char *data, size_t size);
 };

@@ -17,7 +17,7 @@
 
 #include "../../tools/trimself.h"
 #include "../../tools/parseutf8.h"
-#include "c_parser_file.h"
+#include "cparserfile.h"
 
 void CParserFile::Preprocessor() {
     if (l.IfToken("include"))

@@ -16,7 +16,7 @@
  */
 
 #include "cparser.h"
-#include "c_parser_file.h"
+#include "cparserfile.h"
 #include "../cnodelist.h"
 #include "../../tools/fs_tools.h"
 #include "../../tools/catpath.h"
