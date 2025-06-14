@@ -19,7 +19,7 @@
 
 // Replace *&x with x
 
-bool PrepareAddrDeaddr(CNodePtr &node) {
+bool PrepareAddrDeaddr(Prepare &, CNodePtr &node) {
     if (node->type == CNT_MONO_OPERATOR && node->mono_operator_code == MOP_ADDR) {
         assert(node->a != nullptr);
         if (node->a->type == CNT_MONO_OPERATOR && node->a->mono_operator_code == MOP_DEADDR) {

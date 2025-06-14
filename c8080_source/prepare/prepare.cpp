@@ -19,6 +19,7 @@
 #include "prepareint.h"
 #include "../c/tools/ccalcconst.h"
 #include "../c/tools/cthrow.h"
+#include "staticstack.h"
 
 bool DeleteNodeSaveType(CNodePtr &node, char c) {
     CType type = node->ctype;
@@ -29,46 +30,40 @@ bool DeleteNodeSaveType(CNodePtr &node, char c) {
     return true;
 }
 
-typedef bool (*PrepareFunctionType)(CNodePtr &node);
+typedef bool (*PrepareFunctionType)(Prepare &p, CNodePtr &node);
 
 static const PrepareFunctionType prepare_function_list[] = {
-    PrepareUselessOperations, PrepareReplaceDivMul,      PrepareStructItem,
-    PrepareArrayElement,      PrepareLocalVariablesInit, PrepareAddrDeaddr,
+    PrepareUselessOperations,  PrepareReplaceDivMul, PrepareStructItem,   PrepareArrayElement,
+    PrepareLocalVariablesInit, PrepareAddrDeaddr,    PrepareLoadVariable, PrepareStaticArgumentsCall,
 };
 
-static bool PrepareInt(CNodePtr &node) {
-    if (node == nullptr)
-        return false;
-
+static bool PrepareInt(Prepare &p, CNodePtr *pnode) {
     bool result_changed = false;
-    for (;;) {
-        bool changed = CCalcConst(node);
+    while (*pnode != nullptr) {
+        bool changed;
+        do {
+            changed = CCalcConst(*pnode);  // TODO: Recursion
+            changed |= PrepareInt(p, &(*pnode)->a);
+            changed |= PrepareInt(p, &(*pnode)->b);
+            changed |= PrepareInt(p, &(*pnode)->c);
+            changed |= PrepareInt(p, &(*pnode)->d);
 
-        changed |= PrepareInt(node->a);
-        changed |= PrepareInt(node->b);
-        changed |= PrepareInt(node->c);
-        changed |= PrepareInt(node->d);
+            for (auto &i : prepare_function_list) {
+                changed |= i(p, *pnode);
+                if (*pnode == nullptr)
+                    break;
+            }
 
-        for (auto &i : prepare_function_list) {
-            changed |= i(node);
-            if (node == nullptr)
-                break;
-        }
+            result_changed |= changed;
+        } while (changed);
 
-        result_changed |= changed;
-
-        if (node == nullptr || !changed)
-            break;
+        pnode = &(*pnode)->next_node;
     }
-
-    if (node)
-        result_changed |= PrepareInt(node->next_node);  // TODO: Recursion
-
     return result_changed;
 }
 
-void Prepare(CProgramm &c) {
-    for (CNodePtr i = c.first_node; i; i = i->next_node)
-        if (i->variable && i->variable->body && i->variable->type.IsFunction())
-            PrepareInt(i->variable->body->a);
+void PrepareMain(CProgramm &programm, CVariablePtr &f) {
+    Prepare p(programm, f);
+    PrepareFunction(p);
+    PrepareInt(p, &p.function->body->a);
 }

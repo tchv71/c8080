@@ -23,6 +23,7 @@
 #include "cconststring.h"
 #include "cvariable.h"
 #include "cvariableptr.h"
+#include "cprogrammcompiler.h"
 
 class CProgramm {
 public:
@@ -34,13 +35,12 @@ public:
     std::map<std::string, CVariablePtr> variables;  // no static
     std::vector<CVariablePtr> all_top_variables;    // with static
     std::map<std::string, int> output_names;
-    CVariablePtr static_stack;
     std::map<std::string, int> asm_names;
     bool cmm{};  // cmm language mode
     bool error{};
     std::string last_error;
 
-    CVariablePtr compiler_function;  // TODO: Remove
+    CProgrammCompiler c;
 
     CVariablePtr FindVariable(CString name);
     void AddVariable(CVariablePtr a);

@@ -25,9 +25,7 @@
 class CVariable;
 
 struct CVariableCompiler {
-    bool fastcall_prepared{};
-    bool ss_function_arguments_prepared{};
-    uint32_t stack_pointer{};
+    uint64_t function_stack_frame_offset{};
     bool equ_enabled{};
     std::string equ_text;  // Имя переменной в коде
     size_t use_counter{};

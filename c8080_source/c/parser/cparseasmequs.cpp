@@ -34,7 +34,7 @@ void CParseAsmEqus(CString str, std::map<std::string, int> &out_values) {
             }
         }
         p = strchr(p, '\n');
-        if (p == NULL)
+        if (p == nullptr)
             break;
         p++;
     }

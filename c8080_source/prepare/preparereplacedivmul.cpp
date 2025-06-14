@@ -15,11 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "prepare.h"
+#include "prepareint.h"
 #include "../tools/loguint64.h"
 #include "../c/tools/getnumberasuint64.h"
 
-bool PrepareReplaceDivMul(CNodePtr &node) {
+bool PrepareReplaceDivMul(Prepare &p, CNodePtr &node) {
     if (node->type == CNT_OPERATOR && node->b->type == CNT_NUMBER && node->b->ctype.IsUnsigned()) {
         switch (node->operator_code) {
             case COP_MUL:

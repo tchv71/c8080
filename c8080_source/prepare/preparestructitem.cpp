@@ -22,7 +22,7 @@
 // The C parser stores the access to structure field (X.struct_item) as:
 // STRUCT_ITEM(X, struct_item)
 // Will be replaced with:
-// 1) MONOOPERATOR.DEADDR(OPERATOR.ADD(MONOOPERATOR.ADDR(X), struct_item->struct_item_offset)) if struct_item is not array
+// 1) MONOOPERATOR.DEADDR(OPERATOR.ADD(MONOOPERATOR.ADDR(X), struct_item->struct_item_offset)) if item is not array
 // 2) OPERATOR.ADD(MONOOPERATOR.ADDR(X), struct_item->struct_item_offset) if struct_item is array
 //
 // The C parser stores the access to structure field (X->struct_item) as:
@@ -31,9 +31,9 @@
 // 1) MONOOPERATOR.DEADDR(OPERATOR.ADD(X, struct_item->struct_item_offset)) if struct_item is not array
 // 2) OPERATOR.ADD(X, struct_item->struct_item_offset) if struct_item is array
 
-bool PrepareStructItem(CNodePtr &node) {
-    if (node->type == CNT_MONO_OPERATOR && (node->mono_operator_code == MOP_STRUCT_ITEM
-              || node->mono_operator_code == MOP_STRUCT_ITEM_POINTER)) {
+bool PrepareStructItem(Prepare &p, CNodePtr &node) {
+    if (node->type == CNT_MONO_OPERATOR &&
+        (node->mono_operator_code == MOP_STRUCT_ITEM || node->mono_operator_code == MOP_STRUCT_ITEM_POINTER)) {
         assert(node->a != nullptr);
 
         CStructItemPtr &si = node->struct_item;

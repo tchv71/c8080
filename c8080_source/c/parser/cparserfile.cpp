@@ -495,7 +495,7 @@ void CParserFile::ParseFunction(CNodePtr &node) {
 
     Leave();
 
-    current_function->function_stack_size = max_stack_size;
+    current_function->function_stack_frame_size = max_stack_size;
 
     // Check labels
     for (auto &l : scope_labels)

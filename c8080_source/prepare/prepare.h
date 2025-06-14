@@ -19,5 +19,4 @@
 
 #include "../c/cprogramm.h"
 
-void Prepare(CProgramm &c);
-bool PrepareAddrDeaddr(CNodePtr &node);
+void PrepareMain(CProgramm &cprogramm, CVariablePtr &p);

@@ -20,7 +20,7 @@
 #include "../c/tools/numberisone.h"
 #include "../c/tools/numberisnonzero.h"
 
-bool PrepareUselessOperations(CNodePtr &node) {
+bool PrepareUselessOperations(Prepare &p, CNodePtr &node) {
     if (node->type == CNT_OPERATOR) {
         switch (node->operator_code) {
             case COP_SHL:
@@ -113,15 +113,15 @@ bool PrepareUselessOperations(CNodePtr &node) {
                 if (NumberIsZero(node->b))  // Replace X ^= 0 with X
                     return DeleteNodeSaveType(node, 'a');
                 return false;
-                // TODO: COP_CMP_L
-                // TODO: COP_CMP_G
-                // TODO: COP_CMP_LE
-                // TODO: COP_CMP_GE
-                // TODO: COP_CMP_E
-                // TODO: COP_CMP_NE
-                // TODO: COP_MOD
-                // TODO: COP_AND
-                // TODO: COP_SET_AND
+            // TODO: COP_CMP_L
+            // TODO: COP_CMP_G
+            // TODO: COP_CMP_LE
+            // TODO: COP_CMP_GE
+            // TODO: COP_CMP_E
+            // TODO: COP_CMP_NE
+            // TODO: COP_MOD
+            // TODO: COP_AND
+            // TODO: COP_SET_AND
         }
     }
     return false;

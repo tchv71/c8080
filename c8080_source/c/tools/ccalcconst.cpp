@@ -292,9 +292,9 @@ bool CCalcConst(CNodePtr &node) {
                 changed |= CCalcConst(node->a);
                 if (node->a->type == CNT_NUMBER) {
                     if (CalcMonoOperator(node)) {
-                        CalcConvert(node, node);  // Truncate 64 bit to 8, 16, 32
                         node->type = CNT_NUMBER;
-                        node->a = nullptr;  // Free memory
+                        node->a = nullptr;        // Free memory
+                        CalcConvert(node, node);  // Truncate 64 bit to 8, 16, 32
                         changed = true;
                         break;
                     }
@@ -317,10 +317,10 @@ bool CCalcConst(CNodePtr &node) {
                     changed |= CCalcConst(node->b);
                     if (node->a->type == CNT_NUMBER && node->b->type == CNT_NUMBER) {
                         if (CalcOperator(node)) {
-                            CalcConvert(node, node);  // Truncate 64 bit to 8, 16, 32
                             node->type = CNT_NUMBER;
-                            node->a = nullptr;  // Free memory
-                            node->b = nullptr;  // Free memory
+                            node->a = nullptr;        // Free memory
+                            node->b = nullptr;        // Free memory
+                            CalcConvert(node, node);  // Truncate 64 bit to 8, 16, 32
                             changed = true;
                             break;
                         }

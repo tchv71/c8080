@@ -24,7 +24,7 @@
 // 1) MONOOPERATOR.DEADDR(OPERATOR.ADD(X, OPERATOR.MUL(SIZEOF, Y))) if struct_item is not array
 // 2) OPERATOR.ADD(X, OPERATOR.MUL(SIZEOF, Y)) if struct_item is array
 
-bool PrepareArrayElement(CNodePtr &node) {
+bool PrepareArrayElement(Prepare &p, CNodePtr &node) {
     if (node->type == CNT_MONO_OPERATOR && node->mono_operator_code == MOP_ARRAY_ELEMENT) {
         assert(node->a != nullptr);
         assert(node->b != nullptr);
@@ -32,18 +32,18 @@ bool PrepareArrayElement(CNodePtr &node) {
 
         node->type = CNT_OPERATOR;
         node->operator_code = COP_ADD;
-        node->b = CNODE(CNT_OPERATOR,
-                        a : Convert(CTYPE_SIZE, node->b),
-                        b : MakeCNodeNumberSize(node->a->ctype.SizeOfElement(node->a->e), node->a->e),
-                        ctype : CTYPE_SIZE,
-                        operator_code : COP_MUL,
-                        e : node->e);
+        node->b = CNODE(CNT_OPERATOR, a
+                        : Convert(CTYPE_SIZE, node->b), b
+                        : MakeCNodeNumberSize(node->a->ctype.SizeOfElement(node->a->e), node->a->e), ctype
+                        : CTYPE_SIZE, operator_code
+                        : COP_MUL, e
+                        : node->e);
 
         // The result is an array
         // Example:
         //    static int x[5][5];
         //    return x[3];
-        std::vector<CPointer>& ap = node->a->ctype.pointers;
+        std::vector<CPointer> &ap = node->a->ctype.pointers;
         if (ap.size() < 2u || ap[ap.size() - 2u].count == 0) {
             node = MakeCNodeMonoOperatorDeaddr(node);
             node->a->ctype.pointers.push_back(CPointer{});

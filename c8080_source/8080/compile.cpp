@@ -27,10 +27,8 @@ void RegisterInternalNames8080(CProgramm &programm) {
     // TODO: Зарезервированные имена ассемблера
 }
 
-void Compile8080_(CParser &c, CProgramm &programm, OutputFormat output_format, const std::string &output_file_bin,
+void Compile_8080(CParser &c, CProgramm &programm, OutputFormat output_format, const std::string &output_file_bin,
                   CString asm_file_name) {
-    Prepare8080(&programm, programm.first_node, 0);
-
     Compile8080 compile8080;
     compile8080.Compile(c, programm, output_format, output_file_bin, asm_file_name);
 }

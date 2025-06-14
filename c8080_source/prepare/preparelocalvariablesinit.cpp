@@ -22,8 +22,8 @@
 // Must be replaced with:
 // OPERATOR.SET(LOAD_VARIABLE(variable), variable->body)
 
-bool PrepareLocalVariablesInit(CNodePtr &node) {
-    if (node->type == CNT_DECLARE_VARIABLE && node->variable->body != NULL && !node->variable->type.flag_static) {
+bool PrepareLocalVariablesInit(Prepare &p, CNodePtr &node) {
+    if (node->type == CNT_DECLARE_VARIABLE && node->variable->body != nullptr && !node->variable->type.flag_static) {
         node->type = CNT_OPERATOR;
         node->operator_code = COP_SET;
         node->a = CNODE(CNT_LOAD_VARIABLE, ctype : node->ctype, variable : node->variable, e : node->e);
