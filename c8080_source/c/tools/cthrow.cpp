@@ -33,7 +33,6 @@ void CThrow(const CErrorPosition &position, CString text) {
 
 // Throw an internal compiler error exception, including the position in the compiler source code
 
-void CThrowTypeNotSupportedInternal(CConstNodePtr node, const char *file_name, unsigned line) {
-    CThrow(node, "Internal error, type " + node->ctype.ToString() + " is not supported in " + file_name + " " +
-                     std::to_string(line));
+void CInternalError(CConstNodePtr node, CString text, const char *file_name, unsigned line) {
+    CThrow(node, std::string("Internal error, ") + text + "( in " + file_name + " " + std::to_string(line));
 }

@@ -22,8 +22,8 @@
 
 void CThrow(CConstErrorPosition position, CString text);
 void CThrow(CConstNodePtr node, CString text);
-void CThrowTypeNotSupportedInternal(CConstNodePtr node, const char *file_name, unsigned line);
+void CInternalError(CConstNodePtr node, CString text, const char *file_name, unsigned line);
 
 // Throw an internal compiler error exception, including the position in the compiler source code
 
-#define C_THROW_TYPE_NOT_SUPPORTED_INTERNAL(NODE) CThrowTypeNotSupportedInternal((NODE), __PRETTY_FUNCTION__, __LINE__)
+#define C_INTERNAL_ERROR(NODE, TEXT) CInternalError((NODE), (TEXT), __PRETTY_FUNCTION__, __LINE__)

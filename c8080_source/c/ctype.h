@@ -115,6 +115,10 @@ public:
         return !pointers.empty();
     }
 
+    bool IsArray() const {
+        return !pointers.empty() && pointers.back().count > 0;
+    }
+
     CBaseType GetAsmType() const;
 
     uint64_t SizeOfElement(const CErrorPosition &e) const;

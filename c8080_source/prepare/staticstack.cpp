@@ -95,9 +95,8 @@ bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node) {
 
         CNodeList body;
         for (size_t i = 1; i < arg_list.size(); i++) {
-            // Not enough arguments
             if (arg == nullptr)
-                C_THROW_TYPE_NOT_SUPPORTED_INTERNAL(node);
+                C_INTERNAL_ERROR(node, "not enough arguments");
 
             CNodePtr next_arg = arg->next_node;
             arg->next_node = nullptr;
@@ -131,9 +130,8 @@ bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node) {
             arg = next_arg;
         }
 
-        // Extra arguments
         if (arg != nullptr)
-            C_THROW_TYPE_NOT_SUPPORTED_INTERNAL(node);
+            C_INTERNAL_ERROR(node, "extra arguments");
 
         node->c = body.first;
         return true;
@@ -141,8 +139,29 @@ bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node) {
     return false;
 }
 
+bool PrepareStaticLoadVariable(Prepare &p, CNodePtr &node) {
+    // Must be called before PrepareLoadVariable()
+    if (node->type == CNT_LOAD_VARIABLE) {
+        CVariablePtr &v = node->variable;
+        assert(v != nullptr);
+
+        // Replace stack variables with global variables if a static stack is used
+        if (v->is_stack_variable && p.function != nullptr && p.function->type.GetVariableMode() == CVM_GLOBAL) {
+            assert(!v->is_function_argument);  // Replaced before in PrepareFunctionStaticStack()
+            v->c.equ_enabled = true;
+            v->c.equ_text = p.function->c.static_stack->output_name + " + " + std::to_string(v->stack_offset);
+
+            v->is_stack_variable = false;
+            v->output_name = p.function->name + "_" + v->name;
+            p.programm.AddVariable(v);
+            return true;
+        }
+    }
+    return false;
+}
+
 static void PrepareLastFunctionArgCode(Prepare &p) {
-    if (p.programm.cmm)
+    if (p.programm.cmm || !p.function)
         return;
 
     CVariable &f = *p.function;

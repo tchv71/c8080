@@ -24,6 +24,25 @@ void RegisterInternalNames8080(CProgramm &programm) {
     programm.output_names["__entry"] = 1;
     programm.output_names["__bss"] = 1;
     programm.output_names["__end"] = 1;
+
+    programm.output_names["a"] = 1;  // Cannot be a variable name: ld a, (a)
+    programm.output_names["b"] = 1;
+    programm.output_names["c"] = 1;
+    programm.output_names["d"] = 1;
+    programm.output_names["e"] = 1;
+    programm.output_names["h"] = 1;
+    programm.output_names["l"] = 1;
+    programm.output_names["h"] = 1;
+    programm.output_names["i"] = 1;
+    programm.output_names["r"] = 1;
+    programm.output_names["bc"] = 1;
+    programm.output_names["de"] = 1;
+    programm.output_names["hl"] = 1;
+    programm.output_names["sp"] = 1;
+    programm.output_names["ix"] = 1;
+    programm.output_names["iy"] = 1;
+    programm.output_names["ixl"] = 1;
+    programm.output_names["iyl"] = 1;
     // TODO: Зарезервированные имена ассемблера
 }
 

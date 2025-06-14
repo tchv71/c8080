@@ -262,47 +262,47 @@ static bool CalcConvert(CNodePtr &to_node, CNodePtr &node) {
     return false;
 }
 
-bool CCalcConst(CNodePtr &node) {
+bool CCalcConst(CNodePtr &node, bool process_childs) {
     bool changed = false;
     for (;;) {
         switch (node->type) {
             case CNT_LOAD_VARIABLE:
                 if (node->variable->type.IsConst() && node->variable->body) {
-                    changed |= CCalcConst(node->variable->body);  // TODO: Don't call everytime
+                    changed |= CCalcConst(node->variable->body, true);  // TODO: Don't call everytime
                     if (node->variable->body->type == CNT_NUMBER) {
                         node->ctype = node->variable->body->ctype;
                         node->number = node->variable->body->number;
                         node->variable = nullptr;  // Free memory
                         node->type = CNT_NUMBER;
-                        changed = true;
-                        break;
+                        return true;
                     }
                 }
                 break;
             case CNT_CONVERT:
-                changed |= CCalcConst(node->a);
+                if (process_childs)
+                    changed |= CCalcConst(node->a, process_childs);
                 if (CalcConvert(node, node->a)) {
                     node->type = CNT_NUMBER;
                     node->a = nullptr;
-                    changed = true;
-                    break;
+                    return true;
                 }
                 break;
             case CNT_MONO_OPERATOR:
-                changed |= CCalcConst(node->a);
+                if (process_childs)
+                    changed |= CCalcConst(node->a, process_childs);
                 if (node->a->type == CNT_NUMBER) {
                     if (CalcMonoOperator(node)) {
                         node->type = CNT_NUMBER;
                         node->a = nullptr;        // Free memory
                         CalcConvert(node, node);  // Truncate 64 bit to 8, 16, 32
-                        changed = true;
-                        break;
+                        return true;
                     }
                 }
                 break;
             case CNT_OPERATOR: {
                 if (node->operator_code == COP_IF) {
-                    changed |= CCalcConst(node->a);
+                    if (process_childs)
+                        changed |= CCalcConst(node->a, process_childs);
                     if (node->a->type == CNT_NUMBER) {
                         DeleteNode(node, NumberIsZero(node->a) ? 'c' : 'b');
                         changed = true;
@@ -313,16 +313,17 @@ bool CCalcConst(CNodePtr &node) {
                     changed = true;
                     continue;  // RETRY!
                 } else {
-                    changed |= CCalcConst(node->a);
-                    changed |= CCalcConst(node->b);
+                    if (process_childs) {
+                        changed |= CCalcConst(node->a, process_childs);
+                        changed |= CCalcConst(node->b, process_childs);
+                    }
                     if (node->a->type == CNT_NUMBER && node->b->type == CNT_NUMBER) {
                         if (CalcOperator(node)) {
                             node->type = CNT_NUMBER;
                             node->a = nullptr;        // Free memory
                             node->b = nullptr;        // Free memory
                             CalcConvert(node, node);  // Truncate 64 bit to 8, 16, 32
-                            changed = true;
-                            break;
+                            return true;
                         }
                     }
                 }

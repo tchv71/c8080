@@ -22,7 +22,7 @@ uint64_t GetNumberAsUint64(CNodePtr node) {
     assert(node != nullptr);
 
     if (node->type != CNT_NUMBER)
-        C_THROW_TYPE_NOT_SUPPORTED_INTERNAL(node);
+        C_INTERNAL_ERROR(node, "incorrect node type");
 
     switch (node->ctype.GetAsmType()) {
         case CBT_CHAR:
@@ -43,6 +43,6 @@ uint64_t GetNumberAsUint64(CNodePtr node) {
             return uint64_t(node->number.ld);
     }
 
-    C_THROW_TYPE_NOT_SUPPORTED_INTERNAL(node);
+    C_INTERNAL_ERROR(node, "incorrect data type");
     return 0;
 }

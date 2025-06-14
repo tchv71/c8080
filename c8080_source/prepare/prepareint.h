@@ -19,15 +19,7 @@
 
 #include "../c/cprogramm.h"
 #include "../c/consts.h"
-
-class Prepare {
-public:
-    CProgramm &programm;
-    CVariablePtr function;
-
-    Prepare(CProgramm &p, CVariablePtr f) : programm(p), function(f) {
-    }
-};
+#include "prepare.h"
 
 bool PrepareLocalVariablesInit(Prepare &p, CNodePtr &node);
 bool PrepareReplaceDivMul(Prepare &p, CNodePtr &node);
@@ -36,6 +28,7 @@ bool PrepareStructItem(Prepare &p, CNodePtr &node);
 bool PrepareArrayElement(Prepare &p, CNodePtr &node);
 bool PrepareLoadVariable(Prepare &p, CNodePtr &node);
 bool PrepareAddrDeaddr(Prepare &p, CNodePtr &node);
+bool PrepareAddWithStackAddress(Prepare &p, CNodePtr &node);
 
 bool DeleteNodeSaveType(CNodePtr &node, char c);
 

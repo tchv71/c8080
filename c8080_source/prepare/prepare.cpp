@@ -33,23 +33,33 @@ bool DeleteNodeSaveType(CNodePtr &node, char c) {
 typedef bool (*PrepareFunctionType)(Prepare &p, CNodePtr &node);
 
 static const PrepareFunctionType prepare_function_list[] = {
-    PrepareUselessOperations,  PrepareReplaceDivMul, PrepareStructItem,   PrepareArrayElement,
-    PrepareLocalVariablesInit, PrepareAddrDeaddr,    PrepareLoadVariable, PrepareStaticArgumentsCall,
+    PrepareUselessOperations,   PrepareReplaceDivMul,       PrepareStructItem,         PrepareArrayElement,
+    PrepareLocalVariablesInit,  PrepareAddrDeaddr,          PrepareStaticLoadVariable, PrepareLoadVariable,
+    PrepareStaticArgumentsCall, PrepareAddWithStackAddress,
 };
 
-static bool PrepareInt(Prepare &p, CNodePtr *pnode) {
+bool PrepareInt(Prepare &p, CNodePtr *pnode) {
     bool result_changed = false;
     while (*pnode != nullptr) {
         bool changed;
         do {
-            changed = CCalcConst(*pnode);  // TODO: Recursion
-            changed |= PrepareInt(p, &(*pnode)->a);
+            changed = PrepareInt(p, &(*pnode)->a);
             changed |= PrepareInt(p, &(*pnode)->b);
             changed |= PrepareInt(p, &(*pnode)->c);
             changed |= PrepareInt(p, &(*pnode)->d);
+            changed |= CCalcConst(*pnode, false);
 
             for (auto &i : prepare_function_list) {
                 changed |= i(p, *pnode);
+                if (*pnode == nullptr)
+                    break;
+            }
+
+            if (*pnode == nullptr)
+                break;
+
+            for (auto i = p.list; *i; i++) {
+                changed |= (*i)(p, *pnode);
                 if (*pnode == nullptr)
                     break;
             }
@@ -62,8 +72,12 @@ static bool PrepareInt(Prepare &p, CNodePtr *pnode) {
     return result_changed;
 }
 
-void PrepareMain(CProgramm &programm, CVariablePtr &f) {
-    Prepare p(programm, f);
-    PrepareFunction(p);
-    PrepareInt(p, &p.function->body->a);
+void PrepareMain(CProgramm &programm, CVariablePtr &f, const PrepareFunctionType *list) {
+    Prepare p(programm, f, list);
+    if (p.function) {
+        PrepareFunction(p);
+        PrepareInt(p, &p.function->body->a);
+    } else {
+        PrepareInt(p, &p.function->body);
+    }
 }

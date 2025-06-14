@@ -19,4 +19,19 @@
 
 #include "../c/cprogramm.h"
 
-void PrepareMain(CProgramm &cprogramm, CVariablePtr &p);
+class Prepare;
+
+typedef bool (*PrepareFunctionType)(Prepare &p, CNodePtr &node);
+
+class Prepare {
+public:
+    CProgramm &programm;
+    CVariablePtr function;
+    const PrepareFunctionType *list;
+
+    Prepare(CProgramm &p, CVariablePtr f, const PrepareFunctionType *l) : programm(p), function(f), list(l) {
+    }
+};
+
+void PrepareMain(CProgramm &cprogramm, CVariablePtr &p, const PrepareFunctionType *list);
+bool PrepareInt(Prepare &p, CNodePtr *pnode);

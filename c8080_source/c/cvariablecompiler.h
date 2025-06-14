@@ -40,5 +40,7 @@ struct CVariableCompiler {
     size_t call_count{};              // Заполняется при расчете стека
     size_t internal_cmm_id{};         // Used when compiling CMM
 
+    bool prepared{};
+
     void AddCalledBy(const std::shared_ptr<CVariable> &v, bool call);
 };

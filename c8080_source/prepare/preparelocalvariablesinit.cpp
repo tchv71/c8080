@@ -17,10 +17,9 @@
 
 #include "prepareint.h"
 
-// The C parser stores the initialization of local variables as:
-// DECLARE_VARIABLE(variable)
-// Must be replaced with:
-// OPERATOR.SET(LOAD_VARIABLE(variable), variable->body)
+// C parser stores variables as CNT_DECLARE_VARIABLE.
+// The C compiler does not support CNT_DECLARE_VARIABLE.
+// Must be replaced with: OPERATOR.SET(LOAD_VARIABLE(variable), variable->body)
 
 bool PrepareLocalVariablesInit(Prepare &p, CNodePtr &node) {
     if (node->type == CNT_DECLARE_VARIABLE && node->variable->body != nullptr && !node->variable->type.flag_static) {

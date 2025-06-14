@@ -44,7 +44,7 @@ void CParserFile::Parse(CNodeList &node_list, CString file_name) {
 uint64_t CParserFile::ParseUint64() {
     static const CType uint64_ctype{CBT_UNSIGNED_LONG_LONG};
     CNodePtr value = Convert(uint64_ctype, ParseExpression());
-    CCalcConst(value);
+    CCalcConst(value, true);
     if (value->type != CNT_NUMBER) {
         programm.Error(value->e, "Is not number");
         return 0;
@@ -56,7 +56,7 @@ uint64_t CParserFile::ParseUint64() {
 int64_t CParserFile::ParseInt64() {
     static const CType int64_ctype{CBT_LONG_LONG};
     CNodePtr value = Convert(int64_ctype, ParseExpression());
-    CCalcConst(value);
+    CCalcConst(value, true);
     if (value->type != CNT_NUMBER) {
         programm.Error(value->e, "Is not number");
         return 0;
@@ -283,8 +283,9 @@ CNodePtr CParserFile::ParseLine(bool *out_break, bool global) {
             if (typedef_flag || is_function)
                 l.ThrowSyntaxError();
             init = ParseInitBlock(node->ctype, true);
-            if (init)
-                CCalcConst(init);
+            // TODO:            if (init)
+            // TODO:                CCalcConst(init);
+            // TODO:    All .next_mode
         }
 
         CVariablePtr v = RegisterVariable(node->extern_flag, node, global, name);
@@ -1199,7 +1200,7 @@ CNodePtr CParserFile::ParseFunctionBody() {
     }
     if (l.IfToken("case")) {
         CNodePtr node = CNODE(CNT_CASE, Convert(CType{CBT_INT}, ParseExpressionComma()), e : e);
-        CCalcConst(node->a);
+        CCalcConst(node->a, true);
         l.NeedToken(":");
         if (last_switch != nullptr) {
             node->case_link = last_switch->case_link;
