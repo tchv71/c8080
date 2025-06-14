@@ -238,7 +238,7 @@ void CalculateStaticStack(CProgramm &p) {
     p.c.static_stack->type.pointers[0].count = stack_size;
 }
 
-void PrepareFunction(Prepare &p) {
+void PrepareFunctionStaticStack(Prepare &p) {
     PrepareLastFunctionArgCode(p);
     PrepareFunctionStaticStack(p, *p.function);
 }

@@ -22,32 +22,10 @@
 #include "prepare.h"
 
 bool PrepareLocalVariablesInit(Prepare &p, CNodePtr &node);
-bool PrepareReplaceDivMul(Prepare &p, CNodePtr &node);
-bool PrepareUselessOperations(Prepare &p, CNodePtr &node);
+bool PrepareReplaceDivMulWithShift(Prepare &p, CNodePtr &node);
+bool PrepareRemoveUselessOperations(Prepare &p, CNodePtr &node);
 bool PrepareStructItem(Prepare &p, CNodePtr &node);
 bool PrepareArrayElement(Prepare &p, CNodePtr &node);
 bool PrepareLoadVariable(Prepare &p, CNodePtr &node);
 bool PrepareAddrDeaddr(Prepare &p, CNodePtr &node);
 bool PrepareAddWithStackAddress(Prepare &p, CNodePtr &node);
-
-bool DeleteNodeSaveType(CNodePtr &node, char c);
-
-static inline CNodePtr MakeCNodeMonoOperatorAddr(CNodePtr a) {
-    a = CNODE(CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : MOP_ADDR, e : a->e);
-    a->ctype.pointers.push_back(CPointer{0});
-    std::swap(a->next_node, a->a->next_node);
-    return a;
-}
-
-static inline CNodePtr MakeCNodeMonoOperatorDeaddr(CNodePtr a) {
-    a = CNODE(CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : MOP_DEADDR, e : a->e);
-    std::swap(a->next_node, a->a->next_node);
-    return a;
-}
-
-static inline CNodePtr MakeCNodeNumberSize(uint64_t number, CErrorPosition &e) {
-    CNodePtr node = CNODE(CNT_NUMBER, e : e);
-    node->ctype.base_type = CBT_SIZE;
-    node->number.u = number & C_SIZE_MAX;  // TODO: Show warning
-    return node;
-}

@@ -15,12 +15,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma obce
+#include "getfunctionreturnregister.h"
 
-#include "../c/cprogramm.h"
-#include "index.h"
-
-void CalculateStaticStack(CProgramm &p);
-bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node);
-void PrepareFunctionStaticStack(Prepare &p);
-bool PrepareStaticLoadVariable(Prepare &p, CNodePtr &node);
+AsmRegister GetFunctionReturnRegister(CConstType ctype, CompileFlags flags) {
+    if (flags & CF_NO_RESULT)
+        return REG_NONE;
+    switch (ctype.GetAsmType()) {
+        case CBT_VOID:
+            return REG_NONE;
+        case CBT_CHAR:
+        case CBT_UNSIGNED_CHAR:
+            return R8_A;
+        case CBT_SHORT:
+        case CBT_UNSIGNED_SHORT:
+            return R16_HL;
+        case CBT_LONG:
+        case CBT_UNSIGNED_LONG:
+            return R32_DEHL;
+        default:
+            throw std::runtime_error(__FUNCTION__);
+    }
+}

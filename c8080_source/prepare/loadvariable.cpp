@@ -15,9 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "prepareint.h"
+#include "index.h"
 #include <stdexcept>
 #include "../c/tools/cthrow.h"
+#include "../c/tools/makecnode.h"
 
 // C parser stores variables as CNT_LOAD_VARIABLE.
 // The C compiler does not support CNT_LOAD_VARIABLE.
@@ -45,7 +46,7 @@ bool PrepareLoadVariable(Prepare &p, CNodePtr &node) {
         }
 
         if (!v->type.IsArray()) {
-            node = MakeCNodeMonoOperatorDeaddr(node);
+            node = MakeCNodeDeaddr(node);
             node->a->ctype.pointers.push_back(CPointer{0});
         }
 

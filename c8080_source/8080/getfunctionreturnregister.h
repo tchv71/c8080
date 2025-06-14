@@ -15,12 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma obce
+#pragma once
 
-#include "../c/cprogramm.h"
-#include "index.h"
+#include "8080_compile.h"
 
-void CalculateStaticStack(CProgramm &p);
-bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node);
-void PrepareFunctionStaticStack(Prepare &p);
-bool PrepareStaticLoadVariable(Prepare &p, CNodePtr &node);
+AsmRegister GetFunctionReturnRegister(CConstType ctype, CompileFlags flags);

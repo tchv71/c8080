@@ -15,12 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "prepareint.h"
+#include "index.h"
 #include "../c/tools/numberiszero.h"
 #include "../c/tools/numberisone.h"
 #include "../c/tools/numberisnonzero.h"
 
-bool PrepareUselessOperations(Prepare &p, CNodePtr &node) {
+bool PrepareRemoveUselessOperations(Prepare &p, CNodePtr &node) {
     if (node->type == CNT_OPERATOR) {
         switch (node->operator_code) {
             case COP_SHL:

@@ -17,22 +17,17 @@
 
 #pragma once
 
-#include "../c/cprogramm.h"
+#include "../../prepare/prepare.h"
 
-class Prepare;
-
-typedef bool (*PrepareFunctionType)(Prepare &p, CNodePtr &node);
-
-class Prepare {
-public:
-    CProgramm &programm;
-    CVariablePtr function;
-    const PrepareFunctionType *list;
-
-    Prepare(CProgramm &p, CVariablePtr f, const PrepareFunctionType *l) : programm(p), function(f), list(l) {
-    }
-};
-
-void PrepareFunction(CProgramm &cprogramm, CVariablePtr &p, const PrepareFunctionType *list);
-bool PrepareInt(Prepare &p, CNodePtr *pnode);
-bool DeleteNodeSaveType(CNodePtr &node, char c);  // TODO: Move
+bool Prepare8080Const(Prepare &, CNodePtr &node);
+bool Prepare8080SetOperators(Prepare &, CNodePtr &node);
+bool Prepare8080Fast8BitCompare(Prepare &, CNodePtr &node);
+bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node);
+bool Prepare8080UnsignedCompareG0ToE(Prepare &, CNodePtr &node);
+bool Prepare8080CompareGToGe(Prepare &, CNodePtr &node);
+bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node);
+bool Prepare8080IncDec(Prepare &, CNodePtr &node);
+bool Prepare8080Fast8Math(Prepare &, CNodePtr &node);
+bool Prepare8080SecondConstArg(Prepare &, CNodePtr &node);
+bool Prepare8080DoubleConvert(Prepare &, CNodePtr &node);
+bool Prepare8080ConstCond(Prepare &, CNodePtr &node);

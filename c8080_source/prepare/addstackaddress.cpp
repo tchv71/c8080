@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "prepareint.h"
+#include "index.h"
 #include "../c/tools/getnumberasuint64.h"
 
 // Replace

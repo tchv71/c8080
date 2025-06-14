@@ -16,7 +16,7 @@
  */
 
 #include "prepare.h"
-#include "prepareint.h"
+#include "index.h"
 #include "../c/tools/ccalcconst.h"
 #include "../c/tools/cthrow.h"
 #include "staticstack.h"
@@ -33,9 +33,16 @@ bool DeleteNodeSaveType(CNodePtr &node, char c) {
 typedef bool (*PrepareFunctionType)(Prepare &p, CNodePtr &node);
 
 static const PrepareFunctionType prepare_function_list[] = {
-    PrepareUselessOperations,   PrepareReplaceDivMul,       PrepareStructItem,         PrepareArrayElement,
-    PrepareLocalVariablesInit,  PrepareAddrDeaddr,          PrepareStaticLoadVariable, PrepareLoadVariable,
-    PrepareStaticArgumentsCall, PrepareAddWithStackAddress,
+    PrepareRemoveUselessOperations,
+    PrepareReplaceDivMulWithShift,
+    PrepareStructItem,
+    PrepareArrayElement,
+    PrepareLocalVariablesInit,
+    PrepareAddrDeaddr,
+    PrepareStaticLoadVariable,
+    PrepareLoadVariable,
+    PrepareStaticArgumentsCall,
+    PrepareAddWithStackAddress,
 };
 
 bool PrepareInt(Prepare &p, CNodePtr *pnode) {
@@ -72,10 +79,10 @@ bool PrepareInt(Prepare &p, CNodePtr *pnode) {
     return result_changed;
 }
 
-void PrepareMain(CProgramm &programm, CVariablePtr &f, const PrepareFunctionType *list) {
+void PrepareFunction(CProgramm &programm, CVariablePtr &f, const PrepareFunctionType *list) {
     Prepare p(programm, f, list);
     if (p.function) {
-        PrepareFunction(p);
+        PrepareFunctionStaticStack(p);
         PrepareInt(p, &p.function->body->a);
     } else {
         PrepareInt(p, &p.function->body);

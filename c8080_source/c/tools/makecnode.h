@@ -15,12 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma obce
+#pragma once
 
-#include "../c/cprogramm.h"
-#include "index.h"
+#include "../cerrorposition.h"
+#include "../cnodeptr.h"
 
-void CalculateStaticStack(CProgramm &p);
-bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node);
-void PrepareFunctionStaticStack(Prepare &p);
-bool PrepareStaticLoadVariable(Prepare &p, CNodePtr &node);
+CNodePtr MakeCNodeAddr(CNodePtr a);
+CNodePtr MakeCNodeDeaddr(CNodePtr a);
+CNodePtr MakeCNodeNumberSizeT(uint64_t number, CErrorPosition &e);

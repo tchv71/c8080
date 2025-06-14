@@ -15,20 +15,19 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "prepareint.h"
+#include "index.h"
 
-// C parser stores variables as CNT_DECLARE_VARIABLE.
-// The C compiler does not support CNT_DECLARE_VARIABLE.
-// Must be replaced with: OPERATOR.SET(LOAD_VARIABLE(variable), variable->body)
+// Replace *&x with x
 
-bool PrepareLocalVariablesInit(Prepare &p, CNodePtr &node) {
-    if (node->type == CNT_DECLARE_VARIABLE && node->variable->body != nullptr && !node->variable->type.flag_static) {
-        node->type = CNT_OPERATOR;
-        node->operator_code = COP_SET;
-        node->a = CNODE(CNT_LOAD_VARIABLE, ctype : node->ctype, variable : node->variable, e : node->e);
-        node->b = node->variable->body;
-        node->variable->body = nullptr;
-        return true;
+bool PrepareAddrDeaddr(Prepare &, CNodePtr &node) {
+    if (node->type == CNT_MONO_OPERATOR && node->mono_operator_code == MOP_ADDR) {
+        assert(node->a != nullptr);
+        if (node->a->type == CNT_MONO_OPERATOR && node->a->mono_operator_code == MOP_DEADDR) {
+            assert(node->ctype.GetAsmType() == node->a->a->ctype.GetAsmType());
+            node->a = node->a->a;
+            DeleteNodeSaveType(node, 'a');
+            return true;
+        }
     }
     return false;
 }

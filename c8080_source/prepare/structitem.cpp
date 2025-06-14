@@ -15,8 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "prepareint.h"
+#include "index.h"
 #include "../c/tools/cthrow.h"
+#include "../c/tools/makecnode.h"
 #include "../c/consts.h"
 
 // The C parser stores the access to structure field (X.struct_item) as:
@@ -41,17 +42,17 @@ bool PrepareStructItem(Prepare &p, CNodePtr &node) {
             CThrow(node, "Internal error, null pointer in " + std::string(__PRETTY_FUNCTION__));
 
         if (node->mono_operator_code == MOP_STRUCT_ITEM)
-            node->a = MakeCNodeMonoOperatorAddr(node->a);
+            node->a = MakeCNodeAddr(node->a);
 
         assert(node->a->ctype.IsPointer());
 
         node->type = CNT_OPERATOR;
         node->operator_code = COP_ADD;
         assert(node->b == nullptr);
-        node->b = MakeCNodeNumberSize(si->struct_item_offset, node->e);
+        node->b = MakeCNodeNumberSizeT(si->struct_item_offset, node->e);
 
         if (si->type.pointers.empty() || si->type.pointers.back().count == 0) {
-            node = MakeCNodeMonoOperatorDeaddr(node);
+            node = MakeCNodeDeaddr(node);
             node->a->ctype.pointers.push_back(CPointer{});
         }
         return true;
