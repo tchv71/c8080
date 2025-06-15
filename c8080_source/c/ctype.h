@@ -127,3 +127,5 @@ public:
 typedef const CType &CConstType;
 
 const extern CType CTYPE_SIZE;
+const extern CType CTYPE_UNSIGNED_CHAR;
+const extern CType CTYPE_SIGNED_CHAR;

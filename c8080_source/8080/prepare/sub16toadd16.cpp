@@ -18,27 +18,28 @@
 #include "index.h"
 
 // i8080 have not "sub hl, de" instruction
+// Replace "hl -= const" with "hl += -const"
 
 bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node) {
     if (node->type == CNT_OPERATOR && node->operator_code == COP_SUB) {
         if (node->b->type == CNT_NUMBER) {
             switch (node->ctype.GetAsmType()) {
                 case CBT_SHORT:
-                    if (node->b->number.i >= 0 && node->b->number.i <= 3)
-                        return false; // Compile: dec hl, dec hl, dec hl
+                    if (node->b->number.i >= 1 && node->b->number.i <= 3)
+                        return false;  // Compile: dec hl, dec hl, dec hl
                     node->operator_code = COP_ADD;
-                    node->b->number.i = 0 - node->b->number.i;
+                    node->b->number.i = int16_t(0 - node->b->number.i);
                     return true;
                 case CBT_UNSIGNED_SHORT:
-                    if (node->b->number.u <= 3)
-                        return false; // Compile: dec hl, dec hl, dec hl
+                    if (node->b->number.u >= 1 && node->b->number.u <= 3)
+                        return false;  // Compile: dec hl, dec hl, dec hl
                     node->operator_code = COP_ADD;
-                    node->b->number.u = (0u - node->b->number.u) & 0xFFFFu;
+                    node->b->number.u = uint16_t(0u - node->b->number.u);
                     return true;
             }
         } else if (node->b->type == CNT_CONST) {
             node->operator_code = COP_ADD;
-            node->b->text = "(0 - (" + node->b->text + ")) & 0FFFFh";
+            node->b->text = "0FFFFh & (0 - (" + node->b->text + "))";
             return true;
         }
     }

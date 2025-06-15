@@ -43,6 +43,7 @@ static const PrepareFunctionType prepare_function_list[] = {
     PrepareLoadVariable,
     PrepareStaticArgumentsCall,
     PrepareAddWithStackAddress,
+    PrepareDoubleConvert,
 };
 
 bool PrepareInt(Prepare &p, CNodePtr *pnode) {
@@ -79,12 +80,9 @@ bool PrepareInt(Prepare &p, CNodePtr *pnode) {
     return result_changed;
 }
 
-void PrepareFunction(CProgramm &programm, CVariablePtr &f, const PrepareFunctionType *list) {
+void PrepareFunction(CProgramm &programm, CVariablePtr &f, const PrepareFunctionType *list, Asm2 *out) {
     Prepare p(programm, f, list);
-    if (p.function) {
-        PrepareFunctionStaticStack(p);
-        PrepareInt(p, &p.function->body->a);
-    } else {
-        PrepareInt(p, &p.function->body);
-    }
+    p.out = out;
+    PrepareFunctionStaticStack(p);
+    PrepareInt(p, &p.function->body->a);
 }

@@ -40,43 +40,43 @@ static bool AllowedConversions(CConstType type) {
         case CBT_DOUBLE:
         case CBT_LONG_DOUBLE:
             return true;
-            // TODO: Остальные типы
     }
     return false;
 }
 
-CNodePtr Convert(CConstType to_type, CNodePtr from, bool cmm) {
-    assert(from != nullptr);
-
-    CType from_type = from->ctype;
-
-    // При получении значения CONST переменной, этот CONST ничего не значит
+static void ConvertCheck(CConstType to_type, CNodePtr from) {
+    // When getting the value of a CONST variable, that CONST means nothing
     // const int a = 2;
     // int b = a;
     // int* const a = 2;
     // int* b = a;
+    CType from_type = from->ctype;
     if (from_type.pointers.empty())
         from_type.flag_const = false;
     else
         from_type.pointers.back().flag_const = false;
 
-    // void* -> any*
-    if (from->ctype.IsVoidPointerIgnoreConst() && to_type.pointers.size() != 0 &&
-        (!to_type.pointers[0].flag_const || from->ctype.pointers[0].flag_const)) {
-        from->ctype = to_type;
-        return from;
-    }
+    // void* -> any***
+    if (from_type.IsVoidPointerIgnoreConst() && to_type.IsPointer() &&
+        (!from_type.pointers[0].flag_const || to_type.pointers[0].flag_const))
+        return;  // TODO: Experiment!
 
-    // 0 -> any*
-    if (NumberIsZero(from) && to_type.pointers.size() != 0) {
-        from->number.u = 0;
-        from->ctype = to_type;
-        return from;
-    }
+    // any*** -> void*
+    if (from_type.IsPointer() && to_type.IsVoidPointerIgnoreConst() &&
+        (!from_type.pointers[0].flag_const || to_type.pointers[0].flag_const))
+        return;
+
+    // 0 -> any***
+    if (NumberIsZero(from) && to_type.pointers.size() != 0)
+        return;
+
+    // Simple types are converts any to any
+    if (AllowedConversions(to_type) && AllowedConversions(from_type))
+        return;
 
     // Forgot size of last array level
-    if ((from_type.pointers.size() > 0) && (to_type.pointers.size() == from_type.pointers.size()) &&
-        (to_type.pointers.back().count == 0) && (from_type.pointers.back().count != 0)) {
+    if (from_type.pointers.size() > 0 && to_type.pointers.size() == from_type.pointers.size() &&
+        to_type.pointers.back().count == 0 && from_type.pointers.back().count != 0) {
         bool need_drop = true;
         for (size_t i = 0u; i < (to_type.pointers.size() - 1u); i++) {
             if (from_type.pointers[i].count != to_type.pointers[i].count) {
@@ -84,12 +84,8 @@ CNodePtr Convert(CConstType to_type, CNodePtr from, bool cmm) {
                 break;
             }
         }
-        if (need_drop) {
-            // from = new Node{Node::MONO_OPERATOR, a: from, ctype: from->ctype, mono_operator_code: MOP_ADDR, e:
-            // from->e};
+        if (need_drop)
             from_type.pointers.back().count = 0;
-            // from_type = from->ctype;
-        }
     }
 
     // Get const
@@ -101,26 +97,16 @@ CNodePtr Convert(CConstType to_type, CNodePtr from, bool cmm) {
             from_type.flag_const = true;
     }
 
-    // any** -> void*
-    if (to_type.IsVoidPointerIgnoreConst() && from_type.pointers.size() != 0) {
-        // А что там с const в многоуровневом укзателе?
-        from_type.pointers = to_type.pointers;
-        from_type.base_type = CBT_VOID;
-        from_type.variables_mode = CVM_DEFAULT;
-        from_type.function_args.clear();
-    }
-
     // Done
-    if (from_type.CompareNoStatic(to_type)) {
-        from->ctype = from_type;
-        // The conversion occurs without additional nodes // TODO
-        return from;
-    }
-
-    // Simple types are converts any to any
-    if ((AllowedConversions(to_type) && AllowedConversions(from_type)) || cmm)
-        return CNODE(CNT_CONVERT, a : from, ctype : to_type, e : from->e);
+    if (from_type.CompareNoStatic(to_type))
+        return;
 
     CThrow(from, "Can't convert from " + from->ctype.ToString() + " to " + to_type.ToString());
-    return from;
+}
+
+CNodePtr Convert(CConstType to_type, CNodePtr from, bool cmm) {
+    assert(from != nullptr);
+    if (!cmm)
+        ConvertCheck(to_type, from);
+    return CNODE(CNT_CONVERT, a : from, ctype : to_type, e : from->e);
 }

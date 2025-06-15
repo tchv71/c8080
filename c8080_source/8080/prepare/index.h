@@ -21,13 +21,10 @@
 
 bool Prepare8080Const(Prepare &, CNodePtr &node);
 bool Prepare8080SetOperators(Prepare &, CNodePtr &node);
-bool Prepare8080Fast8BitCompare(Prepare &, CNodePtr &node);
-bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node);
-bool Prepare8080UnsignedCompareG0ToE(Prepare &, CNodePtr &node);
+bool Prepare8080Fast8BitOptimization(Prepare &, CNodePtr &node);
 bool Prepare8080CompareGToGe(Prepare &, CNodePtr &node);
 bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node);
 bool Prepare8080IncDec(Prepare &, CNodePtr &node);
-bool Prepare8080Fast8Math(Prepare &, CNodePtr &node);
+bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node);
 bool Prepare8080SecondConstArg(Prepare &, CNodePtr &node);
-bool Prepare8080DoubleConvert(Prepare &, CNodePtr &node);
-bool Prepare8080ConstCond(Prepare &, CNodePtr &node);
+bool Prepare8080RemoveConstCondition(Prepare &, CNodePtr &node);

@@ -15,12 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../../c/cnode.h"
 
-#include "../c/cprogramm.h"
-#include "index.h"
+static const unsigned IS8BITCONST_SIGNED = (1 << 0);
+static const unsigned IS8BITCONST_UNSIGNED = (1 << 1);
 
-void CalculateStaticStack(CProgramm &p);
-bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node);
-void PrepareFunctionStaticStack(Prepare &p);
-bool PrepareStaticLoadVariable(Prepare &p, CNodePtr &node);
+unsigned Is8BitConst(CConstNodePtr node);

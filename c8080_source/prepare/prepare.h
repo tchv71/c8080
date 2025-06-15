@@ -23,16 +23,19 @@ class Prepare;
 
 typedef bool (*PrepareFunctionType)(Prepare &p, CNodePtr &node);
 
+class Asm2;
+
 class Prepare {
 public:
     CProgramm &programm;
     CVariablePtr function;
     const PrepareFunctionType *list;
+    Asm2 *out{};
 
     Prepare(CProgramm &p, CVariablePtr f, const PrepareFunctionType *l) : programm(p), function(f), list(l) {
     }
 };
 
-void PrepareFunction(CProgramm &cprogramm, CVariablePtr &p, const PrepareFunctionType *list);
+void PrepareFunction(CProgramm &cprogramm, CVariablePtr &p, const PrepareFunctionType *list, Asm2 *out);
 bool PrepareInt(Prepare &p, CNodePtr *pnode);
-bool DeleteNodeSaveType(CNodePtr &node, char c);  // TODO: Move
+bool DeleteNodeSaveType(CNodePtr &node, char c);

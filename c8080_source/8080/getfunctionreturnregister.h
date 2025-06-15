@@ -17,6 +17,6 @@
 
 #pragma once
 
-#include "8080_compile.h"
+#include "compile_compile.h"
 
 AsmRegister GetFunctionReturnRegister(CConstType ctype, CompileFlags flags);
