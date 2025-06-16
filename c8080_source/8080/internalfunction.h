@@ -18,26 +18,6 @@
 #pragma once
 
 enum InternalFunction {
-    IF_SUB_16,
-    IF_MUL_U8,
-    IF_MUL_I8,
-    IF_DIV_U8,
-    IF_DIV_I8,
-    IF_MOD_U8,
-    IF_MOD_I8,
-    IF_SHL_8,
-    IF_SHR_U8,
-    IF_SHR_I8,
-    IF_AND_16,
-    IF_OR_16,
-    IF_XOR_16,
-    IF_MUL_U16,
-    IF_MUL_I16,
-    IF_DIV_U16,
-    IF_DIV_I16,
-    IF_MOD_U16,
-    IF_MOD_I16,
-    IF_SHL_16,
     IF_SHR_U16,
     IF_SHR_I16,
     IF_ADD_32,
@@ -65,7 +45,3 @@ enum InternalFunction {
     IF_NEG_32,
     IF_COUNT,
 };
-
-extern const char *internal_function_names[IF_COUNT];
-
-void InternalFunctionDependencies(bool *used);

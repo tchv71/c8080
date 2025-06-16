@@ -24,6 +24,7 @@
 const CType CTYPE_SIZE{CBT_SIZE};
 const CType CTYPE_UNSIGNED_CHAR{CBT_UNSIGNED_CHAR};
 const CType CTYPE_SIGNED_CHAR{CBT_SIGNED_CHAR};
+const CType CTYPE_FUNCTION{CBT_FUNCTION, function_args : {CStructItem{CBT_VOID}}};
 
 bool CType::CompareNoStatic(const CType &b) const {
     if (base_type != b.base_type || flag_const != b.flag_const || flag_volatile != b.flag_volatile ||

@@ -187,14 +187,10 @@ public:
         Add(AC_RET);
     }
 
-    void call(InternalFunction function) {
+    void call(InternalFunction) {
         AllRegistersChanged();
-        if (measure_ == nullptr) {
-            assert(function < std::size(used_internal_functions));
-            used_internal_functions[function] = true;
-            assert(function < std::size(internal_function_names));
-            Add(AC_CALL, internal_function_names[function]);
-        }
+        if (measure_ == nullptr)
+            Add(AC_CALL, "???");  // TODO: Remove
     }
 
     void ld_a_preg(AsmRegister reg) {

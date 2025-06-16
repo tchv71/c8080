@@ -89,6 +89,36 @@ bool Prepare8080Fast8BitOptimization(Prepare &, CNodePtr &node) {
                     }
                 }
                 return false;
+            case COP_MOD:
+            case COP_DIV:
+            case COP_SHR:
+                // Replace
+                // CNT_OPERATOR(
+                //   COP_MOD / COP_DIV / COP_SHR,
+                //   CNT_CONVERT(x, 8 bit value) / CNT_NUMBER(8 bit value),
+                //   CNT_CONVERT(x, 8 bit value) / CNT_NUMBER(8 bit value)
+                // )
+                // with
+                // CNT_CONVERT(x, CNT_OPERATOR(
+                //   COP_MOD / COP_DIV / COP_SHR,
+                //   8 bit value / CNT_NUMBER(8 bit value),
+                //   8 bit value / CNT_NUMBER(8 bit value)
+                // ))
+                // TODO: check __o_div_u8, __o_div_i8, __o_mod_u8, __o_mod_i8...
+                unsigned result = CanConvertTo8Bit(node->a);
+                if (result) {
+                    result &= CanConvertTo8Bit(node->b);
+                    if (result) {
+                        CType t{(result & IS8BITCONST_UNSIGNED) ? CTYPE_UNSIGNED_CHAR : CTYPE_SIGNED_CHAR};
+                        node->a = Convert(t, node->a);
+                        node->b = Convert(t, node->b);
+                        node = CNODE({CNT_CONVERT, a : node, ctype : node->ctype, e : node->e});
+                        node->a->ctype = t;
+                        std::swap(node->next_node, node->a->next_node);
+                        return true;
+                    }
+                }
+                return false;
         }
     }
     return false;
