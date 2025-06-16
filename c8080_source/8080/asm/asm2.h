@@ -187,12 +187,6 @@ public:
         Add(AC_RET);
     }
 
-    void call(InternalFunction) {
-        AllRegistersChanged();
-        if (measure_ == nullptr)
-            Add(AC_CALL, "???");  // TODO: Remove
-    }
-
     void ld_a_preg(AsmRegister reg) {
         switch (reg) {
             case R16_HL:
