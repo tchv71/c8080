@@ -22,7 +22,6 @@
 #include "cnode.h"
 #include "cconststring.h"
 #include "cvariable.h"
-#include "cvariableptr.h"
 #include "cprogrammcompiler.h"
 
 class CProgramm {

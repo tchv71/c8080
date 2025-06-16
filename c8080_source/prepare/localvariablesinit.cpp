@@ -25,7 +25,7 @@ bool PrepareLocalVariablesInit(Prepare &p, CNodePtr &node) {
     if (node->type == CNT_DECLARE_VARIABLE && node->variable->body != nullptr && !node->variable->type.flag_static) {
         node->type = CNT_OPERATOR;
         node->operator_code = COP_SET;
-        node->a = CNODE(CNT_LOAD_VARIABLE, ctype : node->ctype, variable : node->variable, e : node->e);
+        node->a = CNODE({CNT_LOAD_VARIABLE, ctype : node->ctype, variable : node->variable, e : node->e});
         node->b = node->variable->body;
         node->variable->body = nullptr;
         return true;

@@ -55,6 +55,15 @@ bool PrepareRemoveUselessOperations(Prepare &p, CNodePtr &node) {
                     return DeleteNodeSaveType(node, 'a');
                 return false;
             case COP_MUL:
+                if (NumberIsZero(node->a)) {
+                    std::swap(node->a, node->b);
+                    node->operator_code = COP_COMMA;
+                    return true;
+                }
+                if (NumberIsZero(node->b)) {
+                    node->operator_code = COP_COMMA;
+                    return true;
+                }
                 if (NumberIsOne(node->b))  // Replace X * 1 with X
                     return DeleteNodeSaveType(node, 'a');
                 if (NumberIsOne(node->a))  // Replace 1 * X with X

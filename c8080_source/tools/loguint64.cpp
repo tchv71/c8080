@@ -148,7 +148,7 @@ uint8_t LogUint64(uint64_t number) {
             return 62;
         case 0x8000000000000000:
             return 63;
-        // TODO
+        // TODO: __builtin_clzll
         default:
             return UINT8_MAX;
     }

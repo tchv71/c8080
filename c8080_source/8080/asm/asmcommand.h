@@ -61,5 +61,6 @@ enum AssemblerCommand {
     AC_PCHL,
     AC_STC,
     AC_EI,
-    AC_DI
+    AC_DI,
+    AC_NOP,
 };

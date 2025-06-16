@@ -308,10 +308,12 @@ bool CCalcConst(CNodePtr &node, bool process_childs) {
                         changed = true;
                         continue;  // RETRY!
                     }
+#if 0
                 } else if (node->operator_code == COP_COMMA) {
                     DeleteNode(node, 'a');
                     changed = true;
                     continue;  // RETRY!
+#endif
                 } else {
                     if (process_childs) {
                         changed |= CCalcConst(node->a, process_childs);

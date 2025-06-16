@@ -280,7 +280,7 @@ CNodePtr MakeOperator(COperatorCode o, CNodePtr a, CNodePtr b, const CErrorPosit
     assert(a != nullptr);
     assert(b != nullptr);
 
-    CNodePtr node = CNODE(CNT_OPERATOR, a : a, b : b, operator_code : o, e : e);
+    CNodePtr node = CNODE({CNT_OPERATOR, a : a, b : b, operator_code : o, e : e});
 
     // pointer += number, pointer -= number, pointer + number, pointer - number
     if ((o == COP_SET_ADD || o == COP_SET_SUB || o == COP_ADD || o == COP_SUB) && a->ctype.IsPointer() &&
@@ -294,16 +294,20 @@ CNodePtr MakeOperator(COperatorCode o, CNodePtr a, CNodePtr b, const CErrorPosit
         node->b = Convert(CType{CBT_SIZE}, node->b, cmm);
 
         if (element_size > 1) {
-            node->b = CNODE(CNT_OPERATOR, a
-                            : node->b, b
-                            : CNODE(CNT_NUMBER, ctype
-                                    : CType{CBT_SIZE}, number
-                                    : {u : element_size}, e  // TODO: lost
-                                    : node->e),
-                              ctype
-                            : CType{CBT_SIZE}, operator_code
-                            : COP_MUL, e
-                            : node->e);
+            node->b = CNODE({
+                CNT_OPERATOR,
+                a : node->b,
+                b : CNODE({
+                    CNT_NUMBER,
+                    ctype : CType{CBT_SIZE},
+                    number : {u : element_size},
+                    e  // TODO: lost
+                    : node->e
+                }),
+                ctype : CType{CBT_SIZE},
+                operator_code : COP_MUL,
+                e : node->e
+            });
         }
         return node;
     }
@@ -320,17 +324,11 @@ CNodePtr MakeOperator(COperatorCode o, CNodePtr a, CNodePtr b, const CErrorPosit
         MakeOperatorInt(node, cmm);
 
         if (common_type_size > 1) {  // void* - void* eq uint8_t* - uint8_t*
-            CNodePtr element_size = CNODE(CNT_NUMBER, ctype
-                                          : CType{CBT_SIZE}, number
-                                          : {u : common_type_size}, e
-                                          : node->e);
+            CNodePtr element_size =
+                CNODE({CNT_NUMBER, ctype : CType{CBT_SIZE}, number : {u : common_type_size}, e : node->e});
 
-            node = CNODE(CNT_OPERATOR, a
-                         : node, b
-                         : element_size, ctype
-                         : node->ctype, operator_code
-                         : COP_DIV, e
-                         : node->e);
+            node = CNODE(
+                {CNT_OPERATOR, a : node, b : element_size, ctype : node->ctype, operator_code : COP_DIV, e : node->e});
         }
 
         return node;
@@ -341,7 +339,7 @@ CNodePtr MakeOperator(COperatorCode o, CNodePtr a, CNodePtr b, const CErrorPosit
 }
 
 CNodePtr MakeOperatorIf(CNodePtr a, CNodePtr b, CNodePtr c, const CErrorPosition &e, bool cmm) {
-    CNodePtr result = CNODE(CNT_OPERATOR, a, b, c, operator_code : COP_IF, e : e);
+    CNodePtr result = CNODE({CNT_OPERATOR, a, b, c, operator_code : COP_IF, e : e});
     CType common_type = CalcResultCType(result, result->b, result->c);
     result->b = Convert(common_type, result->b, cmm);
     result->c = Convert(common_type, result->c, cmm);

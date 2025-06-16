@@ -20,20 +20,20 @@
 #include "../consts.h"
 
 CNodePtr MakeCNodeAddr(CNodePtr a) {
-    a = CNODE(CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : MOP_ADDR, e : a->e);
+    a = CNODE({CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : MOP_ADDR, e : a->e});
     a->ctype.pointers.push_back(CPointer{0});
     std::swap(a->next_node, a->a->next_node);
     return a;
 }
 
 CNodePtr MakeCNodeDeaddr(CNodePtr a) {
-    a = CNODE(CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : MOP_DEADDR, e : a->e);
+    a = CNODE({CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : MOP_DEADDR, e : a->e});
     std::swap(a->next_node, a->a->next_node);
     return a;
 }
 
 CNodePtr MakeCNodeNumberSizeT(uint64_t number, CErrorPosition &e) {
-    CNodePtr node = CNODE(CNT_NUMBER, e : e);
+    CNodePtr node = CNODE({CNT_NUMBER, e : e});
     node->ctype.base_type = CBT_SIZE;
     node->number.u = number & C_SIZE_MAX;  // TODO: Show warning
     return node;

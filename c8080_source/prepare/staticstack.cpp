@@ -103,25 +103,29 @@ bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node) {
 
             CNodePtr command = nullptr;
             if (i + 1 == arg_list.size() && LastAgumentInCpuRegister(*node->variable)) {
-                command = CNODE(CNT_SAVE_TO_REGISTER, a : arg, ctype : arg_list[i].type, e : arg->e);
+                command = CNODE({CNT_SAVE_TO_REGISTER, a : arg, ctype : arg_list[i].type, e : arg->e});
             } else {
                 CVariablePtr &av = arg_variables[i - 1];
                 assert(av != nullptr);
 
-                CNodePtr aa = CNODE(CNT_CONST, ctype
-                                    : arg_list[i].type, text
-                                    : av->output_name, e
-                                    : arg->e);  // TODO: Replace with CNT_LOAD_VARIABLE
+                CNodePtr aa = CNODE({
+                    CNT_CONST,
+                    ctype : arg_list[i].type,
+                    text : av->output_name,
+                    e : arg->e
+                });  // TODO: Replace with CNT_LOAD_VARIABLE
                 aa->ctype.pointers.push_back(CPointer{0});
 
                 assert(!aa->text.empty());
 
-                CNodePtr a = CNODE(CNT_MONO_OPERATOR, a
-                                   : aa, ctype
-                                   : arg_list[i].type, mono_operator_code
-                                   : MOP_DEADDR, variable
-                                   : av, e
-                                   : arg->e);
+                CNodePtr a = CNODE({
+                    CNT_MONO_OPERATOR,
+                    a : aa,
+                    ctype : arg_list[i].type,
+                    mono_operator_code : MOP_DEADDR,
+                    variable : av,
+                    e : arg->e
+                });
 
                 command = MakeOperator(COP_SET, a, arg, arg->e, p.programm.cmm);
             }
@@ -168,14 +172,14 @@ static void PrepareLastFunctionArgCode(Prepare &p) {
     if (f.type.GetVariableMode() == CVM_GLOBAL && LastAgumentInCpuRegister(f)) {
         CVariablePtr &register_argument = p.function->function_arguments.back();
         if (p.programm.asm_names.find(register_argument->output_name) == p.programm.asm_names.end()) {
-            CNodePtr a = CNODE(CNT_OPERATOR, next_node : p.function->body->a);
+            CNodePtr a = CNODE({CNT_OPERATOR, next_node : p.function->body->a});
             p.function->body->a = a;
             a->e = p.function->e;
             a->operator_code = COP_SET;
-            a->a = CNODE(CNT_LOAD_VARIABLE);
+            a->a = CNODE({CNT_LOAD_VARIABLE});
             a->a->variable = register_argument;
             a->a->ctype = register_argument->type;
-            a->b = CNODE(CNT_LOAD_FROM_REGISTER);
+            a->b = CNODE({CNT_LOAD_FROM_REGISTER});
             a->b->ctype = register_argument->type;
             a->ctype = register_argument->type;
         }

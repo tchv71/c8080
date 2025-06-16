@@ -33,12 +33,14 @@ bool PrepareArrayElement(Prepare &p, CNodePtr &node) {
 
         node->type = CNT_OPERATOR;
         node->operator_code = COP_ADD;
-        node->b = CNODE(CNT_OPERATOR, a
-                        : Convert(CTYPE_SIZE, node->b), b
-                        : MakeCNodeNumberSizeT(node->a->ctype.SizeOfElement(node->a->e), node->a->e), ctype
-                        : CTYPE_SIZE, operator_code
-                        : COP_MUL, e
-                        : node->e);
+        node->b = CNODE({
+            CNT_OPERATOR,
+            a : Convert(CTYPE_SIZE, node->b),
+            b : MakeCNodeNumberSizeT(node->a->ctype.SizeOfElement(node->a->e), node->a->e),
+            ctype : CTYPE_SIZE,
+            operator_code : COP_MUL,
+            e : node->e
+        });
 
         // The result is an array
         // Example:

@@ -82,7 +82,7 @@ bool Prepare8080Fast8BitOptimization(Prepare &, CNodePtr &node) {
                     if (CanConvertTo8Bit(node->b) & IS8BITCONST_UNSIGNED) {
                         node->a = Convert(CTYPE_UNSIGNED_CHAR, node->a);
                         node->b = Convert(CTYPE_UNSIGNED_CHAR, node->b);
-                        node = CNODE(CNT_CONVERT, a : node, ctype : node->ctype, e : node->e);
+                        node = CNODE({CNT_CONVERT, a : node, ctype : node->ctype, e : node->e});
                         node->a->ctype = CTYPE_UNSIGNED_CHAR;
                         std::swap(node->next_node, node->a->next_node);
                         return true;

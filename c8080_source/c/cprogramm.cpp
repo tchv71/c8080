@@ -61,10 +61,10 @@ CConstStringPtr CProgramm::RegisterConstString(CString text) {
 }
 
 void CProgramm::Error(const CErrorPosition &e, CString text, const char *type) {
-    std::string error = e.ToString() + ": " + type + ": " + text;
-    if (last_error != error) {
-        std::cerr << error << std::endl;
-        last_error = error;
+    std::string full_text = e.ToString() + ": " + type + ": " + text;
+    if (last_error != full_text) {
+        std::cerr << full_text << std::endl;
+        last_error = full_text;
     }
     error = true;
 }

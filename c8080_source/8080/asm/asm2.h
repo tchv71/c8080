@@ -80,6 +80,10 @@ public:
         Add(AC_DI);
     }
 
+    void nop() {
+        Add(AC_NOP);
+    }
+
     void pchl() {
         Add(AC_PCHL);
     }
@@ -370,6 +374,10 @@ public:
         ld_reg_reg(R8_D, R8_A);
     }
 
+    void ld_a_d() {
+        ld_reg_reg(R8_A, R8_D);
+    }
+
     void ld_a_l() {
         ld_reg_reg(R8_A, R8_L);
     }
@@ -577,6 +585,10 @@ public:
 
     void or_a_e() {
         alu_a_reg(ALU_OR, R8_E);
+    }
+
+    void or_a_l() {
+        alu_a_reg(ALU_OR, R8_L);
     }
 
     void xor_a_d() {

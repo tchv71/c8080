@@ -56,7 +56,7 @@ enum CNodeType {
     CNT_ARG_STACK_ADDRESS,   // Address relative to the first argument of the function
 
     // Optimizer replaces MOP_INC, MOP_POST_INC, MOP_DEC, MOP_POST_DEC, OP_SET_
-    CNT_SET,  // Example: a = b
+    CNT_SET,  // Example: a[b] += c
 };
 
 std::string ToString(CNodeType type);

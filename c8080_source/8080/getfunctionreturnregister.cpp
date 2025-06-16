@@ -33,6 +33,6 @@ AsmRegister GetFunctionReturnRegister(CConstType ctype, CompileFlags flags) {
         case CBT_UNSIGNED_LONG:
             return R32_DEHL;
         default:
-            throw std::runtime_error(__FUNCTION__);
+            throw std::runtime_error(__FUNCTION__);  // TODO: C_INTERNAL_ERROR
     }
 }

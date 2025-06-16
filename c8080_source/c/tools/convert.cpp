@@ -108,5 +108,5 @@ CNodePtr Convert(CConstType to_type, CNodePtr from, bool cmm) {
     assert(from != nullptr);
     if (!cmm)
         ConvertCheck(to_type, from);
-    return CNODE(CNT_CONVERT, a : from, ctype : to_type, e : from->e);
+    return CNODE({CNT_CONVERT, a : from, ctype : to_type, e : from->e});
 }
