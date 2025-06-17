@@ -63,6 +63,10 @@ struct CNode {
     bool IsConstNode() const {
         return type == CNT_CONST || type == CNT_CONST_STRING || type == CNT_NUMBER;
     }
+
+    bool IsDeaddr() const {
+        return type == CNT_MONO_OPERATOR && mono_operator_code == MOP_DEADDR;
+    }
 };
 
 bool DeleteNode(CNodePtr &node, char c);

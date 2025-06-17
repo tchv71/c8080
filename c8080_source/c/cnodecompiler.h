@@ -25,4 +25,5 @@ struct CNodeCompiler {
     bool const_prepared{};
     std::vector<CVariablePtr> used_variables;  // Only in CONST
     AsmLabel *label{};
+    bool hl_contains_value{};
 };

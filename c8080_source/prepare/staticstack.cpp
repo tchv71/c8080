@@ -172,16 +172,23 @@ static void PrepareLastFunctionArgCode(Prepare &p) {
     if (f.type.GetVariableMode() == CVM_GLOBAL && LastAgumentInCpuRegister(f)) {
         CVariablePtr &register_argument = p.function->function_arguments.back();
         if (p.programm.asm_names.find(register_argument->output_name) == p.programm.asm_names.end()) {
-            CNodePtr a = CNODE({CNT_OPERATOR, next_node : p.function->body->a});
-            p.function->body->a = a;
-            a->e = p.function->e;
-            a->operator_code = COP_SET;
+            CNodePtr a = CNODE({
+                CNT_OPERATOR,
+                next_node : p.function->body->a,
+                operator_code : COP_SET,
+                e : p.function->e,
+
+            });
+            a->compiler.hl_contains_value = true;
             a->a = CNODE({CNT_LOAD_VARIABLE});
+            a->a->compiler.hl_contains_value = true;
             a->a->variable = register_argument;
             a->a->ctype = register_argument->type;
             a->b = CNODE({CNT_LOAD_FROM_REGISTER});
+            a->b->compiler.hl_contains_value = true;
             a->b->ctype = register_argument->type;
             a->ctype = register_argument->type;
+            p.function->body->a = a;
         }
     }
 }

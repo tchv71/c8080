@@ -19,8 +19,8 @@
 
 bool Prepare8080SecondConstArg(Prepare &, CNodePtr &node) {
     assert(node != nullptr);
-    if (node->type == CNT_OPERATOR && (node->a->type == CNT_CONST || node->a->type == CNT_NUMBER) &&
-        !(node->b->type == CNT_CONST || node->b->type == CNT_NUMBER)) {
+    if (node->type == CNT_OPERATOR && (node->a->IsConstNode() || node->a->IsDeaddr()) &&
+        !(node->b->IsConstNode() || node->b->IsDeaddr())) {
         switch (node->operator_code) {
             case COP_CMP_L:
                 std::swap(node->a, node->b);

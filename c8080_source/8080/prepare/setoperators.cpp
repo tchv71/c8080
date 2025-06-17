@@ -46,13 +46,16 @@ static bool SetOperators(CNodePtr &node, COperatorCode op) {
     // SET(x, ADD(DEADDR(LOAD_FROM_REGISTER), y))
 
     CNodePtr reg = CNODE({CNT_LOAD_FROM_REGISTER, ctype : CTYPE_SIZE, e : node->e});
+    reg->compiler.hl_contains_value = true;
 
     CNodePtr da =
         CNODE({CNT_MONO_OPERATOR, a : reg, ctype : node->a->ctype, mono_operator_code : MOP_DEADDR, e : node->e});
+    da->compiler.hl_contains_value = true;
 
     node->b = CNODE({CNT_OPERATOR, a : da, b : node->b, ctype : node->a->ctype, operator_code : op, e : node->e});
 
-    node->type = CNT_SET;
+    node->type = CNT_SET_OPERATION;
+    node->compiler.hl_contains_value = true;
 
     DeleteNode(node->a, 'a');  // Remove DEADDR
 

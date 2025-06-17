@@ -21,7 +21,6 @@
 
 uint16_t __div_16_mod;
 uint32_t __div_32_mod;
-uint16_t __o_div_u32__result;
 
 // Example: void (*hl)(); hl();
 // Input: hl
@@ -601,8 +600,8 @@ void __o_load_32() {
     }
 }
 
-// Example: uint32_t *stack, dehl; dehl = *stack;
-// Input: hl, word in stack
+// Example: uint32_t *stack, dehl; *stack = dehl;
+// Input: de:hl, word in stack
 // Output: de:hl
 
 void __o_set_32() {
@@ -617,6 +616,7 @@ void __o_set_32() {
         ld   (hl), e
         inc  hl
         ld   (hl), d
+        ld   hl, bc
     }
 }
 
@@ -800,6 +800,8 @@ void __o_mul_i32() {
 // Example: uint32_t dehl, stack; dehl /= stack;
 // Input: de:hl, dword in stack
 // Output: de:hl
+
+uint16_t __o_div_u32__result;
 
 void __o_div_u32() {
     (void)__div_32_mod;

@@ -53,7 +53,7 @@ static inline void IncDec(CNodePtr &node) {
 
         node->b = CNODE({CNT_OPERATOR, a : da, b : number, ctype : node->a->ctype, operator_code : op, e : node->e});
 
-        node->type = CNT_SET;
+        node->type = CNT_SET_OPERATION;
 
         DeleteNode(node->a, 'a');  // Remove DEADDR
     }
