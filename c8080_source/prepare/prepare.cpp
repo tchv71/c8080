@@ -44,6 +44,7 @@ static const PrepareFunctionType prepare_function_list[] = {
     PrepareStaticArgumentsCall,
     PrepareAddWithStackAddress,
     PrepareDoubleConvert,
+    PrepareCompareOperators,
 };
 
 bool PrepareInt(Prepare &p, CNodePtr *pnode) {

@@ -179,13 +179,10 @@ static void PrepareLastFunctionArgCode(Prepare &p) {
                 e : p.function->e,
 
             });
-            a->compiler.hl_contains_value = true;
             a->a = CNODE({CNT_LOAD_VARIABLE});
-            a->a->compiler.hl_contains_value = true;
             a->a->variable = register_argument;
             a->a->ctype = register_argument->type;
             a->b = CNODE({CNT_LOAD_FROM_REGISTER});
-            a->b->compiler.hl_contains_value = true;
             a->b->ctype = register_argument->type;
             a->ctype = register_argument->type;
             p.function->body->a = a;

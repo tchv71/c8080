@@ -33,7 +33,7 @@ enum AsmRegister {
     R16_HL,
     R16_SP,
     R32_DEHL,
-    REG_NO_ALT
+    REG_PREPARE
 };
 
 const char *ToString(AsmRegister value);

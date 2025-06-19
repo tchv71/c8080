@@ -53,4 +53,5 @@ enum COperatorCode {
 
 bool IsSetOperator(COperatorCode code);
 bool IsCompareOperator(COperatorCode code);
+COperatorCode NegativeCompareOperator(COperatorCode code);
 const char *ToString(COperatorCode code);

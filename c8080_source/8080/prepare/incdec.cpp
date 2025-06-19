@@ -30,33 +30,17 @@ static inline void IncDec(CNodePtr &node) {
     if (node->a->type != CNT_MONO_OPERATOR || node->a->mono_operator_code != MOP_DEADDR)
         CThrow(node, "lvalue required as left operand of assignment");  // gcc
 
-    if (node->a->a->IsConstNode()) {
-        // Replace
-        // INC(DEADDR(const))
-        // with
-        // SET(DEADDR(const), ADD(DEADDR(const), item_size))
+    // Replace
+    // INC(DEADDR(y))
+    // with
+    // SET(DEADDR(y), ADD(DEADDR(y), item_size))
 
-        CNodePtr a = CopyNode(node->a);
-        node->b = CNODE({CNT_OPERATOR, a : a, b : number, ctype : a->ctype, operator_code : op, e : node->e});
-        node->type = CNT_OPERATOR;
-        node->operator_code = COP_SET;
-    } else {
-        // Replace
-        // INC(DEADDR(x))
-        // with
-        // SET(x, ADD(LOAD_FROM_REGISTER, item_size));
+    CNodePtr a = CopyNode(node->a);
+    node->b = CNODE({CNT_OPERATOR, a : a, b : number, ctype : a->ctype, operator_code : op, e : node->e});
+    node->type = CNT_OPERATOR;
+    node->operator_code = COP_SET;
 
-        CNodePtr reg = CNODE({CNT_LOAD_FROM_REGISTER, ctype : CTYPE_SIZE, e : node->e});
-
-        CNodePtr da =
-            CNODE({CNT_MONO_OPERATOR, a : reg, ctype : node->a->ctype, mono_operator_code : MOP_DEADDR, e : node->e});
-
-        node->b = CNODE({CNT_OPERATOR, a : da, b : number, ctype : node->a->ctype, operator_code : op, e : node->e});
-
-        node->type = CNT_SET_OPERATION;
-
-        DeleteNode(node->a, 'a');  // Remove DEADDR
-    }
+    // TODO: Copy DEADDR(y) to the temp variable
 
     if (node->mono_operator_code == MOP_POST_INC || node->mono_operator_code == MOP_POST_DEC) {
         const auto back_op = inc ? COP_SUB : COP_ADD;

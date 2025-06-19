@@ -83,8 +83,6 @@ std::string ToString(CNodeType type) {
             return "SAVE_TO_REGISTER";
         case CNT_LOAD_FROM_REGISTER:
             return "LOAD_FROM_REGISTER";
-        case CNT_SET_OPERATION:
-            return "SET_OPERATION";
     }
     return "CNT_" + std::to_string(int(type));
 }

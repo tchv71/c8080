@@ -22,9 +22,8 @@
 bool Prepare8080Const(Prepare &, CNodePtr &node);
 bool Prepare8080SetOperators(Prepare &, CNodePtr &node);
 bool Prepare8080Fast8BitOptimization(Prepare &, CNodePtr &node);
-bool Prepare8080CompareGToGe(Prepare &, CNodePtr &node);
+bool PrepareCompareOperators8080(Prepare &, CNodePtr &node);
 bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node);
 bool Prepare8080IncDec(Prepare &, CNodePtr &node);
 bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node);
-bool Prepare8080SecondConstArg(Prepare &, CNodePtr &node);
 bool Prepare8080RemoveConstCondition(Prepare &, CNodePtr &node);

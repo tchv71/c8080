@@ -102,12 +102,12 @@ public:
         Add(AC_CPL);
     }
 
-    void call2(CString string) {
+    void call(CString string) {
         AllRegistersChanged();
         Add(AC_CALL, string);
     }
 
-    void call2(uint16_t number) {
+    void call(uint16_t number) {
         AllRegistersChanged();
         Add(AC_CALL, number);
     }
@@ -490,6 +490,10 @@ public:
 
     void cmp_a_d() {
         alu_a_reg(ALU_CMP, R8_D);
+    }
+
+    void cmp_a_phl() {
+        alu_a_reg(ALU_CMP, R8_M);
     }
 
     void cmp_a_string(CString string) {

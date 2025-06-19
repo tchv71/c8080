@@ -18,47 +18,22 @@
 #include "index.h"
 #include "../../c/tools/cthrow.h"
 
+// TODO: Замена ADD на INC  ( (*word)++ )
+
 static bool SetOperators(CNodePtr &node, COperatorCode op) {
     if (node->a->type != CNT_MONO_OPERATOR || node->a->mono_operator_code != MOP_DEADDR)
         CThrow(node, "lvalue required as left operand of assignment");  // gcc
 
-    if (node->a->a->IsConstNode()) {
-        // Replace
-        // SELF_ADD(DEADDR(const), x)
-        // with
-        // SET(DEADDR(const), ADD(DEADDR(const), x))
-        node->b = CNODE({
-            CNT_OPERATOR,
-            a : CopyNode(node->a),
-            b : node->b,
-            ctype : node->a->ctype,
-            operator_code : op,
-            e : node->e
-        });
-        node->type = CNT_OPERATOR;
-        node->operator_code = COP_SET;
-        return true;
-    }
+    // TODO: Copy DEADDR(y) to the temp variable
 
     // Replace
-    // SELF_ADD(DEADDR(x), y)
+    // SELF_ADD(DEADDR(y), x)
     // with
-    // SET(x, ADD(DEADDR(LOAD_FROM_REGISTER), y))
-
-    CNodePtr reg = CNODE({CNT_LOAD_FROM_REGISTER, ctype : CTYPE_SIZE, e : node->e});
-    reg->compiler.hl_contains_value = true;
-
-    CNodePtr da =
-        CNODE({CNT_MONO_OPERATOR, a : reg, ctype : node->a->ctype, mono_operator_code : MOP_DEADDR, e : node->e});
-    da->compiler.hl_contains_value = true;
-
-    node->b = CNODE({CNT_OPERATOR, a : da, b : node->b, ctype : node->a->ctype, operator_code : op, e : node->e});
-
-    node->type = CNT_SET_OPERATION;
-    node->compiler.hl_contains_value = true;
-
-    DeleteNode(node->a, 'a');  // Remove DEADDR
-
+    // SET(DEADDR(y), ADD(DEADDR(y), x))
+    node->b = CNODE(
+        {CNT_OPERATOR, a : CopyNode(node->a), b : node->b, ctype : node->a->ctype, operator_code : op, e : node->e});
+    node->type = CNT_OPERATOR;
+    node->operator_code = COP_SET;
     return true;
 }
 

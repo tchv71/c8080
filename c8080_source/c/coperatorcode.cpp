@@ -96,6 +96,24 @@ bool IsCompareOperator(COperatorCode code) {
     return false;
 }
 
+COperatorCode NegativeCompareOperator(COperatorCode code) {
+    switch (code) {
+        case COP_CMP_E:
+            return COP_CMP_NE;
+        case COP_CMP_NE:
+            return COP_CMP_E;
+        case COP_CMP_L:
+            return COP_CMP_GE;
+        case COP_CMP_G:
+            return COP_CMP_LE;
+        case COP_CMP_LE:
+            return COP_CMP_G;
+        case COP_CMP_GE:
+            return COP_CMP_L;
+    }
+    throw std::runtime_error("Internal error " + std::to_string(int(code)) + " in " + __PRETTY_FUNCTION__);
+}
+
 const char *ToString(COperatorCode code) {
     switch (code) {
         case COP_CMP_L:

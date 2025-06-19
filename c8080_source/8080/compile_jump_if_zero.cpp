@@ -22,37 +22,35 @@ void Compile8080::CompileJumpIfZero(CNodePtr node, bool jmp_if_not_zero_inital, 
                                     AsmLabel *label) {
     switch (node->ctype.GetAsmType()) {
         case CBT_CHAR:
-        case CBT_UNSIGNED_CHAR: {
-            const AsmRegister reg = CompileExpression(node);
-            assert(reg == R8_A);
+        case CBT_UNSIGNED_CHAR:
+            Build(node);
+            Build(node, R8_A);
             out.or_a_a();
             break;
-        }
         case CBT_SHORT:
-        case CBT_UNSIGNED_SHORT: {
-            const AsmRegister reg = CompileExpression(node, CF_CAN_USE_ALT);
-            if (reg == R16_HL) {
-                out.ld_a_h();
-                out.or_a_l();
-            } else {
-                assert(reg == R16_DE);
+        case CBT_UNSIGNED_SHORT:
+            Build(node);
+            if (node->bi.alt) {
+                Build(node, R16_DE);
                 out.ld_a_d();
                 out.or_a_e();
+            } else {
+                Build(node, R16_HL);
+                out.ld_a_h();
+                out.or_a_l();
             }
             break;
-        }
         case CBT_LONG:
-        case CBT_UNSIGNED_LONG: {
-            const AsmRegister reg = CompileExpression(node);
-            assert(reg == R32_DEHL);
+        case CBT_UNSIGNED_LONG:
+            Build(node);
+            Build(node, R32_DEHL);
             out.ld_a_l();
             out.or_a_h();
             out.or_a_d();
             out.or_a_e();
             break;
-        }
         default:
-            C_INTERNAL_ERROR(node, "data type not supported");
+            C_INTERNAL_ERROR(node, "unsupported data type");
     }
     if (invert_jmp_if_not_zero ? !jmp_if_not_zero_inital : jmp_if_not_zero_inital)
         out.jnz_label(label);

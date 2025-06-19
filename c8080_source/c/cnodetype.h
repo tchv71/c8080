@@ -54,9 +54,6 @@ enum CNodeType {
     CNT_LOAD_FROM_REGISTER,  // The processor register in which the last argument to the function is passed
     CNT_STACK_ADDRESS,       // Address relative to the first stack variable of the function
     CNT_ARG_STACK_ADDRESS,   // Address relative to the first argument of the function
-
-    // Optimizer replaces MOP_INC, MOP_POST_INC, MOP_DEC, MOP_POST_DEC, OP_SET_
-    CNT_SET_OPERATION,  // Example: a[b] += c
 };
 
 std::string ToString(CNodeType type);

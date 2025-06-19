@@ -1182,14 +1182,10 @@ CNodePtr CParserFile::ParseFunctionBody() {
         return node;
     }
     if (l.IfToken("break")) {
-        if (loop_level == 0 && last_switch == nullptr)
-            programm.Error(e, "break statement not within loop or switch");  // gcc
         l.CloseToken(";", ";");
         return CNODE({CNT_BREAK, e : e});
     }
     if (l.IfToken("continue")) {
-        if (loop_level == 0)
-            programm.Error(e, "continue statement not within a loop");  // gcc
         l.CloseToken(";", ";");
         return CNODE({CNT_CONTINUE, e : e});
     }
