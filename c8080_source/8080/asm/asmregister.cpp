@@ -27,3 +27,33 @@ const char *ToString(AsmRegister value) {
 
     return strings[value];
 }
+
+uint32_t RegToUsed(AsmRegister reg) {
+    switch (reg) {
+        case R8_A:
+            return U_A;
+        case R8_B:
+            return U_B;
+        case R8_C:
+            return U_C;
+        case R8_D:
+            return U_D;
+        case R8_E:
+            return U_E;
+        case R8_H:
+            return U_H;
+        case R8_L:
+            return U_L;
+        case R16_AF:
+            return U_A;
+        case R16_BC:
+            return U_BC;
+        case R16_DE:
+            return U_DE;
+        case R16_HL:
+            return U_HL;
+        case R32_DEHL:
+            return U_DEHL;
+    }
+    return 0;
+}

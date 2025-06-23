@@ -20,9 +20,9 @@
 
 bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node) {
     // Replace
-    // CNT_CONVERT(8BIT, CNT_OPERATOR(A, B))
+    // CNT_CONVERT(8_BIT_TYPE, CNT_OPERATOR(A, B))
     // with
-    // CNT_OPERATOR(CNT_CONVERT(8BIT, A), CNT_CONVERT(8BIT, B))
+    // CNT_OPERATOR(CNT_CONVERT(8_BIT_TYPE, A), CNT_CONVERT(8_BIT_TYPE, B))
     if (node->type == CNT_CONVERT && node->a->type == CNT_OPERATOR && node->ctype.Is8BitType()) {
         switch (node->a->operator_code) {
             // No COP_DIV, COP_MOD. Because convert (1 / 0x1001) to (1 / 1) is incorrect.

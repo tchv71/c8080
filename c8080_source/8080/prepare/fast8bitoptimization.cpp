@@ -44,14 +44,14 @@ bool Prepare8080Fast8BitOptimization(Prepare &, CNodePtr &node) {
                 // Replace
                 // CNT_OPERATOR(
                 //   COP_CMP_*,
-                //   CNT_CONVERT(any, 8 bit value) / CNT_NUMBER(8 bit value),
-                //   CNT_CONVERT(any, 8 bit value) / CNT_NUMBER(8 bit value)
+                //   CNT_CONVERT(any, 8 bit value) or CNT_NUMBER(8 bit value),
+                //   CNT_CONVERT(any, 8 bit value) or CNT_NUMBER(8 bit value)
                 // )
                 // with
                 // CNT_OPERATOR(
                 //   COP_CMP_*,
-                //   8 bit value / CNT_NUMBER(8 bit value),
-                //   8 bit value / CNT_NUMBER(8 bit value)
+                //   8 bit value or CNT_NUMBER(8 bit value),
+                //   8 bit value or CNT_NUMBER(8 bit value)
                 // )
                 unsigned result = CanConvertTo8Bit(node->a);
                 if (result) {

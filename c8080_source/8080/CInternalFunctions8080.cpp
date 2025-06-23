@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "internal_functions.h"
+#include "CInternalFunctions8080.h"
 #include <stdexcept>
 
 static CVariablePtr RegisterInternalFunction(CProgramm &p, const char *name) {

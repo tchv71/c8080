@@ -32,7 +32,7 @@ unsigned Is8BitConst(CConstNodePtr node) {
                     return 0;
                 if (node->number.i < 0)
                     return IS8BITCONST_SIGNED;
-                if (node->number.i <= INT8_MIN)
+                if (node->number.i <= INT8_MAX)
                     return IS8BITCONST_SIGNED | IS8BITCONST_UNSIGNED;
                 if (node->number.i <= UINT8_MAX)
                     return IS8BITCONST_UNSIGNED;

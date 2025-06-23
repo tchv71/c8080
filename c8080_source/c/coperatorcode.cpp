@@ -181,3 +181,18 @@ const char *ToString(COperatorCode code) {
     }
     throw std::runtime_error("Internal error " + std::to_string(int(code)) + " in " + __PRETTY_FUNCTION__);
 }
+
+bool CanOperatorArgumentsSwapped(COperatorCode code) {
+    switch (code) {
+        case COP_ADD:
+        case COP_AND:
+        case COP_OR:
+        case COP_XOR:
+        case COP_MUL:
+        case COP_CMP_E:
+        case COP_CMP_NE:
+            return true;
+    }
+    return false;
+}
+

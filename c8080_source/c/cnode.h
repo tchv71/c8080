@@ -59,6 +59,7 @@ struct CNode {
     CErrorPosition e;
 
     CNodeCompiler compiler;
+    CBuildInfo bi;
 
     bool IsConstNode() const {
         return type == CNT_CONST || type == CNT_CONST_STRING || type == CNT_NUMBER;
@@ -67,6 +68,8 @@ struct CNode {
     bool IsDeaddr() const {
         return type == CNT_MONO_OPERATOR && mono_operator_code == MOP_DEADDR;
     }
+
+    bool IsJumpNode();
 };
 
 bool DeleteNode(CNodePtr &node, char c);

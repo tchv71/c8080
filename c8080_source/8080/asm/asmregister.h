@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 enum AsmRegister {
     REG_NONE,
     R8_A,
@@ -35,5 +37,33 @@ enum AsmRegister {
     R32_DEHL,
     REG_PREPARE
 };
+
+static const uint32_t U_ALL = UINT32_MAX;
+static const uint32_t U_A = 1u << R8_A;
+static const uint32_t U_B = 1u << R8_B;
+static const uint32_t U_C = 1u << R8_C;
+static const uint32_t U_D = 1u << R8_D;
+static const uint32_t U_E = 1u << R8_E;
+static const uint32_t U_H = 1u << R8_H;
+static const uint32_t U_L = 1u << R8_L;
+static const uint32_t U_BC = U_B | U_C;
+static const uint32_t U_DE = U_D | U_E;
+static const uint32_t U_HL = U_H | U_L;
+static const uint32_t U_HLDE = U_DE | U_HL;
+static const uint32_t U_DEHL = U_DE | U_HL;
+
+uint32_t RegToUsed(AsmRegister reg);
+
+static inline bool IsAsmRegister16(AsmRegister reg) {
+    switch (reg) {
+        case R16_AF:
+        case R16_BC:
+        case R16_DE:
+        case R16_HL:
+        case R16_SP:
+            return true;
+    }
+    return false;
+}
 
 const char *ToString(AsmRegister value);

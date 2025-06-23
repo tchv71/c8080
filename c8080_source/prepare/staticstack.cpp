@@ -96,7 +96,7 @@ bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node) {
         CNodeList body;
         for (size_t i = 1; i < arg_list.size(); i++) {
             if (arg == nullptr)
-                C_INTERNAL_ERROR(node, "not enough arguments");
+                C_ERROR_INTERNAL(node, "not enough arguments");
 
             CNodePtr next_arg = arg->next_node;
             arg->next_node = nullptr;
@@ -135,7 +135,7 @@ bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node) {
         }
 
         if (arg != nullptr)
-            C_INTERNAL_ERROR(node, "extra arguments");
+            C_ERROR_INTERNAL(node, "extra arguments");
 
         node->c = body.first;
         return true;

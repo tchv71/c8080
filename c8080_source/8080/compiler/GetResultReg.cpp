@@ -15,24 +15,29 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "getfunctionreturnregister.h"
+#include "Compiler.h"
 
-AsmRegister GetFunctionReturnRegister(CConstType ctype, CompileFlags flags) {
-    if (flags & CF_NO_RESULT)
+AsmRegister Compiler8080::GetResultReg(CType &type, bool alt, bool no_result, CNodePtr &e) {
+    if (no_result)
         return REG_NONE;
-    switch (ctype.GetAsmType()) {
+    switch (type.GetAsmType()) {
         case CBT_VOID:
             return REG_NONE;
         case CBT_CHAR:
         case CBT_UNSIGNED_CHAR:
-            return R8_A;
+            return alt ? R8_D : R8_A;
         case CBT_SHORT:
         case CBT_UNSIGNED_SHORT:
-            return R16_HL;
+            return alt ? R16_DE : R16_HL;
         case CBT_LONG:
         case CBT_UNSIGNED_LONG:
+            if (alt)
+                C_ERROR_INTERNAL(e, "no alternative register for 32-bit type");
             return R32_DEHL;
         default:
-            throw std::runtime_error(__FUNCTION__);  // TODO: C_INTERNAL_ERROR
+            C_ERROR_UNSUPPORTED_ASM_TYPE(type.GetAsmType(), e);
+            return REG_NONE;
     }
 }
+
+

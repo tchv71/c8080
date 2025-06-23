@@ -18,130 +18,172 @@
 #pragma once
 
 #include "8080_assembler.h"
+#include "../../c/cnode.h"
+#include "../../c/tools/getnumberasuint64.h"
+#include "../GetConst.h"
 
 class Asm2 : public Assembler {
 public:
     void ld_pointer_hl(CString string) {
-        Add(AC_LD_PCONST_HL, string);
+        measure_metric += 3;
+        Add(AC_SHLD, string);
     }
 
     void ld_pointer_hl(uint16_t number) {
-        Add(AC_LD_PCONST_HL, number);
+        measure_metric += 3;
+        Add(AC_SHLD, number);
     }
 
     void ld_a_pointer(CString string) {
-        Add(AC_LD_A_PCONST, string);
+        measure_metric += 3;
+        Add(AC_LDA, string);
     }
 
     void ex_hl_de() {
         ChangedReg(R32_DEHL);
+        measure_metric += 1;
         Add(AC_XCHG);
     }
 
     void ex_psp_hl() {
         ChangedReg(R16_HL);
+        measure_metric += 1;
         Add(AC_XTHL);
     }
 
     void push_reg(AsmRegister reg) {
+        measure_metric += 1;
         Add(AC_PUSH, reg);
     }
 
     void pop_reg(AsmRegister reg) {
         ChangedReg(reg);
+        measure_metric += 1;
         Add(AC_POP, reg);
     }
 
-    void rla() {
+    // ┌─<─ CF <─ D7 .. D0 <──┐
+    // └──────────────────────┘
+
+    void carry_rotate_left() {
         ChangedReg(R8_A);
+        measure_metric += 1;
         Add(AC_RLA);
     }
 
-    void rra() {
+    // ┌─>─ CF >─ D7 .. D0 >──┐
+    // └──────────────────────┘
+
+    void carry_rotate_right() {
         ChangedReg(R8_A);
+        measure_metric += 1;
         Add(AC_RRA);
     }
 
-    void rrca() {
+    // ┌─> D7 .. D0 >─┬─> CF
+    // └──────────────┘
+
+    void cyclic_rotate_right() {
         ChangedReg(R8_A);
+        measure_metric += 1;
         Add(AC_RRCA);
     }
 
-    void rlca() {
+    // CF <─┬─< D7 .. D0 <─┐
+    //      └──────────────┘
+
+    void cyclic_rotate_left() {
         ChangedReg(R8_A);
+        measure_metric += 1;
         Add(AC_RLCA);
     }
 
     void ei() {
+        measure_metric += 1;
         Add(AC_EI);
     }
 
     void di() {
+        measure_metric += 1;
         Add(AC_DI);
     }
 
     void nop() {
+        measure_metric += 1;
         Add(AC_NOP);
     }
 
     void pchl() {
+        measure_metric += 1;
         Add(AC_PCHL);
     }
 
     void stc() {
+        measure_metric += 1;
         Add(AC_STC);
     }
 
     void ld_sp_hl() {
         ChangedReg(R16_SP);
-        Add(AC_LD_SP_HL);
+        measure_metric += 1;
+        Add(AC_SPHL);
     }
 
     void cpl() {
         ChangedReg(R16_AF);
+        measure_metric += 1;
         Add(AC_CPL);
     }
 
     void call(CString string) {
         AllRegistersChanged();
+        measure_metric += 3;
         Add(AC_CALL, string);
     }
 
     void call(uint16_t number) {
         AllRegistersChanged();
+        measure_metric += 3;
         Add(AC_CALL, number);
     }
 
     void ld_pointer_a(CString string) {
-        Add(AC_LD_PCONST_A, string);
+        measure_metric += 3;
+        Add(AC_STA, string);
     }
 
     void ld_pointer_a(uint16_t number) {
-        Add(AC_LD_PCONST_A, number);
+        measure_metric += 3;
+        Add(AC_STA, number);
     }
 
     void rotate(AssemblerCommand opcode) {
         assert(opcode == AC_RLA || opcode == AC_RRA || opcode == AC_RLCA || opcode == AC_RRCA);
         ChangedReg(R8_A);
+        measure_metric += 1;
         Add(opcode);
     }
 
     void dec_reg(AsmRegister reg) {
         ChangedReg(reg);
+        measure_metric += 1;
         Add(AC_DEC_REG, reg);
     }
 
     void inc_reg(AsmRegister reg) {
         ChangedReg(reg);
+        measure_metric += 1;
         Add(AC_INC_REG, reg);
     }
 
     void in(CString string) {
         ChangedReg(R8_A);
+        measure_metric += 2;
         Add(AC_IN, string);
     }
 
     void out(CString string) {
+        measure_metric += 2;
         Add(AC_OUT, string);
     }
 
@@ -154,27 +196,31 @@ public:
     }
 
     void label(AsmLabel *label) {
-        if (measure_ == nullptr) {
+        if (!measure) {
             Add(AC_LABEL, label);
             label->destination = lines_.size();
         }
     }
 
     void jmp_label(AsmLabel *label) {
+        measure_metric += 3;
         Add(AC_JMP, label);
     }
 
     void jmp(CString string) {
+        measure_metric += 3;
         Add(AC_JMP, string);
     }
 
     void ld_hl_pointer(CString string) {
         ChangedReg(R16_HL);
-        Add(AC_LD_HL_PCONST, string);
+        measure_metric += 3;
+        Add(AC_LHLD, string);
     }
 
     void add_hl_reg(AsmRegister reg) {
         assert(reg == R16_BC || reg == R16_DE || reg == R16_HL || reg == R16_SP);
+        measure_metric += 1;
         Add(AC_ADD_HL_REG, reg);
     }
 
@@ -184,17 +230,19 @@ public:
     }
 
     void ret() {
+        measure_metric += 1;
         Add(AC_RET);
     }
 
     void ld_a_preg(AsmRegister reg) {
         switch (reg) {
             case R16_HL:
-                ld_reg_reg(R8_A, R8_M);
+                ld_r8_r8(R8_A, R8_M);
                 break;
             case R16_BC:
             case R16_DE:
                 ChangedReg(R8_A);
+                measure_metric += 1;
                 Add(AC_LD_A_PREG, reg);
                 break;
             default:
@@ -202,25 +250,28 @@ public:
         }
     }
 
-    void ld_reg_reg(AsmRegister reg_a, AsmRegister reg_b) {
+    void ld_r8_r8(AsmRegister reg_a, AsmRegister reg_b) {
         assert(reg_a != R8_M || reg_b != R8_M);
         ChangedReg(reg_a);
+        measure_metric += 1;
         Add(AC_LD_REG_REG, reg_a, reg_b);
     }
 
     void ld_reg_phl(AsmRegister reg) {
         assert(reg != R8_M);
         ChangedReg(reg);
+        measure_metric += 1;
         Add(AC_LD_REG_REG, reg, R8_M);
     }
 
     void ld_preg_a(AsmRegister reg) {
         switch (reg) {
             case R16_HL:
-                ld_reg_reg(R8_M, R8_A);
+                ld_r8_r8(R8_M, R8_A);
                 break;
             case R16_BC:
             case R16_DE:
+                measure_metric += 1;
                 Add(AC_LD_PREG_A, reg);
                 break;
             default:
@@ -239,22 +290,26 @@ public:
     void ld_reg_stack_addr(AsmRegister reg, uint16_t offset) {
         assert(reg == R16_HL || reg == R16_DE || reg == R16_BC);
         ChangedReg(reg);
+        measure_metric += 3;
         Add(AC_LD_REG_STACK_ADDR, reg, offset);
     }
 
     void ld_reg_arg_stack_addr(AsmRegister reg, uint16_t offset) {
         assert(reg == R16_HL || reg == R16_DE || reg == R16_BC);
         ChangedReg(reg);
+        measure_metric += 3;
         Add(AC_LD_REG_ARG_STACK_ADDR, reg, offset);
     }
 
     void alu_a_reg(AsmAlu alu, AsmRegister reg) {
         ChangedReg(R8_A);
+        measure_metric += 1;
         Add(AC_ALU_A_REG, reg, alu);
     }
 
     void alu_a_string(AsmAlu alu, CString string) {
         ChangedReg(R8_A);
+        measure_metric += 2;
         Add(AC_ALU_A_CONST, string, alu);
     }
 
@@ -268,10 +323,11 @@ public:
             return;
         }
         ChangedReg(R8_A);
+        measure_metric += 2;
         Add(AC_ALU_A_CONST, number, alu);
     }
 
-    void ld_reg_number(AsmRegister reg, uint16_t number) {
+    void ld_r8_number(AsmRegister reg, uint8_t number) {
         if (ChangedReg(reg)) {
             switch (reg) {
                 case R8_A:
@@ -285,27 +341,68 @@ public:
                     number &= 0xFFu;
                     break;
             }
-            if (reg == R8_A && number == 0)
+            if (reg == R8_A && number == 0) {
                 alu_a_reg(ALU_XOR, R8_A);
-            else
+            } else {
+                measure_metric += 2;
                 Add(AC_LD_REG_CONST, reg, number);
+            }
         }
     }
 
-    void ld_reg_string(AsmRegister reg, CString string) {
+    void ld_r16_n16(AsmRegister reg, uint16_t number) {
+        if (ChangedReg(reg)) {
+            measure_metric += 3;
+            Add(AC_LD_REG_CONST, reg, number);
+        }
+    }
+
+    void ld_r8_string(AsmRegister reg, CString string) {
         ChangedReg(reg);
+        measure_metric += 2;
         Add(AC_LD_REG_CONST, reg, string);
     }
 
+    void ld_r16_string(AsmRegister reg, CString string) {
+        ChangedReg(reg);
+        measure_metric += 3;
+        Add(AC_LD_REG_CONST, reg, string);
+    }
+
+    void ld_r8_const(AsmRegister reg, CNodePtr &node) {
+        ChangedReg(reg);
+        measure_metric += 2;
+        if (!measure) {
+            if (node->type == CNT_NUMBER)
+                Add(AC_LD_REG_CONST, reg, GetNumberAsUint64(node));
+            else
+                Add(AC_LD_REG_CONST, reg, GetConst(node, nullptr, this));
+        }
+    }
+
+    void ld_r16_const(AsmRegister reg, CNodePtr &node) {
+        ChangedReg(reg);
+        measure_metric += 3;
+        if (!measure) {
+            if (node->type == CNT_NUMBER)
+                Add(AC_LD_REG_CONST, reg, GetNumberAsUint64(node));
+            else
+                Add(AC_LD_REG_CONST, reg, GetConst(node, nullptr, this));
+        }
+    }
+
     void ret_condition(AsmCondition condition) {
+        measure_metric += 1;
         Add(AC_RET_CONDITION, condition);
     }
 
     void jmp_condition(AsmCondition condition, CString name) {
+        measure_metric += 3;
         Add(AC_JMP_CONDITION, name, condition);
     }
 
     void jmp_condition_label(AsmCondition condition, AsmLabel *label) {
+        measure_metric += 3;
         Add(AC_JMP_CONDITION, label, condition);
     }
 
@@ -317,15 +414,15 @@ public:
     // Simple commands
 
     void ld_bc_number(uint16_t number) {
-        ld_reg_number(R16_BC, number);
+        ld_r16_n16(R16_BC, number);
     }
 
     void ld_de_number(uint16_t number) {
-        ld_reg_number(R16_DE, number);
+        ld_r16_n16(R16_DE, number);
     }
 
     void ld_hl_number(uint16_t number) {
-        ld_reg_number(R16_HL, number);
+        ld_r16_n16(R16_HL, number);
     }
 
     void ld_a_pbc() {
@@ -341,55 +438,55 @@ public:
     }
 
     void ld_l_phl() {
-        ld_reg_reg(R8_L, R8_M);
+        ld_r8_r8(R8_L, R8_M);
     }
 
     void ld_d_phl() {
-        ld_reg_reg(R8_D, R8_M);
+        ld_r8_r8(R8_D, R8_M);
     }
 
     void ld_e_phl() {
-        ld_reg_reg(R8_E, R8_M);
+        ld_r8_r8(R8_E, R8_M);
     }
 
     void ld_phl_a() {
-        ld_reg_reg(R8_M, R8_A);
+        ld_r8_r8(R8_M, R8_A);
     }
 
     void ld_l_a() {
-        ld_reg_reg(R8_L, R8_A);
+        ld_r8_r8(R8_L, R8_A);
     }
 
     void ld_d_a() {
-        ld_reg_reg(R8_D, R8_A);
+        ld_r8_r8(R8_D, R8_A);
     }
 
     void ld_a_d() {
-        ld_reg_reg(R8_A, R8_D);
+        ld_r8_r8(R8_A, R8_D);
     }
 
     void ld_a_l() {
-        ld_reg_reg(R8_A, R8_L);
+        ld_r8_r8(R8_A, R8_L);
     }
 
     void ld_a_h() {
-        ld_reg_reg(R8_A, R8_H);
+        ld_r8_r8(R8_A, R8_H);
     }
 
     void ld_h_d() {
-        ld_reg_reg(R8_H, R8_D);
+        ld_r8_r8(R8_H, R8_D);
     }
 
     void ld_h_l() {
-        ld_reg_reg(R8_H, R8_L);
+        ld_r8_r8(R8_H, R8_L);
     }
 
-    void ld_a_number(uint8_t value) {
-        ld_reg_number(R8_A, value);
+    void ld_a_n8(uint8_t value) {
+        ld_r8_number(R8_A, value);
     }
 
     void ld_d_number(uint8_t value) {
-        ld_reg_number(R8_D, value);
+        ld_r8_number(R8_D, value);
     }
 
     void jz_label(AsmLabel *label) {
@@ -445,23 +542,23 @@ public:
     }
 
     void ld_phl_e() {
-        ld_reg_reg(R8_M, R8_E);
+        ld_r8_r8(R8_M, R8_E);
     }
 
     void ld_phl_d() {
-        ld_reg_reg(R8_M, R8_D);
+        ld_r8_r8(R8_M, R8_D);
     }
 
     void ld_phl_reg(AsmRegister reg) {
-        ld_reg_reg(R8_M, reg);
+        ld_r8_r8(R8_M, reg);
     }
 
     void ld_phl_const(CString value) {
-        ld_reg_string(R8_M, value);
+        ld_r8_string(R8_M, value);
     }
 
     void ld_phl_number(uint8_t value) {
-        ld_reg_number(R8_M, value);
+        ld_r8_number(R8_M, value);
     }
 
     void inc_de() {
@@ -512,7 +609,7 @@ public:
         alu_a_string(ALU_AND, string);
     }
 
-    void and_a_number(uint8_t number) {
+    void and_n8(uint8_t number) {
         alu_a_number(ALU_AND, number);
     }
 
@@ -525,8 +622,8 @@ public:
     }
 
     void ld_de_hl() {
-        ld_reg_reg(R8_D, R8_H);
-        ld_reg_reg(R8_E, R8_L);
+        ld_r8_r8(R8_D, R8_H);
+        ld_r8_r8(R8_E, R8_L);
     }
 
     void inc_a() {
@@ -548,20 +645,20 @@ public:
     }
 
     void ld_hl_bc() {
-        ld_reg_reg(R8_H, R8_B);
-        ld_reg_reg(R8_L, R8_C);
+        ld_r8_r8(R8_H, R8_B);
+        ld_r8_r8(R8_L, R8_C);
     }
 
     void ld_bc_hl() {
-        ld_reg_reg(R8_B, R8_H);
-        ld_reg_reg(R8_C, R8_L);
+        ld_r8_r8(R8_B, R8_H);
+        ld_r8_r8(R8_C, R8_L);
     }
 
-    void add_a_d() {
+    void add_d() {
         alu_a_reg(ALU_ADD, R8_D);
     }
 
-    void add_a_a() {
+    void add_a() {
         alu_a_reg(ALU_ADD, R8_A);
     }
 
@@ -573,15 +670,15 @@ public:
         alu_a_reg(ALU_AND, R8_D);
     }
 
-    void or_a_d() {
+    void or_d() {
         alu_a_reg(ALU_OR, R8_D);
     }
 
-    void or_a_e() {
+    void or_e() {
         alu_a_reg(ALU_OR, R8_E);
     }
 
-    void or_a_l() {
+    void or_l() {
         alu_a_reg(ALU_OR, R8_L);
     }
 
@@ -601,35 +698,35 @@ public:
         add_hl_reg(R16_SP);
     }
 
-    void or_a_a() {
+    void or_a() {
         alu_a_reg(ALU_OR, R8_A);
     }
 
-    void or_a_h() {
+    void or_h() {
         alu_a_reg(ALU_OR, R8_H);
     }
 
     void ld_h_number(uint8_t number) {
-        ld_reg_number(R8_H, number);
+        ld_r8_number(R8_H, number);
     }
 
     void ld_l_number(uint8_t number) {
-        ld_reg_number(R8_L, number);
+        ld_r8_number(R8_L, number);
     }
 
     void ld_d_offset(CString string) {
-        ld_reg_string(R8_D, string);
+        ld_r8_string(R8_D, string);
     }
 
     void ld_bc_offset(CString string) {
-        ld_reg_string(R16_BC, string);
+        ld_r16_string(R16_BC, string);
     }
 
     void ld_de_offset(CString string) {
-        ld_reg_string(R16_DE, string);
+        ld_r16_string(R16_DE, string);
     }
 
     void ld_hl_offset(CString string) {
-        ld_reg_string(R16_HL, string);
+        ld_r16_string(R16_HL, string);
     }
 };

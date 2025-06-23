@@ -37,7 +37,12 @@ void __o_call_hl() {
 
 void __o_shl_8() {
     asm {
-        TODO
+        inc  d
+__o_shl_8__l1:
+        dec  d
+        ret  z
+        add  a
+        jp   __o_shl_8__l1
     }
 }
 
@@ -448,6 +453,7 @@ __o_shr_u16__l1:
         rra
         ld   l, a
         jp   __o_shr_u16__l1
+1
     }
 }
 
@@ -801,11 +807,8 @@ void __o_mul_i32() {
 // Input: de:hl, dword in stack
 // Output: de:hl
 
-uint16_t __o_div_u32__result;
-
 void __o_div_u32() {
     (void)__div_32_mod;
-    (void)__o_div_u32__result;
     asm {
         ld   bc, hl                    ; __div_32_mod = a
         pop  hl
@@ -853,7 +856,8 @@ __o_div_u32__ra=$+1
         jp   z, __o_div_u32__ret
         ld   (__o_div_u32__lc), a
 
-        ld   hl, (__o_div_u32__result) ; result <<= 1
+__o_div_u32__result = $+1
+        ld   hl, 0                     ; result <<= 1
         call __o_div_u32__shl_dehl
         ld   (__o_div_u32__result), hl
 

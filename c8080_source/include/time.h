@@ -1,6 +1,6 @@
 /*
- * c8080 compiler
- * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ * c8080 stdlib
+ * Copyright (c) 2022 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,3 @@
  */
 
 #pragma once
-
-#include "../c/parser/cparser.h"
-
-enum OutputFormat {
-    OF_I1080,
-    OF_CPM,
-};
-
-bool ParseOutputFormat(enum OutputFormat &result, const char *str);
-void RegisterInternalNames8080(CProgramm &programm);
-void Compile_8080(CParser &c, CProgramm &programm, OutputFormat output_format, const std::string &output_file_bin,
-                  CString asm_file_name);

@@ -57,3 +57,16 @@ CNodePtr CopyNode(CNodePtr source) {
     result->next_node = CopyNode(source->next_node);
     return result;
 }
+
+bool CNode::IsJumpNode() {
+    switch (type) {
+        case CNT_OPERATOR:
+            if (operator_code == COP_LAND || operator_code == COP_LOR)
+                return true;
+            return IsCompareOperator(operator_code);
+        case CNT_MONO_OPERATOR:
+            return mono_operator_code == MOP_NOT;
+    }
+    return false;
+}
+
