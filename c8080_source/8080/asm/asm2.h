@@ -350,7 +350,7 @@ public:
         }
     }
 
-    void ld_r16_n16(AsmRegister reg, uint16_t number) {
+    void ld_r16_number(AsmRegister reg, uint16_t number) {
         if (ChangedReg(reg)) {
             measure_metric += 3;
             Add(AC_LD_REG_CONST, reg, number);
@@ -414,15 +414,15 @@ public:
     // Simple commands
 
     void ld_bc_number(uint16_t number) {
-        ld_r16_n16(R16_BC, number);
+        ld_r16_number(R16_BC, number);
     }
 
     void ld_de_number(uint16_t number) {
-        ld_r16_n16(R16_DE, number);
+        ld_r16_number(R16_DE, number);
     }
 
     void ld_hl_number(uint16_t number) {
-        ld_r16_n16(R16_HL, number);
+        ld_r16_number(R16_HL, number);
     }
 
     void ld_a_pbc() {

@@ -422,7 +422,7 @@ void CParserFile::ParseFunctionTypeArgs(CErrorPosition &e, CType &return_type, s
 
         ParseTypeNameArray(pre_type, arg.name, arg.type);
 
-        for (auto& i : arg.type.pointers)
+        for (auto &i : arg.type.pointers)
             i.count = 0;
 
         if (!arg.name.empty() && !names.try_emplace(arg.name, 0).second)

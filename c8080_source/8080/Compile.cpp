@@ -15,5 +15,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cvariablecompiler.h"
-#include "cvariable.h"
+#include "compiler/Compiler.h"
+
+bool ParseOutputFormat8080(enum OutputFormat8080 &result, CString str) {
+    if (str == "i1080") {
+        result = OF_I1080;
+        return true;
+    }
+    if (str == "cpm") {
+        result = OF_CPM;
+        return true;
+    }
+    return false;
+}
+
+void Compile8080(CParser &parser, CProgramm &programm, OutputFormat8080 output_format, CString output_file_bin,
+                 CString asm_file_name) {
+    Compiler8080 compile8080(programm);
+    compile8080.Compile(parser, output_format, output_file_bin, asm_file_name);
+}

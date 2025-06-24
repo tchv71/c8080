@@ -195,4 +195,3 @@ bool CanOperatorArgumentsSwapped(COperatorCode code) {
     }
     return false;
 }
-

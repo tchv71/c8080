@@ -137,15 +137,12 @@ std::string CType::ToString() const {
             result += std::to_string(i.count);
             result += "]";
         }
-        if (i.flag_const) {
+        if (i.flag_const)
             result += " const";
-        }
-        if (i.flag_volatile) {
+        if (i.flag_volatile)
             result += " volatile";
-        }
-        if (i.flag_restrict) {
+        if (i.flag_restrict)
             result += " restict";
-        }
     }
     if (base_type == CBT_FUNCTION && !pointers.empty()) {
         result += ")";
@@ -153,9 +150,8 @@ std::string CType::ToString() const {
     if (base_type == CBT_FUNCTION) {
         result += "(";
         for (size_t i = 1; i < function_args.size(); i++) {
-            if (i > 1) {
+            if (i > 1)
                 result += ", ";
-            }
             result += function_args[i].type.ToString();
             if (!function_args[i].name.empty()) {
                 result += " ";

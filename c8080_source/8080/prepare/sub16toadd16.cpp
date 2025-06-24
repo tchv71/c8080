@@ -25,14 +25,10 @@ bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node) {
         if (node->b->type == CNT_NUMBER) {
             switch (node->ctype.GetAsmType()) {
                 case CBT_SHORT:
-                    if (node->b->number.i >= 1 && node->b->number.i <= 3)
-                        return false;  // Compile: dec hl, dec hl, dec hl
                     node->operator_code = COP_ADD;
                     node->b->number.i = int16_t(0 - node->b->number.i);
                     return true;
                 case CBT_UNSIGNED_SHORT:
-                    if (node->b->number.u >= 1 && node->b->number.u <= 3)
-                        return false;  // Compile: dec hl, dec hl, dec hl
                     node->operator_code = COP_ADD;
                     node->b->number.u = uint16_t(0u - node->b->number.u);
                     return true;

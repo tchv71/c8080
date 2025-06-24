@@ -41,6 +41,4 @@ struct CVariableCompiler {
     size_t internal_cmm_name{};       // Used when compiling CMM
 
     bool prepared{};
-
-    void AddCalledBy(const std::shared_ptr<CVariable> &v, bool call);
 };
