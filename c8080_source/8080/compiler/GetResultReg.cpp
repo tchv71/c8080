@@ -39,5 +39,3 @@ AsmRegister Compiler8080::GetResultReg(CType &type, bool alt, bool no_result, CN
             return REG_NONE;
     }
 }
-
-

@@ -59,5 +59,5 @@ void Compiler8080::OutShr8(CNodePtr &node, AsmRegister reg) {
         for (unsigned i = 0; i < value; i++)
             out.cyclic_rotate_right();
     }
-    out.and_n8(0xFF >> value);
+    out.and_number(0xFF >> value);
 }

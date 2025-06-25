@@ -44,14 +44,14 @@ void Compiler8080::OutShl8(CNodePtr &node, AsmRegister reg) {
 
     if (value == 7) {
         out.cyclic_rotate_right();
-        out.and_n8(0x01);
+        out.and_number(0x01);
         return;
     }
 
     if (value == 6) {
         out.cyclic_rotate_right();
         out.cyclic_rotate_right();
-        out.and_n8(0x03);
+        out.and_number(0x03);
         return;
     }
 

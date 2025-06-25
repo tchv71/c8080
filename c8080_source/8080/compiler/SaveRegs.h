@@ -49,12 +49,27 @@ public:
     Asm2 &out;
     bool enabled{};
 
-    SaveHlLoadDe(Asm2 &out_, CBuildCase &c) : out(out_) {
-        enabled = (c.regs & U_DE);
-        if (enabled)
-            out.push_reg(R16_HL);
-        else
-            out.ex_hl_de();
+    SaveHlLoadDe(Asm2 &out_, AsmRegister reg, CBuildCase &c) : out(out_) {
+        switch(reg) {
+            case R16_HL:
+            case R16_DE:
+                enabled = (c.regs & U_DE);
+                if (enabled)
+                    out.push_reg(R16_HL);
+                else
+                    out.ex_hl_de();
+                break;
+            case R8_A:
+            case R8_D:
+                enabled = (c.regs & U_D);
+                if (enabled)
+                    out.push_reg(R16_AF);
+                else
+                    out.ld_d_a();
+                break;
+            default:
+                throw std::runtime_error(__PRETTY_FUNCTION__);
+        }
     }
 
     void End() {
@@ -65,31 +80,6 @@ public:
     }
 
     ~SaveHlLoadDe() {
-        assert(!enabled);
-    }
-};
-
-class SaveALoadD {
-public:
-    Asm2 &out;
-    bool enabled{};
-
-    SaveALoadD(Asm2 &out_, CBuildCase &c) : out(out_) {
-        enabled = (c.regs & U_D);
-        if (enabled)
-            out.push_reg(R16_AF);
-        else
-            out.ld_d_a();
-    }
-
-    void End() {
-        if (enabled) {
-            out.pop_reg(R16_DE);
-            enabled = false;
-        }
-    }
-
-    ~SaveALoadD() {
         assert(!enabled);
     }
 };

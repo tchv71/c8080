@@ -18,7 +18,7 @@
 #include "Compiler.h"
 #include "../../c/tools/getnumberasuint64.h"
 
-void Compiler8080::VariantMul16_N(CNodePtr &var, uint16_t number, AsmRegister reg) {
+void Compiler8080::OutMul16(CNodePtr &var, uint16_t number, AsmRegister reg) {
     assert(var != nullptr);
     assert(var->ctype.Is16BitType());
     assert(var->ctype.IsUnsigned());

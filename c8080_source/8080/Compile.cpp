@@ -18,11 +18,11 @@
 #include "compiler/Compiler.h"
 
 bool ParseOutputFormat8080(enum OutputFormat8080 &result, CString str) {
-    if (str == "i1080") {
+    if (0 == strcasecmp(str.c_str(), "i1080")) {
         result = OF_I1080;
         return true;
     }
-    if (str == "cpm") {
+    if (0 == strcasecmp(str.c_str(), "cpm")) {
         result = OF_CPM;
         return true;
     }

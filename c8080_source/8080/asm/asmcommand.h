@@ -19,7 +19,8 @@
 
 enum AssemblerCommand {
     AC_REMOVED,
-    AC_LD_REG_CONST,
+    AC_MVI,
+    AC_LXI,
     AC_LD_REG_STACK_ADDR,
     AC_LD_REG_ARG_STACK_ADDR,
     AC_STACK_CORRECTION,
@@ -64,3 +65,5 @@ enum AssemblerCommand {
     AC_DI,
     AC_NOP,
 };
+
+int GetAssemblerCommandSize(enum AssemblerCommand c);
