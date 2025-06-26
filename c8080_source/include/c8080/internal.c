@@ -112,19 +112,31 @@ void __o_div_i8() {
 // Input: a, d
 // Output: a
 
-void __o_div_u8() {
+void __o_div_u8() {  // TODO: Optimize ADD HL, HL
+    (void)__div_16_mod;
     asm {
-        TODO
-    }
-}
-
-// Example: int8_t a, d; a %= d;
-// Input: a, d
-// Output: a
-
-void __o_mod_i8() {
-    asm {
-        TODO
+        ld   e, a
+        ld   hl, 8 << 8  ; l = remain, h = loop
+        ld   c, l        ; c = result
+__o_div_u8_1:
+        ld   a, e
+        rla
+        ld   e, a
+        ld   a, l
+        rla
+        sub  d
+        jp   nc, __o_div_u8_2
+        add  d
+__o_div_u8_2:
+        ld   l, a  ; remain
+        ccf
+        ld   a, c  ; result
+        rla
+        ld   c, a
+        dec  h
+        jp   nz, __o_div_u8_1
+        ld   (__div_16_mod), hl
+        ld   a, c
     }
 }
 
@@ -133,6 +145,18 @@ void __o_mod_i8() {
 // Output: a
 
 void __o_mod_u8() {
+    (void)__o_mod_u8;
+    asm {
+        call __o_mod_u8
+        ld   a, l
+    }
+}
+
+// Example: int8_t a, d; a %= d;
+// Input: a, d
+// Output: a
+
+void __o_mod_i8() {
     asm {
         TODO
     }

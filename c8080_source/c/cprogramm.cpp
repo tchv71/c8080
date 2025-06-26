@@ -37,7 +37,7 @@ void CProgramm::AddVariable(CVariablePtr a) {
 
     std::string alt_name = lo_name;
     while (output_names.find(alt_name) != output_names.end())
-        alt_name = lo_name + "_" + std::to_string((unsigned)rand());
+        alt_name = lo_name + "_" + std::to_string(unique_counter++);
 
     a->output_name = alt_name;
 

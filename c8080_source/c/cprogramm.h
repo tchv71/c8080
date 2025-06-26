@@ -37,6 +37,7 @@ public:
     std::map<std::string, int> asm_names;
     bool cmm{};  // cmm language mode
     bool error{};
+    uint64_t unique_counter{};
     std::string last_error;
 
     CProgrammCompiler c;

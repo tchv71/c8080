@@ -40,5 +40,19 @@ bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node) {
                 return true;
         }
     }
+
+    // Replace
+    // CNT_CONVERT(8_BIT_TYPE, CNT_OPERATOR(IF, A, B, C))
+    // with
+    // CNT_OPERATOR(A, CNT_CONVERT(8_BIT_TYPE, B), CNT_CONVERT(8_BIT_TYPE, C))
+    if (node->type == CNT_CONVERT && node->a->type == CNT_OPERATOR && node->a->operator_code == COP_IF &&
+        node->ctype.Is8BitType()) {
+        node->a->ctype = node->ctype;
+        DeleteNode(node, 'a');
+        node->b = Convert(node->ctype, node->b);
+        node->c = Convert(node->ctype, node->c);
+        return true;
+    }
+
     return false;
 }

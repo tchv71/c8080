@@ -29,7 +29,10 @@ void CInternalError(CConstNodePtr node, CString text, const char *file_name, uns
 #define C_ERROR_INTERNAL(NODE, TEXT) CInternalError((NODE), (TEXT), __PRETTY_FUNCTION__, __LINE__)
 
 #define C_ERROR_UNSUPPORTED_ASM_TYPE(ASMTYPE, NODE) \
-    C_ERROR_INTERNAL((NODE), std::string("unsupported data type ") + CType{ASMTYPE}.ToString());
+    C_ERROR_INTERNAL((NODE), std::string("unsupported data type ") + CType{ASMTYPE}.ToString())
 
 #define C_ERROR_UNSUPPORTED_OPERATOR(NODE) \
-    C_ERROR_INTERNAL((NODE), std::string("unsupported operator ") + ToString((NODE)->operator_code));
+    C_ERROR_INTERNAL((NODE), std::string("unsupported operator ") + ToString((NODE)->operator_code))
+
+#define C_ERROR_CONVERSION(NODE, A, B) \
+    C_ERROR_INTERNAL((NODE), "Unsupported conversion from " + CType{(A)}.ToString() + " to " + CType{(B)}.ToString())

@@ -24,7 +24,7 @@
 bool DeleteNodeSaveType(CNodePtr &node, char c) {
     CType type = node->ctype;
     DeleteNode(node, c);
-    if (node->ctype.GetAsmType() != type.GetAsmType())
+    if (node->ctype.GetAsmTypeIgnoreSign() != type.GetAsmTypeIgnoreSign())
         CThrow(node, "Internal error in " + std::string(__PRETTY_FUNCTION__));
     node->ctype = type;
     return true;

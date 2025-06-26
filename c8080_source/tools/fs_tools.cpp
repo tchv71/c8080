@@ -73,7 +73,7 @@ void LoadFile(CString file_name, std::function<void *(size_t)> allocate) {
                                  std::string(", errno ") + std::to_string(errno));
     }
 
-    if (buff.st_size > SIZE_MAX) {
+    if (buff.st_size < 0 || uint64_t(buff.st_size) > SIZE_MAX) {
         throw std::runtime_error(std::string("Too big file ") + std::string(file_name) +
                                  std::string(", current size ") + std::to_string(buff.st_size) +
                                  std::string(", max size ") + std::to_string(SIZE_MAX));

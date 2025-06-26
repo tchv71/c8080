@@ -24,12 +24,33 @@
 
 class Asm2 : public Assembler {
 public:
-    void ld_pointer_hl(CString string) {
+    void ld_pstring_hl(CString string) {
         Add(AC_SHLD, string);
     }
 
-    void ld_pointer_hl(uint16_t number) {
+    void ld_pnumber_hl(uint16_t number) {
         Add(AC_SHLD, number);
+    }
+
+    void ld_pconst_hl(CNodePtr &node) {
+        if (node->type == CNT_NUMBER)
+            ld_pnumber_hl(GetNumberAsUint64(node));
+        else
+            ld_pstring_hl(GetConst(node, nullptr, this));
+    }
+
+    void ld_pconst_dehl_xchg(CNodePtr &node) {
+        if (node->type == CNT_NUMBER) {
+            uint32_t n = GetNumberAsUint64(node);
+            ld_pnumber_hl(n);
+            ex_hl_de();
+            ld_pnumber_hl(n >> 16);
+        } else {
+            std::string s = GetConst(node, nullptr, this);
+            ld_pstring_hl(s);
+            ex_hl_de();
+            ld_pstring_hl(s + " + 2");
+        }
     }
 
     void ld_a_pointer(CString string) {
@@ -348,6 +369,18 @@ public:
             Add(AC_LXI, reg, GetNumberAsUint64(node));
         else
             Add(AC_LXI, reg, GetConst(node, nullptr, this));
+    }
+
+    void ld_dehl_const(CNodePtr &node) {
+        if (node->type == CNT_NUMBER) {
+            const uint64_t value = GetNumberAsUint64(node);
+            ld_r16_number(R16_DE, value >> 16);
+            ld_r16_number(R16_HL, value);
+        } else {
+            const std::string value = GetConst(node, nullptr, this);
+            ld_r16_string(R16_DE, "(" + value + ") >> 16");
+            ld_r16_string(R16_HL, "(" + value + ") & 0FFFFh");
+        }
     }
 
     void ret_condition(AsmCondition condition) {

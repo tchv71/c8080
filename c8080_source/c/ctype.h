@@ -120,6 +120,7 @@ public:
     }
 
     CBaseType GetAsmType() const;
+    CBaseType GetAsmTypeIgnoreSign() const;
 
     uint64_t SizeOfElement(const CErrorPosition &e) const;
 };

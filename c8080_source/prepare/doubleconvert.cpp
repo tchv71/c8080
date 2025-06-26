@@ -19,8 +19,8 @@
 
 bool PrepareDoubleConvert(Prepare &, CNodePtr &node) {
     if (node->type == CNT_CONVERT) {
-        const CBaseType a = node->ctype.GetAsmType();
-        const CBaseType b = node->a->ctype.GetAsmType();
+        const CBaseType a = node->ctype.GetAsmTypeIgnoreSign();
+        const CBaseType b = node->a->ctype.GetAsmTypeIgnoreSign();
 
         // Remove cast from type to same type
         if (a == b) {
@@ -30,10 +30,9 @@ bool PrepareDoubleConvert(Prepare &, CNodePtr &node) {
 
         // Replace cast "medium size -> large size -> small size" with "medium size -> small size"
         if (node->a->type == CNT_CONVERT) {
-            const CBaseType c = node->a->a->ctype.GetAsmType();
+            const CBaseType c = node->a->a->ctype.GetAsmTypeIgnoreSign();
             if (IsInteger(a) && IsInteger(b) && IsInteger(c)) {
-                const uint64_t c_sizeof = SizeOf(c, node->a->a->e);
-                if (SizeOf(a, node->e) <= c_sizeof && c_sizeof <= SizeOf(b, node->a->e)) {
+                if (a <= c && c <= b) {
                     DeleteNode(node->a, 'a');
                     return true;
                 }

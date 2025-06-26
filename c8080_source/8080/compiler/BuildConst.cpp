@@ -17,47 +17,45 @@
 
 #include "Compiler.h"
 #include "../../c/tools/getnumberasuint64.h"
-#include "../GetConst.h"
+
+void Compiler8080::Case_Const8(CNodePtr &node, AsmRegister reg) {
+    out.ld_r8_const(reg, node);
+}
+
+void Compiler8080::Case_Const16(CNodePtr &node, AsmRegister reg) {
+    out.ld_r16_const(reg, node);
+}
+
+void Compiler8080::Case_Const32(CNodePtr &node, AsmRegister reg) {
+    out.ld_dehl_const(node);
+}
 
 void Compiler8080::BuildConst(CNodePtr &node, AsmRegister reg) {
     assert(node->IsConstNode());
 
-    if (reg == REG_NONE)
+    if (reg == REG_NONE) {
+        GetConst(node, nullptr, &out);  // ref counter
+        return;
+    }
+
+    if (MeasureReset(node, reg))
         return;
 
     switch (node->ctype.GetAsmType()) {
         case CBT_CHAR:
         case CBT_UNSIGNED_CHAR:
-            if (reg == REG_PREPARE) {
-                node->bi.SetMainAndAlt(U_A, 2, U_D, 2);
-                return;
-            }
-            out.ld_r8_const(reg, node);
-            return;
+            Measure(node, R8_A, &Compiler8080::Case_Const8);
+            Measure(node, R8_D, &Compiler8080::Case_Const8);
+            break;
         case CBT_SHORT:
         case CBT_UNSIGNED_SHORT:
-            if (reg == REG_PREPARE) {
-                node->bi.SetMainAndAlt(U_HL, 3, U_DE, 3);
-                return;
-            }
-            out.ld_r16_const(reg, node);
-            return;
+            Measure(node, R16_HL, &Compiler8080::Case_Const16);
+            Measure(node, R16_DE, &Compiler8080::Case_Const16);
+            break;
         case CBT_LONG:
         case CBT_UNSIGNED_LONG:
-            if (reg == REG_PREPARE) {
-                node->bi.SetMain(U_HLDE, 6);
-                return;
-            }
-            if (node->type == CNT_NUMBER) {
-                const uint64_t value = GetNumberAsUint64(node);
-                out.ld_r16_number(R16_DE, value >> 16);
-                out.ld_r16_number(R16_HL, value);
-            } else {
-                const std::string value = GetConst(node, nullptr, &out);
-                out.ld_r16_string(R16_DE, "(" + value + ") >> 16");
-                out.ld_r16_string(R16_HL, "(" + value + ") & 0FFFFh");
-            }
-            return;
+            Measure(node, R32_DEHL, &Compiler8080::Case_Const32);
+            break;
         default:
             C_ERROR_UNSUPPORTED_ASM_TYPE(node->ctype.GetAsmType(), node);
     }

@@ -181,6 +181,27 @@ CBaseType CType::GetAsmType() const {
     }
 }
 
+CBaseType CType::GetAsmTypeIgnoreSign() const {
+    if (pointers.size() != 0)
+        return CBT_UNSIGNED_SHORT;
+
+    switch (base_type) {
+        case CBT_CHAR:
+        case CBT_SIGNED_CHAR:
+            return CBT_UNSIGNED_CHAR;
+        case CBT_SHORT:
+        case CBT_INT:
+        case CBT_UNSIGNED_INT:
+            return CBT_UNSIGNED_SHORT;
+        case CBT_LONG:
+            return CBT_UNSIGNED_LONG;
+        case CBT_LONG_LONG:
+            return CBT_UNSIGNED_LONG_LONG;
+        default:
+            return base_type;
+    }
+}
+
 uint64_t CType::SizeOfBase(const CErrorPosition &e) const {
     if (base_type == CBT_STRUCT) {
         if (struct_object == nullptr)
