@@ -53,8 +53,19 @@ public:
         }
     }
 
-    void ld_a_pointer(CString string) {
+    void ld_a_pstring(CString string) {
         Add(AC_LDA, string);
+    }
+
+    void ld_a_pnumber(uint16_t number) {
+        Add(AC_LDA, number);
+    }
+
+    void ld_a_pconst(CNodePtr &node) {
+        if (node->type == CNT_NUMBER)
+            ld_a_pnumber(GetNumberAsUint64(node));
+        else
+            ld_a_pstring(GetConst(node, nullptr, this));
     }
 
     void ex_hl_de() {
@@ -210,9 +221,40 @@ public:
         Add(AC_JMP, string);
     }
 
-    void ld_hl_pointer(CString string) {
+    void ld_hl_pstring(CString string) {
         ChangedReg(R16_HL);
         Add(AC_LHLD, string);
+    }
+
+    void ld_hl_pnumber(uint16_t number) {
+        ChangedReg(R16_HL);
+        Add(AC_LHLD, number);
+    }
+
+    void ld_hl_pconst(CNodePtr &node) {
+        if (node->type == CNT_NUMBER)
+            ld_hl_pnumber(GetNumberAsUint64(node));
+        else
+            ld_hl_pstring(GetConst(node, nullptr, this));
+    }
+
+    void ld_dehl_pstring(CString string) {
+        ld_hl_pstring("((" + string + ") + 2)");
+        ex_hl_de();
+        ld_hl_pstring(string);
+    }
+
+    void ld_dehl_pnumber(uint32_t number) {
+        ld_hl_pnumber(number + 2);
+        ex_hl_de();
+        ld_hl_pnumber(number);
+    }
+
+    void ld_dehl_pconst(CNodePtr &node) {
+        if (node->type == CNT_NUMBER)
+            ld_dehl_pnumber(GetNumberAsUint64(node));
+        else
+            ld_dehl_pstring(GetConst(node, nullptr, this));
     }
 
     void add_hl_reg(AsmRegister reg) {

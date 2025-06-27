@@ -21,6 +21,28 @@ void Compiler8080::Case_Convert_void(CNodePtr &node, AsmRegister reg) {
     Build(node->a, REG_NONE);
 }
 
+void Compiler8080::Case_ConvertLoadConstAddr_8(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R8_A);
+    if (node->a->IsDeaddr() && node->a->a->IsConstNode())
+        out.ld_a_pconst(node->a->a);
+}
+
+void Compiler8080::Case_ConvertLoad_8(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R8_A || reg == R8_D);
+    if (node->a->IsDeaddr()) {
+        Build(node->a->a, R16_HL);
+        out.ld_r8_r8(reg, R8_M);
+    }
+}
+
+void Compiler8080::Case_ConvertLoad_8_A(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R8_A);
+    if (node->a->IsDeaddr() && node->a->a->bi.alt.able) {
+        Build(node->a->a, R16_DE);
+        out.ld_a_pde();
+    }
+}
+
 void Compiler8080::Case_Convert_U8_16_MM(CNodePtr &node, AsmRegister reg) {
     Build(node->a, R8_A);
     out.ld_r8_r8(R8_L, R8_A);
@@ -106,13 +128,75 @@ void Compiler8080::Case_Convert_32_16(CNodePtr &node, AsmRegister reg) {
     // HL
 }
 
+void Compiler8080::Case_ConvertLoadConstAddr_16(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R16_HL);
+    if (node->a->IsDeaddr() && node->a->a->IsConstNode())
+        out.ld_hl_pconst(node->a->a);
+}
+
+void Compiler8080::Case_ConvertLoad_16(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R16_HL || reg == R16_DE);
+    if (node->a->IsDeaddr()) {
+        Build(node->a->a, R16_HL);
+        out.ld_e_phl();
+        out.inc_hl();
+        out.ld_d_phl();
+        if (reg == R16_HL)
+            out.ex_hl_de();
+    }
+}
+
+void Compiler8080::Case_ConvertLoadConstAddr_U8_16(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R16_HL);
+    if (node->a->IsDeaddr() && node->a->a->IsConstNode()) {
+        out.ld_hl_pconst(node->a->a);
+        out.ld_h_number(0);
+    }
+}
+
+void Compiler8080::Case_ConvertLoad_U8_16(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R16_HL || reg == R16_DE);
+    if (node->a->IsDeaddr()) {
+        Build(node->a->a, R16_HL);
+        if (reg == R16_HL) {
+            out.ld_l_phl();
+            out.ld_h_number(0);
+        } else {
+            out.ld_e_phl();
+            out.ld_d_number(0);
+        }
+    }
+}
+
+void Compiler8080::Case_ConvertLoadConstAddr_U8_32(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R32_DEHL);
+    if (node->a->IsDeaddr() && node->a->a->IsConstNode()) {
+        out.ld_hl_pconst(node->a->a);
+        out.ld_de_number(0);
+        out.ld_h_d();
+    }
+}
+
+void Compiler8080::Case_ConvertLoad_U8_32(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R32_DEHL);
+    if (node->a->IsDeaddr()) {
+        Build(node->a->a, R16_HL);
+        out.ld_l_phl();
+        out.ld_de_number(0);
+        out.ld_h_d();
+    }
+}
+
 #define PAIR(A, B) (unsigned(A) + (unsigned(B) << 8))
 
 void Compiler8080::BuildConvert(CNodePtr &node, AsmRegister reg) {
+    assert(node->type == CNT_CONVERT);
+    assert(node->a != nullptr);
+
     if (MeasureReset(node, reg))
         return;
 
-    Build(node->a, reg);
+    Build(node->a);
 
     Measure(node, REG_NONE, &Compiler8080::Case_Convert_void);
 
@@ -120,41 +204,39 @@ void Compiler8080::BuildConvert(CNodePtr &node, AsmRegister reg) {
         return;
 
     switch (PAIR(node->a->ctype.GetAsmType(), node->ctype.GetAsmType())) {
-        // 8 bit -> 16 bit
         case PAIR(CBT_UNSIGNED_CHAR, CBT_SHORT):
         case PAIR(CBT_UNSIGNED_CHAR, CBT_UNSIGNED_SHORT):
             Measure(node, R16_HL, &Compiler8080::Case_Convert_U8_16_MM);
             Measure(node, R16_HL, &Compiler8080::Case_Convert_U8_16_MA);
             Measure(node, R16_DE, &Compiler8080::Case_Convert_U8_16_AM);
             Measure(node, R16_DE, &Compiler8080::Case_Convert_U8_16_AA);
+            Measure(node, R16_HL, &Compiler8080::Case_ConvertLoadConstAddr_U8_16);
+            Measure(node, R16_HL, &Compiler8080::Case_ConvertLoad_U8_16);
+            Measure(node, R16_DE, &Compiler8080::Case_ConvertLoad_U8_16);
             break;
-        // signed 8 bit -> 16 bit
         case PAIR(CBT_CHAR, CBT_SHORT):
         case PAIR(CBT_CHAR, CBT_UNSIGNED_SHORT):
             Measure(node, R16_HL, &Compiler8080::Case_Convert_S8_16);
             break;
-        // 8 bit -> 32 bit
         case PAIR(CBT_UNSIGNED_CHAR, CBT_LONG):
         case PAIR(CBT_UNSIGNED_CHAR, CBT_UNSIGNED_LONG):
             Measure(node, R32_DEHL, &Compiler8080::Case_Convert_U8_32_M);
             Measure(node, R32_DEHL, &Compiler8080::Case_Convert_U8_32_A);
+            Measure(node, R32_DEHL, &Compiler8080::Case_ConvertLoadConstAddr_U8_32);
+            Measure(node, R32_DEHL, &Compiler8080::Case_ConvertLoad_U8_32);
             break;
-        // signed 8 bit -> 32 bit
         case PAIR(CBT_CHAR, CBT_LONG):
         case PAIR(CBT_CHAR, CBT_UNSIGNED_LONG):
             Measure(node, R32_DEHL, &Compiler8080::Case_Convert_S8_32);
             break;
-        // 16 bit -> 32 bit
         case PAIR(CBT_UNSIGNED_SHORT, CBT_LONG):
         case PAIR(CBT_UNSIGNED_SHORT, CBT_UNSIGNED_LONG):
             Measure(node, R32_DEHL, &Compiler8080::Case_Convert_U16_32);
             break;
-        // signed 16 bit -> 32 bit
         case PAIR(CBT_SHORT, CBT_LONG):
         case PAIR(CBT_SHORT, CBT_UNSIGNED_LONG):
             Measure(node, R32_DEHL, &Compiler8080::Case_Convert_S16_32);
             break;
-        // 16 bit -> 8 bit
         case PAIR(CBT_SHORT, CBT_CHAR):
         case PAIR(CBT_SHORT, CBT_UNSIGNED_CHAR):
         case PAIR(CBT_UNSIGNED_SHORT, CBT_CHAR):
@@ -163,21 +245,30 @@ void Compiler8080::BuildConvert(CNodePtr &node, AsmRegister reg) {
             Measure(node, R8_D, &Compiler8080::Case_Convert_16_8_M);
             Measure(node, R8_A, &Compiler8080::Case_Convert_16_8_A);
             Measure(node, R8_D, &Compiler8080::Case_Convert_16_8_A);
+            Measure(node, R8_A, &Compiler8080::Case_ConvertLoadConstAddr_8);
+            Measure(node, R8_A, &Compiler8080::Case_ConvertLoad_8);
+            Measure(node, R8_D, &Compiler8080::Case_ConvertLoad_8);
+            Measure(node, R8_A, &Compiler8080::Case_ConvertLoad_8_A);
             break;
-        // 32 bit -> 8 bit
         case PAIR(CBT_LONG, CBT_CHAR):
         case PAIR(CBT_LONG, CBT_UNSIGNED_CHAR):
         case PAIR(CBT_UNSIGNED_LONG, CBT_CHAR):
         case PAIR(CBT_UNSIGNED_LONG, CBT_UNSIGNED_CHAR):
             Measure(node, R8_A, &Compiler8080::Case_Convert_32_8);
             Measure(node, R8_D, &Compiler8080::Case_Convert_32_8);
+            Measure(node, R8_A, &Compiler8080::Case_ConvertLoadConstAddr_8);
+            Measure(node, R8_A, &Compiler8080::Case_ConvertLoad_8);
+            Measure(node, R8_D, &Compiler8080::Case_ConvertLoad_8);
+            Measure(node, R8_A, &Compiler8080::Case_ConvertLoad_8_A);
             break;
-        // 32 bit -> 16 bit
         case PAIR(CBT_LONG, CBT_SHORT):
         case PAIR(CBT_LONG, CBT_UNSIGNED_SHORT):
         case PAIR(CBT_UNSIGNED_LONG, CBT_SHORT):
         case PAIR(CBT_UNSIGNED_LONG, CBT_UNSIGNED_SHORT):
             Measure(node, R16_HL, &Compiler8080::Case_Convert_32_16);
+            Measure(node, R16_HL, &Compiler8080::Case_ConvertLoadConstAddr_16);
+            Measure(node, R16_HL, &Compiler8080::Case_ConvertLoad_16);
+            Measure(node, R16_DE, &Compiler8080::Case_ConvertLoad_16);
             break;
         default:
             C_ERROR_CONVERSION(node, node->a->ctype.GetAsmType(), node->ctype.GetAsmType());

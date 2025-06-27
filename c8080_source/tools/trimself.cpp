@@ -27,7 +27,7 @@ void TrimSelf(std::string &string) {
         string.erase(0u, begin);
     }
 
-    const auto end = string.find(' ');
+    const auto end = string.find(' ');  // TODO: last
     if (end != std::string::npos)
         string.resize(end);
 }
