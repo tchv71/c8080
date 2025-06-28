@@ -55,4 +55,4 @@ bool IsSetOperator(COperatorCode code);
 bool IsCompareOperator(COperatorCode code);
 COperatorCode NegativeCompareOperator(COperatorCode code);
 const char *ToString(COperatorCode code);
-bool CanOperatorArgumentsSwapped(COperatorCode code);
+bool IsArgumentsRearrangeAllowed(COperatorCode code);

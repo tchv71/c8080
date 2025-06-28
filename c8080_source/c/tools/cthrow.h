@@ -28,6 +28,9 @@ void CInternalError(CConstNodePtr node, CString text, const char *file_name, uns
 
 #define C_ERROR_INTERNAL(NODE, TEXT) CInternalError((NODE), (TEXT), __PRETTY_FUNCTION__, __LINE__)
 
+#define C_ERROR_UNSUPPORTED_NODE_TYPE(NODE) \
+    C_ERROR_INTERNAL((NODE), std::string("unsupported node type ") + ToString((NODE)->type))
+
 #define C_ERROR_UNSUPPORTED_ASM_TYPE(ASMTYPE, NODE) \
     C_ERROR_INTERNAL((NODE), std::string("unsupported data type ") + CType{ASMTYPE}.ToString())
 

@@ -34,7 +34,7 @@ void Compiler8080::BuildConst(CNodePtr &node, AsmRegister reg) {
     assert(node->IsConstNode());
 
     if (reg == REG_NONE) {
-        GetConst(node, nullptr, &out);  // ref counter
+        out.GetConst(node);  // ref counter
         return;
     }
 

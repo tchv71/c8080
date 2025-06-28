@@ -20,10 +20,11 @@
 #include "8080_assembler.h"
 #include "../../c/cnode.h"
 #include "../../c/tools/getnumberasuint64.h"
-#include "../GetConst.h"
 
 class Asm2 : public Assembler {
 public:
+    std::string GetConst(const CNodePtr &node, std::vector<CVariablePtr> *use = nullptr);
+
     void ld_pstring_hl(CString string) {
         Add(AC_SHLD, string);
     }
@@ -36,7 +37,7 @@ public:
         if (node->type == CNT_NUMBER)
             ld_pnumber_hl(GetNumberAsUint64(node));
         else
-            ld_pstring_hl(GetConst(node, nullptr, this));
+            ld_pstring_hl(GetConst(node));
     }
 
     void ld_pconst_dehl_xchg(CNodePtr &node) {
@@ -46,7 +47,7 @@ public:
             ex_hl_de();
             ld_pnumber_hl(n >> 16);
         } else {
-            std::string s = GetConst(node, nullptr, this);
+            std::string s = GetConst(node);
             ld_pstring_hl(s);
             ex_hl_de();
             ld_pstring_hl(s + " + 2");
@@ -65,7 +66,7 @@ public:
         if (node->type == CNT_NUMBER)
             ld_a_pnumber(GetNumberAsUint64(node));
         else
-            ld_a_pstring(GetConst(node, nullptr, this));
+            ld_a_pstring(GetConst(node));
     }
 
     void ex_hl_de() {
@@ -171,7 +172,7 @@ public:
         if (node->type == CNT_NUMBER)
             ld_pnumber_a(GetNumberAsUint64(node));
         else
-            ld_pstring1_a(GetConst(node, nullptr, this));
+            ld_pstring1_a(GetConst(node));
     }
 
     void rotate(AssemblerCommand opcode) {
@@ -235,7 +236,7 @@ public:
         if (node->type == CNT_NUMBER)
             ld_hl_pnumber(GetNumberAsUint64(node));
         else
-            ld_hl_pstring(GetConst(node, nullptr, this));
+            ld_hl_pstring(GetConst(node));
     }
 
     void ld_dehl_pstring(CString string) {
@@ -254,7 +255,7 @@ public:
         if (node->type == CNT_NUMBER)
             ld_dehl_pnumber(GetNumberAsUint64(node));
         else
-            ld_dehl_pstring(GetConst(node, nullptr, this));
+            ld_dehl_pstring(GetConst(node));
     }
 
     void add_hl_reg(AsmRegister reg) {
@@ -359,7 +360,7 @@ public:
         if (number->type == CNT_NUMBER)
             alu_a_number(alu, GetNumberAsUint64(number));
         else
-            alu_a_string(alu, GetConst(number, nullptr, this));
+            alu_a_string(alu, GetConst(number));
     }
 
     void ld_r8_number(AsmRegister reg, uint8_t number) {
@@ -402,7 +403,7 @@ public:
         if (node->type == CNT_NUMBER)
             ld_r8_number(reg, GetNumberAsUint64(node));
         else
-            ld_r8_string(reg, GetConst(node, nullptr, this));
+            ld_r8_string(reg, GetConst(node));
     }
 
     void ld_r16_const(AsmRegister reg, CNodePtr &node) {
@@ -410,7 +411,7 @@ public:
         if (node->type == CNT_NUMBER)
             Add(AC_LXI, reg, GetNumberAsUint64(node));
         else
-            Add(AC_LXI, reg, GetConst(node, nullptr, this));
+            Add(AC_LXI, reg, GetConst(node));
     }
 
     void ld_dehl_const(CNodePtr &node) {
@@ -419,7 +420,7 @@ public:
             ld_r16_number(R16_DE, value >> 16);
             ld_r16_number(R16_HL, value);
         } else {
-            const std::string value = GetConst(node, nullptr, this);
+            const std::string value = GetConst(node);
             ld_r16_string(R16_DE, "(" + value + ") >> 16");
             ld_r16_string(R16_HL, "(" + value + ") & 0FFFFh");
         }
@@ -592,7 +593,7 @@ public:
         if (node->type == CNT_NUMBER)
             ld_phl_number(GetNumberAsUint64(node));
         else
-            ld_phl_string(GetConst(node, nullptr, this));
+            ld_phl_string(GetConst(node));
     }
 
     void inc_de() {
@@ -754,5 +755,49 @@ public:
 
     void ld_hl_offset(CString string) {
         ld_r16_string(R16_HL, string);
+    }
+
+    unsigned data(CNodePtr &node) {
+        if (node->type == CNT_NUMBER) {
+            switch (node->ctype.GetAsmType()) {
+                case CBT_CHAR:
+                    db(node->number.i);
+                    return 1;
+                case CBT_UNSIGNED_CHAR:
+                    db(node->number.u);
+                    return 1;
+                case CBT_SHORT:
+                    dw(node->number.i);
+                    return 2;
+                case CBT_UNSIGNED_SHORT:
+                    dw(node->number.u);
+                    return 2;
+                case CBT_LONG:
+                    dd(node->number.i);
+                    return 4;
+                case CBT_UNSIGNED_LONG:
+                    dd(node->number.u);
+                    return 4;
+                default:
+                    C_ERROR_UNSUPPORTED_ASM_TYPE(node->ctype.GetAsmType(), node);
+            }
+        }
+        switch (node->ctype.GetAsmType()) {
+            case CBT_CHAR:
+            case CBT_UNSIGNED_CHAR:
+                db(GetConst(node));
+                return 1;
+            case CBT_SHORT:
+            case CBT_UNSIGNED_SHORT:
+                dw(GetConst(node));
+                return 2;
+            case CBT_LONG:
+            case CBT_UNSIGNED_LONG:
+                dd(GetConst(node));
+                return 4;
+            default:
+                C_ERROR_UNSUPPORTED_ASM_TYPE(node->ctype.GetAsmType(), node);
+        }
+        return 0;
     }
 };
