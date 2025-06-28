@@ -30,8 +30,8 @@ void Compiler8080::Case_Save8_AM(CNodePtr &node, AsmRegister reg) {
 void Compiler8080::Case_Save8_MA(CNodePtr &node, AsmRegister reg) {
     if (BuildArgs(node, reg, node->a->a, R16_HL, node->b, R8_D)) {
         out.ld_phl_d();
-        MeasureMid(node, R8_D, &Compiler8080::Case_Save8_MA);
-        MeasureMid(node, REG_NONE, &Compiler8080::Case_Save8_MA);
+        MeasureMid(node, R8_D);
+        MeasureMid(node, REG_NONE);
         if (reg != R8_D)
             out.ld_a_d();
     }
@@ -56,8 +56,8 @@ void Compiler8080::Case_Save16_AA(CNodePtr &node, AsmRegister reg) {
     out.ld_phl_e();
     out.inc_hl();
     out.ld_phl_d();
-    MeasureMid(node, R16_DE, &Compiler8080::Case_Save16_AA);
-    MeasureMid(node, REG_NONE, &Compiler8080::Case_Save16_AA);
+    MeasureMid(node, R16_DE);
+    MeasureMid(node, REG_NONE);
     if (reg != R16_DE)
         out.ex_hl_de();
 }
@@ -91,7 +91,7 @@ void Compiler8080::Case_Save32_NM(CNodePtr &node, AsmRegister reg) {
     if (node->a->a->IsConstNode()) {
         Build(node->b, R32_DEHL);
         out.ld_pconst_dehl_xchg(node->a->a);
-        MeasureMid(node, REG_NONE, &Compiler8080::Case_Save32_NM);
+        MeasureMid(node, REG_NONE);
         if (reg != REG_NONE)
             out.ex_hl_de();
     }
