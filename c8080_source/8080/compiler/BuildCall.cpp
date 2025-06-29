@@ -39,30 +39,37 @@ void Compiler8080::BuildCall(CNodePtr &node, AsmRegister reg) {
 
     for (size_t j = args.size(); j != 0; j--) {
         CNodePtr &i = args[j - 1];
-        auto reg = CompileExpression(i, false, 2);
+        Build(i);
         switch (i->ctype.GetAsmType()) {
             case CBT_CHAR:
             case CBT_UNSIGNED_CHAR:
                 assert(reg == R8_A || reg == R8_D);
-                if (reg == R8_A) {
+                if (!i->bi.alt.able) {
+                    Build(i, R8_A);
                     out.dec_reg(R16_SP);  // TODO: Remove
                     out.push_af();
                     out.inc_reg(R16_SP);  // TODO: Remove
                 } else {
+                    Build(i, R8_D);
                     out.push_de();
                 }
                 used_stack_size += 2;
                 break;
             case CBT_SHORT:
             case CBT_UNSIGNED_SHORT:
-                assert(reg == R16_HL || reg == R16_DE);
-                out.push_reg(reg);
+                if (!i->bi.alt.able) {
+                    Build(i, R16_HL);
+                    out.push_reg(R16_HL);
+                } else {
+                    Build(i, R16_DE);
+                    out.push_reg(R16_DE);
+                }
                 used_stack_size += 2;
                 break;
             case CBT_LONG:
             case CBT_UNSIGNED_LONG:
+                Build(i, R32_DEHL);
                 out.push_de_hl();
-                assert(reg == R32_DEHL);
                 used_stack_size += 4;
                 break;
             default:
@@ -78,8 +85,8 @@ void Compiler8080::BuildCall(CNodePtr &node, AsmRegister reg) {
 
         MakeCallTreeEnd();
     } else {
-        auto ar = CompileExpression(node->b);
-        assert(ar == R16_HL);
+        Build(node->a);
+        Build(node->a, R16_HL);
         InternalCall(o.call_hl);
     }
 

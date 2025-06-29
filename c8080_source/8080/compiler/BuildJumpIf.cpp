@@ -18,18 +18,18 @@
 #include "Compiler.h"
 #include "../../c/tools/numberiszero.h"
 
-void Compiler8080::CompileJumpIf(CNodePtr &node, bool jmp_if_true, AsmLabel *label) {
+void Compiler8080::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, AsmLabel *label) {
     switch (node->type) {
         case CNT_MONO_OPERATOR:
             if (node->mono_operator_code == MOP_NOT)
-                return CompileJumpIf(node->a, !jmp_if_true, label);
+                return BuildJumpIf(prepare, node->a, !jmp_if_true, label);
             break;
         case CNT_OPERATOR:
             if (node->operator_code == COP_CMP_E || node->operator_code == COP_CMP_NE) {
                 if (NumberIsZero(node->b))
-                    return CompileJumpIfZero(node->a, node->operator_code == COP_CMP_E, jmp_if_true, label);
+                    return BuildJumpIfZero(prepare, node->a, node->operator_code == COP_CMP_E, jmp_if_true, label);
                 if (NumberIsZero(node->a))
-                    return CompileJumpIfZero(node->b, node->operator_code == COP_CMP_E, jmp_if_true, label);
+                    return BuildJumpIfZero(prepare, node->b, node->operator_code == COP_CMP_E, jmp_if_true, label);
             }
 
             switch (node->operator_code) {
@@ -37,8 +37,11 @@ void Compiler8080::CompileJumpIf(CNodePtr &node, bool jmp_if_true, AsmLabel *lab
                 case COP_CMP_NE:
                 case COP_CMP_L:
                 case COP_CMP_GE:
-                    Build(node);
-                    Build(node, R8_A);
+                    if (prepare) {
+                        BuildOperator(node, REG_PREPARE);
+                        return;
+                    }
+                    BuildOperator(node, R8_A);
                     switch (jmp_if_true ? node->operator_code : NegativeCompareOperator(node->operator_code)) {
                         case COP_CMP_E:
                             out.jz_label(label);
@@ -65,22 +68,22 @@ void Compiler8080::CompileJumpIf(CNodePtr &node, bool jmp_if_true, AsmLabel *lab
                 case COP_LAND:
                     if (jmp_if_true) {
                         auto label2 = out.AllocLabel();
-                        CompileJumpIf(node->a, false, label2);
-                        CompileJumpIf(node->b, true, label);
+                        BuildJumpIf(prepare, node->a, false, label2);
+                        BuildJumpIf(prepare, node->b, true, label);
                         out.label(label2);
                     } else {
-                        CompileJumpIf(node->a, false, label);
-                        CompileJumpIf(node->b, false, label);
+                        BuildJumpIf(prepare, node->a, false, label);
+                        BuildJumpIf(prepare, node->b, false, label);
                     }
                     return;
                 case COP_LOR:
                     if (jmp_if_true) {
-                        CompileJumpIf(node->a, true, label);
-                        CompileJumpIf(node->b, true, label);
+                        BuildJumpIf(prepare, node->a, true, label);
+                        BuildJumpIf(prepare, node->b, true, label);
                     } else {
                         auto label2 = out.AllocLabel();
-                        CompileJumpIf(node->a, true, label2);
-                        CompileJumpIf(node->b, false, label);
+                        BuildJumpIf(prepare, node->a, true, label2);
+                        BuildJumpIf(prepare, node->b, false, label);
                         out.label(label2);
                     }
                     return;

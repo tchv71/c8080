@@ -17,8 +17,11 @@
 
 #include "Compiler.h"
 
-void Compiler8080::CompileJumpIfZero(CNodePtr &node, bool invert1, bool invert2, AsmLabel *label) {
-    Build(node);
+void Compiler8080::BuildJumpIfZero(bool prepare, CNodePtr &node, bool invert1, bool invert2, AsmLabel *label) {
+    if (prepare) {
+        Build(node);
+        return;
+    }
 
     switch (node->ctype.GetAsmType()) {
         case CBT_CHAR:

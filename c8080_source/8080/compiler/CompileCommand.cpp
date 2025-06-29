@@ -56,7 +56,8 @@ void Compiler8080::CompileCommand(CNodePtr &node) {
         case CNT_IF: {
             const auto label_false = out.AllocLabel();
             const auto label_exit = out.AllocLabel();
-            CompileJumpIf(node->a, false, label_false);
+            BuildJumpIf(true, node->a, false, label_false);
+            BuildJumpIf(false, node->a, false, label_false);
             if (node->b)
                 CompileCommand(node->b);
             if (node->c)
@@ -86,8 +87,10 @@ void Compiler8080::CompileCommand(CNodePtr &node) {
             continue_label = out.AllocLabel();
             break_label = out.AllocLabel();
             out.label(start_label);
-            if (node->b)
-                CompileJumpIf(node->b, false, break_label);
+            if (node->b) {
+                BuildJumpIf(true, node->b, false, break_label);
+                BuildJumpIf(false, node->b, false, break_label);
+            }
             if (node->d)
                 CompileCommand(node->d);
             out.label(continue_label);
@@ -105,8 +108,10 @@ void Compiler8080::CompileCommand(CNodePtr &node) {
             continue_label = out.AllocLabel();
             break_label = out.AllocLabel();
             out.label(continue_label);
-            if (node->a)
-                CompileJumpIf(node->a, false, break_label);
+            if (node->a) {
+                BuildJumpIf(true, node->a, false, break_label);
+                BuildJumpIf(false, node->a, false, break_label);
+            }
             if (node->b)
                 CompileCommand(node->b);
             out.jmp_label(continue_label);
@@ -127,17 +132,20 @@ void Compiler8080::CompileCommand(CNodePtr &node) {
             out.label(start_label);
             CompileCommand(node->b);
             out.label(continue_label);
-            CompileJumpIf(node->a, true, start_label);
+            BuildJumpIf(true, node->a, true, start_label);
+            BuildJumpIf(false, node->a, true, start_label);
             out.label(break_label);
             continue_label = saved_continue_label;
             break_label = saved_break_label;
             break;
         }
         case CNT_SAVE_TO_REGISTER:
-            CompileExpression(node->a);
+            Build(node->a);
+            Build(node->a, GetResultReg(node->ctype, false, false, node));
             // Leave the result in the processor register
             break;
         default:
-            CompileExpression(node, true);
+            Build(node);
+            Build(node, REG_NONE);
     }
 }
