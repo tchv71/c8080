@@ -20,9 +20,10 @@
 #include "../cerrorposition.h"
 #include "../cnodeptr.h"
 
-void CThrow(CConstErrorPosition position, CString text);
-void CThrow(CConstNodePtr node, CString text);
-void CInternalError(CConstNodePtr node, CString text, const char *file_name, unsigned line);
+void CThrow(const CErrorPosition &position, CString text);
+void CThrow(const CNodePtr &node, CString text);
+void CInternalError(const CErrorPosition &position, CString text, const char *file_name, unsigned line);
+void CInternalError(const CNodePtr &node, CString text, const char *file_name, unsigned line);
 
 // Throw an internal compiler error exception, including the position in the compiler source code
 

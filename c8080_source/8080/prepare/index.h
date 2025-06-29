@@ -27,4 +27,3 @@ bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node);
 bool Prepare8080IncDec(Prepare &, CNodePtr &node);
 bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node);
 bool Prepare8080RemoveConstCondition(Prepare &, CNodePtr &node);
-bool Prepare8080InsertCompare0BeforeJump(Prepare &, CNodePtr &node);

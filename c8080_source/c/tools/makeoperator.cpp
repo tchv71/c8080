@@ -96,8 +96,10 @@ static void MakeOperatorInt(CNodePtr &n, bool cmm) {
         case COP_CMP_E:
         case COP_CMP_NE: {
             CType common_type = CalcResultCType(n, n->a, n->b);
-            n->a = Convert(common_type, n->a, cmm);
-            n->b = Convert(common_type, n->b, cmm);
+            if (n->a->ctype != common_type)
+                n->a = Convert(common_type, n->a, cmm);
+            if (n->b->ctype != common_type)
+                n->b = Convert(common_type, n->b, cmm);
             n->ctype = CType{CBT_BOOL};
             if (common_type.IsPointer())
                 return;

@@ -23,6 +23,8 @@
 
 class Asm2 : public Assembler {
 public:
+    static const unsigned CALL_METRICS = 100;
+
     std::string GetConst(const CNodePtr &node, std::vector<CVariablePtr> *use = nullptr);
 
     void ld_pstring_hl(CString string) {
