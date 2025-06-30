@@ -22,7 +22,7 @@ uint64_t GetNumberAsUint64(CNodePtr node) {
     assert(node != nullptr);
 
     if (node->type != CNT_NUMBER)
-        C_ERROR_INTERNAL(node, "incorrect node type");
+        C_ERROR_INTERNAL(node, "does not reduce to an integer constant");  // gcc
 
     switch (node->ctype.GetAsmType()) {
         case CBT_CHAR:
@@ -41,8 +41,9 @@ uint64_t GetNumberAsUint64(CNodePtr node) {
             return uint64_t(node->number.d);
         case CBT_LONG_DOUBLE:
             return uint64_t(node->number.ld);
+        default:
+            C_ERROR_UNSUPPORTED_ASM_TYPE(node->ctype.GetAsmType(), node);
     }
 
-    C_ERROR_INTERNAL(node, "incorrect data type");
     return 0;
 }

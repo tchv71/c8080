@@ -1193,8 +1193,7 @@ CNodePtr CParserFile::ParseFunctionBody() {
         return CNODE({CNT_CONTINUE, e : e});
     }
     if (l.IfToken("case")) {
-        CNodePtr node = CNODE({CNT_CASE, Convert(CType{CBT_INT}, ParseExpressionComma()), e : e});
-        CCalcConst(node->a, true);
+        CNodePtr node = CNODE({CNT_CASE, ParseExpressionComma(), e : e});
         l.NeedToken(":");
         if (last_switch != nullptr) {
             node->case_link = last_switch->case_link;
@@ -1221,8 +1220,6 @@ CNodePtr CParserFile::ParseFunctionBody() {
         CNodePtr saved_switch = last_switch;
         l.NeedToken("(");
         auto value = ParseExpressionComma();
-        if (value->ctype.SizeOf(value->e) != 1)
-            value = Convert(CType{CBT_UNSIGNED_INT}, value);
         auto node = CNODE({CNT_SWITCH, value});
         last_switch = node;
         node->e = e;
@@ -1232,19 +1229,6 @@ CNodePtr CParserFile::ParseFunctionBody() {
         CNodeList body;
         while (!l.IfToken("}"))
             body.PushBack(ParseFunctionBody());
-        // Преобразование в 16 бит
-        if (value->ctype.SizeOf(value->e) == 1) {
-            bool is8 = true;
-            for (CNodePtr j = node->case_link.lock(); j != nullptr; j = j->case_link.lock()) {
-                if (j->a->number.u > 0xFF) {
-                    is8 = false;
-                    break;
-                }
-            }
-            if (!is8) {
-                value = Convert(CType{CBT_UNSIGNED_INT}, value);
-            }
-        }
         Leave();
         node->b = body.first;
         last_switch = saved_switch;

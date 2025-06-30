@@ -69,14 +69,26 @@ void Compiler8080::CompileCommand(CNodePtr &node) {
             }
             break;
         }
-        case CNT_SWITCH:
+        case CNT_SWITCH: {
+            const auto saved_break_label = break_label;
+            break_label = out.AllocLabel();
+
             CompileSwitch(node);
+
+            for (CNodePtr j = node->b; j != nullptr; j = j->next_node)
+                CompileCommand(j);
+
+            out.label(break_label);
+            break_label = saved_break_label;
             break;
+        }
         case CNT_CASE:
-            out.label(node->compiler.label);
+            if (node->compiler.label)
+                out.label(node->compiler.label);
             break;
         case CNT_DEFAULT:
-            out.label(node->compiler.label);
+            if (node->compiler.label)
+                out.label(node->compiler.label);
             break;
         case CNT_FOR: {
             if (node->a)

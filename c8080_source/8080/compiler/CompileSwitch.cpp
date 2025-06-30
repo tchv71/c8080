@@ -1,0 +1,93 @@
+/*
+ * c8080 compiler
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "Compiler.h"
+#include "../../c/tools/prepareswitch.h"
+#include <limits.h>
+
+void Compiler8080::CompileSwitch(CNodePtr &node) {
+    std::vector<CNodePtr> cases;
+    if (!PrepareSwitch(p, node, cases))
+        return;
+
+    for (auto &i : cases)
+        i->compiler.label = out.AllocLabel();
+
+    AsmLabel *default_label;
+    CNodePtr default_link = node->default_link.lock();
+    if (default_link != nullptr) {
+        default_label = out.AllocLabel();
+        default_link->compiler.label = default_label;
+    } else {
+        default_label = break_label;
+    }
+
+    switch (node->a->ctype.GetAsmType()) {
+        case CBT_CHAR:
+        case CBT_UNSIGNED_CHAR:
+            CompileSwitch8(node, cases, default_label);
+            break;
+        case CBT_SHORT:
+        case CBT_UNSIGNED_SHORT:
+            CompileSwitch16(node, cases, default_label);
+            break;
+        default:
+            C_ERROR_INTERNAL(node->a, "no case");
+    }
+}
+
+// TODO: Optimize. Value-pointer array. Binary search.
+
+void Compiler8080::CompileSwitch8(CNodePtr &node, std::vector<CNodePtr> &cases, AsmLabel *default_label) {
+    Build(node->a);
+    Build(node->a, R8_A);
+
+    uint8_t current = 0;
+    for (auto &i : cases) {
+        uint8_t v = uint8_t(i->number.u) - current;
+        if (v == 0)
+            out.alu_a_reg(ALU_OR, R8_A);
+        else if (v == 1)
+            out.dec_reg(R8_A);
+        else
+            out.alu_a_number(ALU_SUB, v);
+        out.jz_label(i->compiler.label);
+        current = uint8_t(i->number.u);
+    }
+
+    out.jmp_label(default_label);
+}
+
+void Compiler8080::CompileSwitch16(CNodePtr &node, std::vector<CNodePtr> &cases, AsmLabel *default_label) {
+    Build(node->a);
+    Build(node->a, R16_HL);
+
+    for (auto &i : cases) {
+        if (i->number.u == 0) {
+            out.ld_r8_r8(R8_A, R8_D);
+            out.alu_a_reg(ALU_OR, R8_E);
+        } else {
+            out.ld_hl_number(0x10000u - uint16_t(i->number.u));
+            out.add_hl_de();
+            out.ld_r8_r8(R8_A, R8_L);
+            out.alu_a_reg(ALU_OR, R8_H);
+        }
+        out.jz_label(i->compiler.label);
+    }
+
+    out.jmp_label(default_label);
+}
