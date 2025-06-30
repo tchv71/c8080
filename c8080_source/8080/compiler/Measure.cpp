@@ -42,9 +42,14 @@ void Compiler8080::MeasureBegin() {
 
 void Compiler8080::MeasureResult(CNodePtr &node, AsmRegister reg) {
     if (out.measure) {
-        CBuildCase &c = (reg == REG_NONE) ? node->bi.no_result : node->bi.Get(reg);
-        if (!c.able || c.metric > out.measure_metric)
-            c.Set(out.measure_regs, out.measure_metric, out.measure_args_id, measure_proc);
+        if (reg != REG_NONE) {
+            CBuildCase &c = node->bi.Get(reg);
+            if (!c.able || c.metric > out.measure_metric)
+                c.Set(out.measure_regs, out.measure_metric, out.measure_args_id, measure_proc);
+        }
+        CBuildCase &n = node->bi.no_result;
+        if (!n.able || n.metric > out.measure_metric)
+            n.Set(out.measure_regs, out.measure_metric, out.measure_args_id, measure_proc);
     }
 }
 

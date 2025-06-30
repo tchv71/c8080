@@ -101,7 +101,7 @@ bool Compiler8080::Case_Set16_AA(CNodePtr &node, AsmRegister reg) {
     out.ld_phl_d();
     MeasureResult(node, R16_DE);
     MeasureResult(node, REG_NONE);
-    if (reg != R16_DE)
+    if (reg == R16_HL)
         out.ex_hl_de();
     return true;
 }
