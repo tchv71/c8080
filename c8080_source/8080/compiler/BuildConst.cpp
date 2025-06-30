@@ -18,28 +18,30 @@
 #include "Compiler.h"
 #include "../../c/tools/getnumberasuint64.h"
 
-void Compiler8080::Case_Const8(CNodePtr &node, AsmRegister reg) {
+bool Compiler8080::Case_Const0(CNodePtr &node, AsmRegister reg) {
+    out.GetConst(node);  // ref counter
+    return true;
+}
+
+bool Compiler8080::Case_Const8(CNodePtr &node, AsmRegister reg) {
     out.ld_r8_const(reg, node);
+    return true;
 }
 
-void Compiler8080::Case_Const16(CNodePtr &node, AsmRegister reg) {
+bool Compiler8080::Case_Const16(CNodePtr &node, AsmRegister reg) {
     out.ld_r16_const(reg, node);
+    return true;
 }
 
-void Compiler8080::Case_Const32(CNodePtr &node, AsmRegister reg) {
+bool Compiler8080::Case_Const32(CNodePtr &node, AsmRegister reg) {
     out.ld_dehl_const(node);
+    return true;
 }
 
-void Compiler8080::BuildConst(CNodePtr &node, AsmRegister reg) {
+void Compiler8080::BuildConst(CNodePtr &node) {
     assert(node->IsConstNode());
 
-    if (reg == REG_NONE) {
-        out.GetConst(node);  // ref counter
-        return;
-    }
-
-    if (MeasureReset(node, reg))
-        return;
+    Measure(node, REG_NONE, &Compiler8080::Case_Const0);
 
     switch (node->ctype.GetAsmType()) {
         case CBT_CHAR:
@@ -57,6 +59,6 @@ void Compiler8080::BuildConst(CNodePtr &node, AsmRegister reg) {
             Measure(node, R32_DEHL, &Compiler8080::Case_Const32);
             break;
         default:
-            C_ERROR_UNSUPPORTED_ASM_TYPE(node->ctype.GetAsmType(), node);
+            C_ERROR_UNSUPPORTED_ASM_TYPE(node);
     }
 }

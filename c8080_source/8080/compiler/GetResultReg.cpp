@@ -35,7 +35,7 @@ AsmRegister Compiler8080::GetResultReg(CType &type, bool alt, bool no_result, CN
                 C_ERROR_INTERNAL(e, "no alternative register for 32-bit type");
             return R32_DEHL;
         default:
-            C_ERROR_UNSUPPORTED_ASM_TYPE(type.GetAsmType(), e);
+            C_ERROR_UNSUPPORTED_ASM_TYPE_INT(e, type.GetAsmType());
             return REG_NONE;
     }
 }

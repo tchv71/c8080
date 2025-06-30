@@ -42,7 +42,7 @@ uint64_t GetNumberAsUint64(CNodePtr node) {
         case CBT_LONG_DOUBLE:
             return uint64_t(node->number.ld);
         default:
-            C_ERROR_UNSUPPORTED_ASM_TYPE(node->ctype.GetAsmType(), node);
+            C_ERROR_UNSUPPORTED_ASM_TYPE(node);
     }
 
     return 0;

@@ -1,0 +1,73 @@
+/*
+ * c8080 compiler
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "index.h"
+#include "../../c/tools/makeoperator.h"
+#include "index.h"
+
+static bool Prepare8080Jump2(CNodePtr &node) {
+    if (node && !node->IsJumpNode()) {
+        CNodePtr ch = CNODE({CNT_NUMBER, ctype : node->ctype, e : node->e});
+        node = MakeOperator(COP_CMP_NE, node, ch, node->e, false);
+        assert(node->IsJumpNode());
+        return true;
+    }
+    return false;
+}
+
+static bool Prepare8080Jump1(CNodePtr &node) {
+    assert(node != nullptr);
+    switch (node->type) {
+        case CNT_OPERATOR:
+            if (node->operator_code == COP_IF)
+                return Prepare8080Jump2(node->a);
+            if ((node->operator_code == COP_LAND) || (node->operator_code == COP_LOR)) {
+                const bool b = Prepare8080Jump2(node->a);
+                const bool a = Prepare8080Jump2(node->b);
+                return a || b;
+            }
+            return false;
+        case CNT_MONO_OPERATOR:
+            if (node->mono_operator_code == MOP_NOT)
+                return Prepare8080Jump2(node->a);
+            return false;
+        case CNT_IF:
+        case CNT_WHILE:
+        case CNT_DO:
+            return Prepare8080Jump2(node->a);
+        case CNT_FOR:
+            return Prepare8080Jump2(node->b);
+    }
+    return false;
+}
+
+bool Prepare8080Jump(CNodePtr *pnode) {
+    bool result_changed = false;
+    while (*pnode != nullptr) {
+        bool changed;
+        do {
+            changed = Prepare8080Jump(&(*pnode)->a);
+            changed |= Prepare8080Jump(&(*pnode)->b);
+            changed |= Prepare8080Jump(&(*pnode)->c);
+            changed |= Prepare8080Jump(&(*pnode)->d);
+            changed |= Prepare8080Jump1(*pnode);
+            result_changed |= changed;
+        } while (changed);
+        pnode = &(*pnode)->next_node;
+    }
+    return result_changed;
+}

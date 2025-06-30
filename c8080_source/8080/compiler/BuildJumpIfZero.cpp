@@ -50,7 +50,7 @@ void Compiler8080::BuildJumpIfZero(bool prepare, CNodePtr &node, bool invert1, b
             out.or_e();
             break;
         default:
-            C_ERROR_UNSUPPORTED_ASM_TYPE(node->ctype.GetAsmType(), node);
+            C_ERROR_UNSUPPORTED_ASM_TYPE(node);
     }
 
     if (invert2)

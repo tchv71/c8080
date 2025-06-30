@@ -781,7 +781,7 @@ public:
                     dd(node->number.u);
                     return 4;
                 default:
-                    C_ERROR_UNSUPPORTED_ASM_TYPE(node->ctype.GetAsmType(), node);
+                    C_ERROR_UNSUPPORTED_ASM_TYPE(node);
             }
         }
         switch (node->ctype.GetAsmType()) {
@@ -798,7 +798,7 @@ public:
                 dd(GetConst(node));
                 return 4;
             default:
-                C_ERROR_UNSUPPORTED_ASM_TYPE(node->ctype.GetAsmType(), node);
+                C_ERROR_UNSUPPORTED_ASM_TYPE(node);
         }
         return 0;
     }

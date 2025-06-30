@@ -38,10 +38,12 @@ void Compiler8080::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, A
                 case COP_CMP_L:
                 case COP_CMP_GE:
                     if (prepare) {
-                        BuildOperator(node, REG_PREPARE);
+                        MeasureReset(node, REG_PREPARE);
+                        BuildOperator(node);
                         return;
                     }
-                    BuildOperator(node, R8_A);
+                    MeasureReset(node, R8_A);
+
                     switch (jmp_if_true ? node->operator_code : NegativeCompareOperator(node->operator_code)) {
                         case COP_CMP_E:
                             out.jz_label(label);

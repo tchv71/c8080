@@ -20,14 +20,10 @@
 void Compiler8080::Measure(CNodePtr &node, AsmRegister reg, CBuildProc proc) {
     MeasureBegin();
     measure_proc = proc;
-    const auto prev = out.measure_metric;
-    (this->*proc)(node, reg);
-    if (prev == out.measure_metric) {
-        out.measure = false;  // Canceled
-        measure_proc = nullptr;
-        return;
-    }
-    MeasureEnd(node, reg);
+    if ((this->*proc)(node, reg))
+        MeasureResult(node, reg);
+    out.measure = false;
+    measure_proc = nullptr;
 }
 
 void Compiler8080::MeasureBegin(AsmRegister reg) {
@@ -44,18 +40,12 @@ void Compiler8080::MeasureBegin() {
     out.measure_args_id = 0;
 }
 
-void Compiler8080::MeasureMid(CNodePtr &node, AsmRegister reg) {
+void Compiler8080::MeasureResult(CNodePtr &node, AsmRegister reg) {
     if (out.measure) {
-        CBuildCase &c = node->bi.Get(reg);
+        CBuildCase &c = (reg == REG_NONE) ? node->bi.no_result : node->bi.Get(reg);
         if (!c.able || c.metric > out.measure_metric)
             c.Set(out.measure_regs, out.measure_metric, out.measure_args_id, measure_proc);
     }
-}
-
-void Compiler8080::MeasureEnd(CNodePtr &node, AsmRegister reg) {
-    MeasureMid(node, reg);
-    out.measure = false;
-    measure_proc = nullptr;
 }
 
 bool Compiler8080::MeasureReset(CNodePtr &node, AsmRegister reg) {

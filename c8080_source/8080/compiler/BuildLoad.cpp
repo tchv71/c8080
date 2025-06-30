@@ -17,62 +17,12 @@
 
 #include "Compiler.h"
 
-void Compiler8080::Case_LoadConstAddr_8(CNodePtr &node, AsmRegister reg) {
-    assert(reg == R8_A);
-    if (node->a->IsConstNode())
-        out.ld_a_pconst(node->a);
-}
-
-void Compiler8080::Case_Load_8(CNodePtr &node, AsmRegister reg) {
-    assert(reg == R8_A || reg == R8_D);
-    Build(node->a, R16_HL);
-    out.ld_r8_r8(reg, R8_M);
-}
-
-void Compiler8080::Case_Load_8_A(CNodePtr &node, AsmRegister reg) {
-    assert(reg == R8_A);
-    if (node->a->bi.alt.able) {
-        Build(node->a, R16_DE);
-        out.ld_a_pde();
-    }
-}
-
-void Compiler8080::Case_LoadConstAddr_16(CNodePtr &node, AsmRegister reg) {
-    assert(reg == R16_HL);
-    if (node->a->IsConstNode())
-        out.ld_hl_pconst(node->a);
-}
-
-void Compiler8080::Case_Load_16(CNodePtr &node, AsmRegister reg) {
-    assert(reg == R16_HL || reg == R16_DE);
-    Build(node->a, R16_HL);
-    out.ld_e_phl();
-    out.inc_hl();
-    out.ld_d_phl();
-    if (reg == R16_HL)
-        out.ex_hl_de();
-}
-
-void Compiler8080::Case_LoadConstAddr_32(CNodePtr &node, AsmRegister reg) {
-    assert(reg == R32_DEHL);
-    if (node->a->IsConstNode())
-        out.ld_dehl_pconst(node->a);
-}
-
-void Compiler8080::Case_Load_32(CNodePtr &node, AsmRegister reg) {
-    assert(reg == R32_DEHL);
-    Build(node->a, R16_HL);
-    InternalCall(o.load_32);
-}
-
-void Compiler8080::BuildLoad(CNodePtr &node, AsmRegister reg) {
+void Compiler8080::BuildLoad(CNodePtr &node) {
     assert(node->type == CNT_MONO_OPERATOR);
     assert(node->mono_operator_code == MOP_DEADDR);
     assert(node->a != nullptr);
-    assert(reg != REG_NONE);  // already processed
 
-    if (MeasureReset(node, reg))
-        return;
+    Measure(node, REG_NONE, &Compiler8080::Case_Direct);
 
     switch (node->ctype.GetAsmType()) {
         case CBT_CHAR:
@@ -94,6 +44,68 @@ void Compiler8080::BuildLoad(CNodePtr &node, AsmRegister reg) {
             Measure(node, R32_DEHL, &Compiler8080::Case_Load_32);
             break;
         default:
-            C_ERROR_UNSUPPORTED_ASM_TYPE(node->ctype.GetAsmType(), node);
+            C_ERROR_UNSUPPORTED_ASM_TYPE(node);
     }
+}
+
+bool Compiler8080::Case_LoadConstAddr_8(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R8_A);
+    if (node->a->IsConstNode()) {
+        out.ld_a_pconst(node->a);
+        return true;
+    }
+    return false;
+}
+
+bool Compiler8080::Case_Load_8(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R8_A || reg == R8_D);
+    Build(node->a, R16_HL);
+    out.ld_r8_r8(reg, R8_M);
+    return true;
+}
+
+bool Compiler8080::Case_Load_8_A(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R8_A);
+    if (node->a->bi.alt.able) {
+        Build(node->a, R16_DE);
+        out.ld_a_pde();
+        return true;
+    }
+    return false;
+}
+
+bool Compiler8080::Case_LoadConstAddr_16(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R16_HL);
+    if (node->a->IsConstNode()) {
+        out.ld_hl_pconst(node->a);
+        return true;
+    }
+    return false;
+}
+
+bool Compiler8080::Case_Load_16(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R16_HL || reg == R16_DE);
+    Build(node->a, R16_HL);
+    out.ld_e_phl();
+    out.inc_hl();
+    out.ld_d_phl();
+    if (reg == R16_HL)
+        out.ex_hl_de();
+    return true;
+}
+
+bool Compiler8080::Case_LoadConstAddr_32(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R32_DEHL);
+    if (node->a->IsConstNode()) {
+        out.ld_dehl_pconst(node->a);
+        return true;
+    }
+    return false;
+}
+
+bool Compiler8080::Case_Load_32(CNodePtr &node, AsmRegister reg) {
+    assert(reg == R32_DEHL);
+    Build(node->a, R16_HL);
+    InternalCall(o.load_32);
+    return true;
 }

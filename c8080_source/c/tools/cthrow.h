@@ -32,8 +32,10 @@ void CInternalError(const CNodePtr &node, CString text, const char *file_name, u
 #define C_ERROR_UNSUPPORTED_NODE_TYPE(NODE) \
     C_ERROR_INTERNAL((NODE), std::string("unsupported node type ") + ToString((NODE)->type))
 
-#define C_ERROR_UNSUPPORTED_ASM_TYPE(ASMTYPE, NODE) \
+#define C_ERROR_UNSUPPORTED_ASM_TYPE_INT(NODE, ASMTYPE) \
     C_ERROR_INTERNAL((NODE), std::string("unsupported data type ") + CType{ASMTYPE}.ToString())
+
+#define C_ERROR_UNSUPPORTED_ASM_TYPE(NODE) C_ERROR_UNSUPPORTED_ASM_TYPE_INT((NODE), (NODE)->ctype.GetAsmType())
 
 #define C_ERROR_UNSUPPORTED_OPERATOR(NODE) \
     C_ERROR_INTERNAL((NODE), std::string("unsupported operator ") + ToString((NODE)->operator_code))

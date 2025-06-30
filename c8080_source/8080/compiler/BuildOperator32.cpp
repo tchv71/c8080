@@ -17,16 +17,12 @@
 
 #include "Compiler.h"
 
-void Compiler8080::BuildOperator32(CNodePtr &node, AsmRegister reg) {
-    if (reg == REG_PREPARE) {
-        Build(node->a, reg);
-        Build(node->b, reg);
-        node->bi.SetMain(U_ALL, 0);
-        return;
-    }
-
+void Compiler8080::BuildOperator32(CNodePtr &node) {
     //  TODO: Fast SHL, SHR, MUL, DIV
+    Measure(node, R32_DEHL, &Compiler8080::Case_Operator32);
+}
 
+bool Compiler8080::Case_Operator32(CNodePtr &node, AsmRegister reg) {
     Build(node->a, R32_DEHL);
     out.push_de_hl();
     Build(node->b, R32_DEHL);
@@ -71,4 +67,5 @@ void Compiler8080::BuildOperator32(CNodePtr &node, AsmRegister reg) {
             C_ERROR_UNSUPPORTED_OPERATOR(node);
     }
     out.stack_correction(-4);
+    return true;
 }

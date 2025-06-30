@@ -17,10 +17,16 @@
 
 #include "Compiler.h"
 
-void Compiler8080::BuildCall(CNodePtr &node, AsmRegister reg) {
-    if (reg == REG_PREPARE) {
-        node->bi.SetMain(U_ALL, out.CALL_METRICS);
-        return;
+void Compiler8080::BuildCall(CNodePtr &node) {
+    AsmRegister result_reg = GetResultReg(node->ctype, false, false, node);
+    Measure(node, result_reg, &Compiler8080::Case_Call);
+}
+
+bool Compiler8080::Case_Call(CNodePtr &node, AsmRegister reg) {
+    if (out.measure) {
+        out.measure_metric += out.CALL_METRICS;
+        out.measure_regs |= U_ALL;
+        return true;
     }
 
     if (node->type == CNT_FUNCTION_CALL) {
@@ -43,7 +49,6 @@ void Compiler8080::BuildCall(CNodePtr &node, AsmRegister reg) {
         switch (i->ctype.GetAsmType()) {
             case CBT_CHAR:
             case CBT_UNSIGNED_CHAR:
-                assert(reg == R8_A || reg == R8_D);
                 if (!i->bi.alt.able) {
                     Build(i, R8_A);
                     out.dec_reg(R16_SP);  // TODO: Remove
@@ -57,12 +62,12 @@ void Compiler8080::BuildCall(CNodePtr &node, AsmRegister reg) {
                 break;
             case CBT_SHORT:
             case CBT_UNSIGNED_SHORT:
-                if (!i->bi.alt.able) {
-                    Build(i, R16_HL);
-                    out.push_reg(R16_HL);
-                } else {
+                if (i->bi.alt.able && i->bi.alt.metric < i->bi.main.metric) {
                     Build(i, R16_DE);
                     out.push_reg(R16_DE);
+                } else {
+                    Build(i, R16_HL);
+                    out.push_reg(R16_HL);
                 }
                 used_stack_size += 2;
                 break;
@@ -73,7 +78,7 @@ void Compiler8080::BuildCall(CNodePtr &node, AsmRegister reg) {
                 used_stack_size += 4;
                 break;
             default:
-                C_ERROR_UNSUPPORTED_ASM_TYPE(i->ctype.GetAsmType(), i);
+                C_ERROR_UNSUPPORTED_ASM_TYPE(i);
         }
     }
 
@@ -90,8 +95,8 @@ void Compiler8080::BuildCall(CNodePtr &node, AsmRegister reg) {
         InternalCall(o.call_hl);
     }
 
-    AsmRegister result_reg = GetResultReg(node->ctype, false, reg == REG_NONE, node);
-    OutAddSpN(result_reg, used_stack_size);
+    OutAddSpN(reg, used_stack_size);
+    return true;
 }
 
 void Compiler8080::InternalCall(CVariablePtr &fn) {

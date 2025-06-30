@@ -17,13 +17,6 @@
 
 #pragma once
 
-#include "../../prepare/prepare.h"
+#include "../../c/cnodeptr.h"
 
-bool Prepare8080Const(Prepare &, CNodePtr &node);
-bool Prepare8080SetOperators(Prepare &, CNodePtr &node);
-bool Prepare8080Fast8BitOptimization(Prepare &, CNodePtr &node);
-bool PrepareCompareOperators8080(Prepare &, CNodePtr &node);
-bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node);
-bool Prepare8080IncDec(Prepare &, CNodePtr &node);
-bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node);
-bool Prepare8080RemoveDead(Prepare &, CNodePtr &node);
+bool Prepare8080Jump(CNodePtr *pnode);

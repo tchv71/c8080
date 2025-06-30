@@ -17,13 +17,9 @@
 
 #pragma once
 
-#include "../../prepare/prepare.h"
+#include "../../c/cprogramm.h"
 
-bool Prepare8080Const(Prepare &, CNodePtr &node);
-bool Prepare8080SetOperators(Prepare &, CNodePtr &node);
-bool Prepare8080Fast8BitOptimization(Prepare &, CNodePtr &node);
-bool PrepareCompareOperators8080(Prepare &, CNodePtr &node);
-bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node);
-bool Prepare8080IncDec(Prepare &, CNodePtr &node);
-bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node);
-bool Prepare8080RemoveDead(Prepare &, CNodePtr &node);
+class Asm2;
+
+void Prepare8080Function(CProgramm *programm, CNodePtr &node, Asm2 *out);
+void Prepare8080Variable(CProgramm &programm, CNodePtr &node, Asm2 *out);
