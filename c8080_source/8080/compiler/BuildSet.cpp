@@ -49,7 +49,7 @@ void Compiler8080::BuildSet(CNodePtr &node) {
 }
 
 bool Compiler8080::Case_Set8_MM(CNodePtr &node, AsmRegister reg) {
-    if (BuildArgs(node, reg, node->a->a, R16_HL, node->b, R8_A)) {
+    if (BuildDouble(node, reg, node->a->a, R16_HL, node->b, R8_A)) {
         out.ld_phl_a();
         return true;
     }
@@ -57,7 +57,7 @@ bool Compiler8080::Case_Set8_MM(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Set8_AM(CNodePtr &node, AsmRegister reg) {
-    if (BuildArgs(node, reg, node->a->a, R16_DE, node->b, R8_A)) {
+    if (BuildDouble(node, reg, node->a->a, R16_DE, node->b, R8_A)) {
         out.ld_pde_a();
         return true;
     }
@@ -65,7 +65,7 @@ bool Compiler8080::Case_Set8_AM(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Set8_MA(CNodePtr &node, AsmRegister reg) {
-    if (BuildArgs(node, reg, node->a->a, R16_HL, node->b, R8_D)) {
+    if (BuildDouble(node, reg, node->a->a, R16_HL, node->b, R8_D)) {
         out.ld_phl_d();
         MeasureResult(node, R8_D);
         MeasureResult(node, REG_NONE);

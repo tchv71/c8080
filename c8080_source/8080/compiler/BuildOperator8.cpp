@@ -105,7 +105,7 @@ bool Compiler8080::Case_Operator8(CNodePtr &node, AsmRegister reg) {
 
 bool Compiler8080::Case_Operator8_PM(CNodePtr &node, AsmRegister reg) {
     if (node->bi.alu != ALU_NONE && node->b->IsDeaddr()) {
-        if (BuildArgs(node, reg, node->b->a, R16_HL, node->a, R8_A)) {
+        if (BuildDouble(node, reg, node->b->a, R16_HL, node->a, R8_A)) {
             out.alu_a_reg(node->bi.alu, R8_M);
             return true;
         }
@@ -115,7 +115,7 @@ bool Compiler8080::Case_Operator8_PM(CNodePtr &node, AsmRegister reg) {
 
 bool Compiler8080::Case_Operator8_PMR(CNodePtr &node, AsmRegister reg) {
     if (node->bi.alu != ALU_NONE && node->a->IsDeaddr() && node->bi.rearrange) {
-        if (BuildArgs(node, reg, node->a->a, R16_HL, node->b, R8_A)) {
+        if (BuildDouble(node, reg, node->a->a, R16_HL, node->b, R8_A)) {
             out.alu_a_reg(node->bi.alu, R8_M);
             return true;
         }

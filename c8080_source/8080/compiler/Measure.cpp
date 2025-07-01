@@ -17,6 +17,19 @@
 
 #include "Compiler.h"
 
+void Compiler8080::MeasureArgsBegin() {
+    out.measure_metric = 0;
+    out.measure_regs = 0;
+}
+
+void Compiler8080::MeasureArgsEnd(unsigned id) {
+    if (out.measure_args_id == 0 || out.measure_args_metric > out.measure_metric) {
+        out.measure_args_id = id;
+        out.measure_args_metric = out.measure_metric;
+        out.measure_args_regs = out.measure_regs;
+    }
+}
+
 void Compiler8080::Measure(CNodePtr &node, AsmRegister reg, CBuildProc proc) {
     MeasureBegin();
     measure_proc = proc;

@@ -20,14 +20,14 @@
 #include "../asm/asm2.h"
 #include "Compiler.h"
 
-class SaveRegs {
+class SaveReg {
 public:
     Asm2 &out;
     bool enabled{};
     AsmRegister reg{};
 
-    SaveRegs(Asm2 &out_, CBuildCase &c, AsmRegister reg_, uint32_t mask) : out(out_), reg(reg_) {
-        enabled = (c.regs & mask);
+    SaveReg(Asm2 &out_, CBuildCase &c, AsmRegister reg_) : out(out_), reg(reg_) {
+        enabled = (c.regs & RegToUsed(reg));
         if (enabled)
             out.push_reg(reg);
     }
@@ -39,17 +39,17 @@ public:
         }
     }
 
-    ~SaveRegs() {
+    ~SaveReg() {
         assert(!enabled);
     }
 };
 
-class SaveHlLoadDe {
+class PushMainPopDe {
 public:
     Asm2 &out;
     bool enabled{};
 
-    SaveHlLoadDe(Asm2 &out_, AsmRegister reg, CBuildCase &c) : out(out_) {
+    PushMainPopDe(Asm2 &out_, AsmRegister reg, CBuildCase &c) : out(out_) {
         switch(reg) {
             case R16_HL:
             case R16_DE:
@@ -72,14 +72,14 @@ public:
         }
     }
 
-    void End() {
+    void PopDe() {
         if (enabled) {
             out.pop_reg(R16_DE);
             enabled = false;
         }
     }
 
-    ~SaveHlLoadDe() {
+    ~PushMainPopDe() {
         assert(!enabled);
     }
 };

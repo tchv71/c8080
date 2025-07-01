@@ -134,7 +134,7 @@ void Compiler8080::MakeCallTreeBegin(CVariablePtr &fn) {
 
     call_in_call.push_back(fn);
 
-    AddToCompileQueue(fn);
+    out.AddToCompileQueue(fn);
 }
 
 void Compiler8080::MakeCallTreeEnd() {
@@ -142,13 +142,4 @@ void Compiler8080::MakeCallTreeEnd() {
         return;
 
     call_in_call.pop_back();
-}
-
-void Compiler8080::AddToCompileQueue(CVariablePtr &fn) {
-    if (fn->c.use_counter == 0) {
-        fn->c.use_counter++;
-
-        if (!fn->only_extern)
-            out.compile_queue.push_back(fn);
-    }
 }

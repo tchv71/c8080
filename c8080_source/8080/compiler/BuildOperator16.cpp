@@ -88,28 +88,13 @@ bool Compiler8080::Case_Shl16_MN(CNodePtr &node, AsmRegister reg) {
     return false;
 }
 
-void Compiler8080::OutInc16(AsmRegister reg, CNodePtr &a, CNodePtr &b) {
-    uint16_t value = GetNumberAsUint64(b);
-    if (value <= 3 || value >= 0x10000 - 3) {
-        Build(a, reg);
-        if (value < 0x8000) {
-            for (unsigned i = 0; i < value; i++)
-                out.inc_reg(reg);
-        } else {
-            for (unsigned i = value; i < 0x10000; i++)
-                out.dec_reg(reg);
-        }
-    }
-}
-
 bool Compiler8080::Case_IncDec16_N(CNodePtr &node, AsmRegister reg) {
     // COP_SUB replaced with COP_ADD
     if (node->operator_code == COP_ADD && (reg != R16_DE || node->bi.alt.able)) {
         if (node->a->type == CNT_NUMBER)
-            OutInc16(reg, node->b, node->a);
-        else if (node->b->type == CNT_NUMBER)
-            OutInc16(reg, node->a, node->b);
-        return true;
+            return OutIncDec16(reg, node->b, node->a);
+        if (node->b->type == CNT_NUMBER)
+            return OutIncDec16(reg, node->a, node->b);
     }
     return false;
 }

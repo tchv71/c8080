@@ -28,7 +28,7 @@ void Compiler8080::Compile(CParser &c, OutputFormat8080 output_format, CString o
     CVariablePtr main = p.FindVariable(main_function_name);
     if (main == nullptr || !main->type.IsFunction() || main->only_extern)
         throw std::runtime_error(std::string("function ") + main_function_name + " not found");
-    AddToCompileQueue(main);
+    out.AddToCompileQueue(main);
 
     for (size_t i = 0; i < out.compile_queue.size(); i++) {
         CVariablePtr fn = out.compile_queue[i];
