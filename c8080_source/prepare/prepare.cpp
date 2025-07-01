@@ -47,19 +47,29 @@ static const PrepareFunctionType prepare_function_list[] = {
     PrepareCompareOperators,
 };
 
-bool PrepareInt(Prepare &p, CNodePtr *pnode) {
-    bool result_changed = false;
+enum { PREPARE_CHANGED = 1, PREPARE_LABEL = 2 };
+
+uint32_t PrepareInt(Prepare &p, CNodePtr *pnode) {
+    uint32_t return_value = 0;
     while (*pnode != nullptr) {
-        bool changed;
+        uint32_t r;
         do {
-            changed = PrepareInt(p, &(*pnode)->a);
-            changed |= PrepareInt(p, &(*pnode)->b);
-            changed |= PrepareInt(p, &(*pnode)->c);
-            changed |= PrepareInt(p, &(*pnode)->d);
-            changed |= CCalcConst(*pnode, false);
+            r = PrepareInt(p, &(*pnode)->a);
+            r |= PrepareInt(p, &(*pnode)->b);
+            r |= PrepareInt(p, &(*pnode)->c);
+            r |= PrepareInt(p, &(*pnode)->d);
+
+            if (CCalcConst(*pnode, false))
+                r |= PREPARE_CHANGED;
+
+            if ((*pnode)->type == CNT_LABEL)
+                r |= PREPARE_LABEL;
+            if (r & PREPARE_LABEL)
+                (*pnode)->has_label = true;
 
             for (auto &i : prepare_function_list) {
-                changed |= i(p, *pnode);
+                if (i(p, *pnode))
+                    r |= PREPARE_CHANGED;
                 if (*pnode == nullptr)
                     break;
             }
@@ -68,17 +78,18 @@ bool PrepareInt(Prepare &p, CNodePtr *pnode) {
                 break;
 
             for (auto i = p.list; *i; i++) {
-                changed |= (*i)(p, *pnode);
+                if ((*i)(p, *pnode))
+                    r |= PREPARE_CHANGED;
                 if (*pnode == nullptr)
                     break;
             }
 
-            result_changed |= changed;
-        } while (changed);
+            return_value |= r;
+        } while (r & PREPARE_CHANGED);
 
         pnode = &(*pnode)->next_node;
     }
-    return result_changed;
+    return return_value;
 }
 
 void PrepareFunction(CProgramm &programm, CVariablePtr &f, const PrepareFunctionType *list, Asm2 *out) {

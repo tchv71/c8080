@@ -17,25 +17,24 @@
 
 #include "index.h"
 #include "../../c/tools/makeoperator.h"
-#include "index.h"
 
 static bool Prepare8080Jump2(CNodePtr &node) {
     if (node && !node->IsJumpNode()) {
         CNodePtr ch = CNODE({CNT_NUMBER, ctype : node->ctype, e : node->e});
         node = MakeOperator(COP_CMP_NE, node, ch, node->e, false);
+        node->need_jump_node = true;
         assert(node->IsJumpNode());
         return true;
     }
     return false;
 }
 
-static bool Prepare8080Jump1(CNodePtr &node) {
-    assert(node != nullptr);
+bool Prepare8080Jump(Prepare&, CNodePtr &node) {
     switch (node->type) {
         case CNT_OPERATOR:
             if (node->operator_code == COP_IF)
                 return Prepare8080Jump2(node->a);
-            if ((node->operator_code == COP_LAND) || (node->operator_code == COP_LOR)) {
+            if (node->operator_code == COP_LAND || node->operator_code == COP_LOR) {
                 const bool b = Prepare8080Jump2(node->a);
                 const bool a = Prepare8080Jump2(node->b);
                 return a || b;
@@ -53,21 +52,4 @@ static bool Prepare8080Jump1(CNodePtr &node) {
             return Prepare8080Jump2(node->b);
     }
     return false;
-}
-
-bool Prepare8080Jump(CNodePtr *pnode) {
-    bool result_changed = false;
-    while (*pnode != nullptr) {
-        bool changed;
-        do {
-            changed = Prepare8080Jump(&(*pnode)->a);
-            changed |= Prepare8080Jump(&(*pnode)->b);
-            changed |= Prepare8080Jump(&(*pnode)->c);
-            changed |= Prepare8080Jump(&(*pnode)->d);
-            changed |= Prepare8080Jump1(*pnode);
-            result_changed |= changed;
-        } while (changed);
-        pnode = &(*pnode)->next_node;
-    }
-    return result_changed;
 }

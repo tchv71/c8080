@@ -18,7 +18,6 @@
 #include "prepare.h"
 #include "index.h"
 #include "../../prepare/prepare.h"
-#include "jump.h"
 
 static const PrepareFunctionType prepare_function_list[] = {
     Prepare8080Const,
@@ -29,13 +28,12 @@ static const PrepareFunctionType prepare_function_list[] = {
     Prepare8080RemoveDead,
     Prepare8080IncDec,
     Prepare8080Sub16ToAdd16,
+    Prepare8080Jump,
     nullptr,
 };
 
 void Prepare8080Function(CProgramm *programm, CNodePtr &node, Asm2 *out) {
-    Prepare8080Jump(&node);
     PrepareFunction(*programm, node->variable, prepare_function_list, out);
-    Prepare8080Jump(&node);
 }
 
 void Prepare8080Variable(CProgramm &programm, CNodePtr &node, Asm2 *out) {

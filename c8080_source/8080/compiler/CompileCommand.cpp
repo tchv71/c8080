@@ -22,6 +22,13 @@ void Compiler8080::CompileCommand(CNodePtr &node) {
         out.source(node->e);
 
     switch (node->type) {
+        case CNT_LABEL:
+            if (node->variable->label_call_count > 0)
+                out.label(node->variable->output_name);
+            break;
+        case CNT_GOTO:
+            out.jmp(node->variable->output_name);
+            break;
         case CNT_BREAK:
             if (break_label)
                 out.jmp_label(break_label);
