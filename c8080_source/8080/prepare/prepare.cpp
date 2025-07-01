@@ -33,6 +33,7 @@ static const PrepareFunctionType prepare_function_list[] = {
 };
 
 void Prepare8080Function(CProgramm *programm, CNodePtr &node, Asm2 *out) {
+    Prepare8080Jump(&node);
     PrepareFunction(*programm, node->variable, prepare_function_list, out);
     Prepare8080Jump(&node);
 }

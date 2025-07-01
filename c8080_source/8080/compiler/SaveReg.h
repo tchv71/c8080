@@ -26,13 +26,13 @@ public:
     bool enabled{};
     AsmRegister reg{};
 
-    SaveReg(Asm2 &out_, CBuildCase &c, AsmRegister reg_) : out(out_), reg(reg_) {
+    SaveReg(Asm2 &out_, const CBuildCase &c, AsmRegister reg_) : out(out_), reg(reg_) {
         enabled = (c.regs & RegToUsed(reg));
         if (enabled)
             out.push_reg(reg);
     }
 
-    void End() {
+    void Pop() {
         if (enabled) {
             out.pop_reg(reg);
             enabled = false;
@@ -40,46 +40,6 @@ public:
     }
 
     ~SaveReg() {
-        assert(!enabled);
-    }
-};
-
-class PushMainPopDe {
-public:
-    Asm2 &out;
-    bool enabled{};
-
-    PushMainPopDe(Asm2 &out_, AsmRegister reg, CBuildCase &c) : out(out_) {
-        switch(reg) {
-            case R16_HL:
-            case R16_DE:
-                enabled = (c.regs & U_DE);
-                if (enabled)
-                    out.push_reg(R16_HL);
-                else
-                    out.ex_hl_de();
-                break;
-            case R8_A:
-            case R8_D:
-                enabled = (c.regs & U_D);
-                if (enabled)
-                    out.push_reg(R16_AF);
-                else
-                    out.ld_d_a();
-                break;
-            default:
-                throw std::runtime_error(__PRETTY_FUNCTION__);
-        }
-    }
-
-    void PopDe() {
-        if (enabled) {
-            out.pop_reg(R16_DE);
-            enabled = false;
-        }
-    }
-
-    ~PushMainPopDe() {
         assert(!enabled);
     }
 };

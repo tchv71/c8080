@@ -66,7 +66,7 @@ bool Compiler8080::Case_Load_8(CNodePtr &node, AsmRegister reg) {
 
 bool Compiler8080::Case_Load_8_A(CNodePtr &node, AsmRegister reg) {
     assert(reg == R8_A);
-    if (node->a->bi.alt.able) {
+    if (node->a->compiler.alt.able) {
         Build(node->a, R16_DE);
         out.ld_a_pde();
         return true;

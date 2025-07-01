@@ -1,0 +1,72 @@
+/*
+ * c8080 compiler
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "asm2.h"
+#include "../../c/tools/cthrow.h"
+
+std::string Asm2::GetConst(const CNodePtr &node, std::vector<CVariablePtr> *use) {
+    switch (node->type) {
+        case CNT_CONST_STRING:
+            if (node->const_string == nullptr)
+                C_ERROR_INTERNAL(node->e, "null pointer");
+            if (!measure)
+                return node->const_string->c.GetName(const_string_counter);
+            return "measure";
+        case CNT_NUMBER:
+            switch (node->ctype.GetAsmType()) {
+                case CBT_CHAR:
+                    return std::to_string(int8_t(node->number.i));
+                case CBT_SHORT:
+                    return std::to_string(int16_t(node->number.i));
+                case CBT_LONG:
+                    return std::to_string(int32_t(node->number.i));
+                case CBT_LONG_LONG:
+                    return std::to_string(node->number.i);
+                case CBT_UNSIGNED_CHAR:
+                case CBT_UNSIGNED_SHORT:
+                case CBT_UNSIGNED_LONG:
+                case CBT_UNSIGNED_LONG_LONG:
+                    return std::to_string(node->number.u);
+                case CBT_FLOAT:
+                    return std::to_string(node->number.f);
+                case CBT_DOUBLE:
+                    return std::to_string(node->number.d);
+                case CBT_LONG_DOUBLE:
+                    return std::to_string(node->number.ld);
+                default:  // TODO: other types
+                    C_ERROR_UNSUPPORTED_ASM_TYPE(node);
+            }
+            break;
+        case CNT_CONST:
+            if (use != nullptr) {
+                assert(!measure);
+                use->insert(use->begin(), node->compiler.used_variables.begin(), node->compiler.used_variables.end());
+            } else if (!measure) {
+                for (auto &i : node->compiler.used_variables) {
+                    if (i->c.use_counter == 0) {
+                        i->c.use_counter++;
+                        if (i->type.IsFunction() && !i->only_extern)
+                            compile_queue.push_back(i);
+                    }
+                }
+            }
+            assert(!node->text.empty());
+            return node->text;
+    }
+    CThrow(node, "initializer element is not constant");  // TODO: programm->error
+    return "";
+}

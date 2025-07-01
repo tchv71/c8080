@@ -19,7 +19,7 @@
 #include "../../c/tools/getnumberasuint64.h"
 
 void Compiler8080::BuildOperator16(CNodePtr &node) {
-    node->bi.rearrange = IsArgumentsRearrangeAllowed(node->operator_code);
+    node->compiler.rearrange = IsArgumentsRearrangeAllowed(node->operator_code);
 
     // First priority
     Measure(node, R16_HL, &Compiler8080::Case_Mul16_MC);
@@ -31,7 +31,7 @@ void Compiler8080::BuildOperator16(CNodePtr &node) {
     Measure(node, R16_DE, &Compiler8080::Case_IncDec16_N);
 
     // Last priority
-    if (!node->bi.main.able)
+    if (!node->compiler.main.able)
         Measure(node, R16_HL, &Compiler8080::Case_Operator16);
 }
 
@@ -69,7 +69,7 @@ void Compiler8080::Alu16(CNodePtr &node) {
 }
 
 bool Compiler8080::Case_Operator16(CNodePtr &node, AsmRegister reg) {
-    BuildArgs2(node, reg, node->a, node->b, R16_HL, R16_DE, node->bi.rearrange);
+    BuildArgs2(node, reg, node->a, node->b, R16_HL, R16_DE, node->compiler.rearrange);
     Alu16(node);
     return true;
 }
@@ -90,7 +90,7 @@ bool Compiler8080::Case_Shl16_MN(CNodePtr &node, AsmRegister reg) {
 
 bool Compiler8080::Case_IncDec16_N(CNodePtr &node, AsmRegister reg) {
     // COP_SUB replaced with COP_ADD
-    if (node->operator_code == COP_ADD && (reg != R16_DE || node->bi.alt.able)) {
+    if (node->operator_code == COP_ADD && (reg != R16_DE || node->compiler.alt.able)) {
         if (node->a->type == CNT_NUMBER)
             return OutIncDec16(reg, node->b, node->a);
         if (node->b->type == CNT_NUMBER)
@@ -108,7 +108,7 @@ bool Compiler8080::Case_Mul16_MC(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Mul16_AC(CNodePtr &node, AsmRegister reg) {
-    if (node->operator_code == COP_MUL && node->b->type == CNT_NUMBER && node->a->bi.alt.able &&
+    if (node->operator_code == COP_MUL && node->b->type == CNT_NUMBER && node->a->compiler.alt.able &&
         node->a->ctype.IsUnsigned()) {
         OutMul16(node->a, GetNumberAsUint64(node->b), R16_DE);
         return true;
@@ -125,7 +125,7 @@ bool Compiler8080::Case_Mul16_MCR(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Mul16_ACR(CNodePtr &node, AsmRegister reg) {
-    if (node->operator_code == COP_MUL && node->a->type == CNT_NUMBER && node->b->bi.alt.able &&
+    if (node->operator_code == COP_MUL && node->a->type == CNT_NUMBER && node->b->compiler.alt.able &&
         node->a->ctype.IsUnsigned()) {
         OutMul16(node->b, GetNumberAsUint64(node->a), R16_DE);
         return true;

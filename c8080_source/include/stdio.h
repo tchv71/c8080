@@ -24,4 +24,4 @@ int __stack snprintf(char *buffer, size_t bufer_size, const char *format, ...) _
 int __stack printf(const char *format, ...) __link("stdio/printf.c");
 int getchar() __link("stdio/getchar.c");
 int putchar(int c) __link("stdio/putchar.c");
-int puts(const char* text) __link("stdio/puts.c");
+int puts(const char *text) __link("stdio/puts.c");

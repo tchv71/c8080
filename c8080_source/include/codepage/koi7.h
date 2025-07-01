@@ -115,4 +115,3 @@
 #pragma codepage('э', 0xFC)
 #pragma codepage('щ', 0xFD)
 #pragma codepage('ч', 0xFE)
-

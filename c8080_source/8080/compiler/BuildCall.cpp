@@ -49,7 +49,7 @@ bool Compiler8080::Case_Call(CNodePtr &node, AsmRegister reg) {
         switch (i->ctype.GetAsmType()) {
             case CBT_CHAR:
             case CBT_UNSIGNED_CHAR:
-                if (!i->bi.alt.able) {
+                if (!i->compiler.alt.able) {
                     Build(i, R8_A);
                     out.dec_reg(R16_SP);  // TODO: Remove
                     out.push_af();
@@ -62,7 +62,7 @@ bool Compiler8080::Case_Call(CNodePtr &node, AsmRegister reg) {
                 break;
             case CBT_SHORT:
             case CBT_UNSIGNED_SHORT:
-                if (i->bi.alt.able && i->bi.alt.metric < i->bi.main.metric) {
+                if (i->compiler.alt.able && i->compiler.alt.metric < i->compiler.main.metric) {
                     Build(i, R16_DE);
                     out.push_reg(R16_DE);
                 } else {
@@ -110,7 +110,7 @@ void Compiler8080::InternalCall(CVariablePtr &fn) {
     MakeCallTreeEnd();
 }
 
-static void AddCalledBy(CVariableCompiler &self, CVariablePtr &function, bool call) {
+static void AddCalledBy(CVariable8080 &self, CVariablePtr &function, bool call) {
     for (auto &i : self.called_by) {  // TODO: Optimize, change to map
         if (i.function.lock() == function) {
             if (call)
@@ -118,7 +118,7 @@ static void AddCalledBy(CVariableCompiler &self, CVariablePtr &function, bool ca
             return;
         }
     }
-    self.called_by.push_back(CVariableCompiler::CalledBy{function, call});
+    self.called_by.push_back(CVariable8080::CalledBy{function, call});
     function->c.call_count++;
 }
 

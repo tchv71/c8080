@@ -27,7 +27,7 @@
 #include "cvariable.h"
 #include "cstruct.h"
 #include "cnodetype.h"
-#include "cnodecompiler.h"
+#include "../8080/treeextensions/cnode8080.h"
 
 union CNodeNumber {
     int64_t i;
@@ -58,8 +58,7 @@ struct CNode {
     std::string text;                        // Only in CONST or ASM
     CErrorPosition e;
 
-    CNodeCompiler compiler;
-    CBuildInfo bi;
+    CNode8080 compiler;
 
     bool IsConstNode() const {
         return type == CNT_CONST || type == CNT_CONST_STRING || type == CNT_NUMBER;

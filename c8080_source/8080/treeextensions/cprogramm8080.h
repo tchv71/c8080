@@ -1,6 +1,6 @@
 /*
- * c8080 stdlib
- * Copyright (c) 2022 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ * c8080 compiler
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,9 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <c8080/c8080.h>
+#include "../../c/cvariable.h"
 
-#define EXIT_FAILURE 1 /* Failing exit status. */
-#define EXIT_SUCCESS 0 /* Successful exit status. */
-
-int rand(void) __link("stdlib/rand.c");
-int abs(int x) __link("stdlib/abs.c");
+class CProgramm8080 {
+public:
+    CVariablePtr static_stack;
+};

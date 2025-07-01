@@ -31,7 +31,7 @@ void Compiler8080::BuildJumpIfZero(bool prepare, CNodePtr &node, bool invert1, b
             break;
         case CBT_SHORT:
         case CBT_UNSIGNED_SHORT:
-            if (node->bi.alt.able && node->bi.alt.metric <= node->bi.main.metric) {
+            if (node->compiler.alt.able && node->compiler.alt.metric <= node->compiler.main.metric) {
                 Build(node, R16_DE);
                 out.ld_a_d();
                 out.or_e();

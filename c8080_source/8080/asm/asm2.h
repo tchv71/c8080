@@ -35,14 +35,14 @@ public:
         Add(AC_SHLD, number);
     }
 
-    void ld_pconst_hl(CNodePtr &node) {
+    void ld_pconst_hl(const CNodePtr &node) {
         if (node->type == CNT_NUMBER)
             ld_pnumber_hl(GetNumberAsUint64(node));
         else
             ld_pstring_hl(GetConst(node));
     }
 
-    void ld_pconst_dehl_xchg(CNodePtr &node) {
+    void ld_pconst_dehl_xchg(const CNodePtr &node) {
         if (node->type == CNT_NUMBER) {
             uint32_t n = GetNumberAsUint64(node);
             ld_pnumber_hl(n);
@@ -64,7 +64,7 @@ public:
         Add(AC_LDA, number);
     }
 
-    void ld_a_pconst(CNodePtr &node) {
+    void ld_a_pconst(const CNodePtr &node) {
         if (node->type == CNT_NUMBER)
             ld_a_pnumber(GetNumberAsUint64(node));
         else
@@ -170,7 +170,7 @@ public:
         Add(AC_STA, number);
     }
 
-    void ld_pconst_a(CNodePtr &node) {
+    void ld_pconst_a(const CNodePtr &node) {
         if (node->type == CNT_NUMBER)
             ld_pnumber_a(GetNumberAsUint64(node));
         else
@@ -234,7 +234,7 @@ public:
         Add(AC_LHLD, number);
     }
 
-    void ld_hl_pconst(CNodePtr &node) {
+    void ld_hl_pconst(const CNodePtr &node) {
         if (node->type == CNT_NUMBER)
             ld_hl_pnumber(GetNumberAsUint64(node));
         else
@@ -253,7 +253,7 @@ public:
         ld_hl_pnumber(number);
     }
 
-    void ld_dehl_pconst(CNodePtr &node) {
+    void ld_dehl_pconst(const CNodePtr &node) {
         if (node->type == CNT_NUMBER)
             ld_dehl_pnumber(GetNumberAsUint64(node));
         else
@@ -358,7 +358,7 @@ public:
         Add(AC_ALU_A_CONST, number, alu);
     }
 
-    void alu_a_const(AsmAlu alu, CNodePtr &number) {
+    void alu_a_const(AsmAlu alu, const CNodePtr &number) {
         if (number->type == CNT_NUMBER)
             alu_a_number(alu, GetNumberAsUint64(number));
         else
@@ -401,14 +401,14 @@ public:
         Add(AC_LXI, reg, string);
     }
 
-    void ld_r8_const(AsmRegister reg, CNodePtr &node) {  // can xor
+    void ld_r8_const(AsmRegister reg, const CNodePtr &node) {  // can xor
         if (node->type == CNT_NUMBER)
             ld_r8_number(reg, GetNumberAsUint64(node));
         else
             ld_r8_string(reg, GetConst(node));
     }
 
-    void ld_r16_const(AsmRegister reg, CNodePtr &node) {
+    void ld_r16_const(AsmRegister reg, const CNodePtr &node) {
         ChangedReg(reg);
         if (node->type == CNT_NUMBER)
             Add(AC_LXI, reg, GetNumberAsUint64(node));
@@ -416,7 +416,7 @@ public:
             Add(AC_LXI, reg, GetConst(node));
     }
 
-    void ld_dehl_const(CNodePtr &node) {
+    void ld_dehl_const(const CNodePtr &node) {
         if (node->type == CNT_NUMBER) {
             const uint64_t value = GetNumberAsUint64(node);
             ld_r16_number(R16_DE, value >> 16);
@@ -591,7 +591,7 @@ public:
         ld_r8_number(R8_M, value);
     }
 
-    void ld_phl_const(CNodePtr &node) {
+    void ld_phl_const(const CNodePtr &node) {
         if (node->type == CNT_NUMBER)
             ld_phl_number(GetNumberAsUint64(node));
         else

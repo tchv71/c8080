@@ -1,6 +1,6 @@
 /*
- * c8080 stdlib
- * Copyright (c) 2022 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ * c8080 compiler
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,13 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "asm/asm2.h"
+#include "../c/cprogramm.h"
 
-#include <stdint.h>
-#include <c8080/c8080.h>
-
-#define EXIT_FAILURE 1 /* Failing exit status. */
-#define EXIT_SUCCESS 0 /* Successful exit status. */
-
-int rand(void) __link("stdlib/rand.c");
-int abs(int x) __link("stdlib/abs.c");
+void PrepareVariable(Asm2 &out, CProgramm &p, CVariablePtr &vd);
+void CompileVariable(Asm2 &out, CProgramm &p, CVariablePtr &vd);

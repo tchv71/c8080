@@ -20,7 +20,7 @@
 #include "../c/tools/cthrow.h"
 #include "../c/tools/makecnode.h"
 
-// C parser stores variables as CNT_LOAD_VARIABLE.
+// The C parser stores variables as CNT_LOAD_VARIABLE.
 // The C compiler does not support CNT_LOAD_VARIABLE.
 // Need to replace CNT_LOAD_VARIABLE with DEADDR(CNT_ARG_STACK_ADDRESS(N) / CNT_STACK_ADDRESS(N) / CNT_CONST).
 

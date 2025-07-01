@@ -22,7 +22,7 @@
 #include "cnode.h"
 #include "cconststring.h"
 #include "cvariable.h"
-#include "cprogrammcompiler.h"
+#include "../8080/treeextensions/cprogramm8080.h"
 
 class CProgramm {
 public:
@@ -40,7 +40,7 @@ public:
     uint64_t unique_counter{};
     std::string last_error;
 
-    CProgrammCompiler c;
+    CProgramm8080 c;
 
     CVariablePtr FindVariable(CString name);
     void AddVariable(CVariablePtr a);

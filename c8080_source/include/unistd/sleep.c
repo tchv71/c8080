@@ -15,13 +15,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include <unistd.h>
+#include <c8080/delay.h>
 
-#include <stdint.h>
-#include <c8080/c8080.h>
+#ifndef __C8080_ONE_SECOND_DELAY
+#define __C8080_ONE_SECOND_DELAY 5000
+#endif
 
-#define EXIT_FAILURE 1 /* Failing exit status. */
-#define EXIT_SUCCESS 0 /* Successful exit status. */
-
-int rand(void) __link("stdlib/rand.c");
-int abs(int x) __link("stdlib/abs.c");
+unsigned sleep(unsigned seconds) {
+    while (seconds != 0) {
+        seconds--;
+        Delay(__C8080_ONE_SECOND_DELAY);
+    }
+    return 0;
+}

@@ -20,8 +20,8 @@
 static const enum AsmAlu ALU_NONE = ALU_SBC;
 
 void Compiler8080::BuildOperator8(CNodePtr &node) {
-    node->bi.alu = OperatorCodeToAlu(node->operator_code);
-    node->bi.rearrange = IsArgumentsRearrangeAllowed(node->operator_code);
+    node->compiler.alu = OperatorCodeToAlu(node->operator_code);
+    node->compiler.rearrange = IsArgumentsRearrangeAllowed(node->operator_code);
 
     // First priority
     Measure(node, R8_A, &Compiler8080::Case_Shl8_MC);
@@ -32,7 +32,7 @@ void Compiler8080::BuildOperator8(CNodePtr &node) {
     Measure(node, R8_A, &Compiler8080::Case_Mul8_ACR);
 
     // Last priority
-    if (!node->bi.main.able) {
+    if (!node->compiler.main.able) {
         Measure(node, R8_A, &Compiler8080::Case_Operator8);
         Measure(node, R8_A, &Compiler8080::Case_Operator8_PMR);
         Measure(node, R8_A, &Compiler8080::Case_Operator8_PM);
@@ -81,7 +81,7 @@ void Compiler8080::Alu8D(CNodePtr &node) {
         case COP_AND:
         case COP_OR:
         case COP_XOR:
-            return out.alu_a_reg(node->bi.alu, R8_D);
+            return out.alu_a_reg(node->compiler.alu, R8_D);
         case COP_MUL:
             return InternalCall(node->ctype.IsUnsigned() ? o.mul_u8 : o.mul_i8);
         case COP_DIV:
@@ -98,15 +98,15 @@ void Compiler8080::Alu8D(CNodePtr &node) {
 }
 
 bool Compiler8080::Case_Operator8(CNodePtr &node, AsmRegister reg) {
-    BuildArgs2(node, reg, node->a, node->b, R8_A, R8_D, node->bi.rearrange);
+    BuildArgs2(node, reg, node->a, node->b, R8_A, R8_D, node->compiler.rearrange);
     Alu8D(node);
     return true;
 }
 
 bool Compiler8080::Case_Operator8_PM(CNodePtr &node, AsmRegister reg) {
-    if (node->bi.alu != ALU_NONE && node->b->IsDeaddr()) {
+    if (node->compiler.alu != ALU_NONE && node->b->IsDeaddr()) {
         if (BuildDouble(node, reg, node->b->a, R16_HL, node->a, R8_A)) {
-            out.alu_a_reg(node->bi.alu, R8_M);
+            out.alu_a_reg(node->compiler.alu, R8_M);
             return true;
         }
     }
@@ -114,9 +114,9 @@ bool Compiler8080::Case_Operator8_PM(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Operator8_PMR(CNodePtr &node, AsmRegister reg) {
-    if (node->bi.alu != ALU_NONE && node->a->IsDeaddr() && node->bi.rearrange) {
+    if (node->compiler.alu != ALU_NONE && node->a->IsDeaddr() && node->compiler.rearrange) {
         if (BuildDouble(node, reg, node->a->a, R16_HL, node->b, R8_A)) {
-            out.alu_a_reg(node->bi.alu, R8_M);
+            out.alu_a_reg(node->compiler.alu, R8_M);
             return true;
         }
     }
@@ -124,18 +124,18 @@ bool Compiler8080::Case_Operator8_PMR(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Operator8_MC(CNodePtr &node, AsmRegister reg) {
-    if (node->bi.alu != ALU_NONE && node->b->IsConstNode()) {
+    if (node->compiler.alu != ALU_NONE && node->b->IsConstNode()) {
         Build(node->a, R8_A);
-        out.alu_a_const(node->bi.alu, node->b);
+        out.alu_a_const(node->compiler.alu, node->b);
         return true;
     }
     return false;
 }
 
 bool Compiler8080::Case_Operator8_MCR(CNodePtr &node, AsmRegister reg) {
-    if (node->bi.alu != ALU_NONE && node->a->IsConstNode() && node->bi.rearrange) {
+    if (node->compiler.alu != ALU_NONE && node->a->IsConstNode() && node->compiler.rearrange) {
         Build(node->b, R8_A);
-        out.alu_a_const(node->bi.alu, node->a);
+        out.alu_a_const(node->compiler.alu, node->a);
         return true;
     }
     return false;
@@ -166,7 +166,7 @@ bool Compiler8080::Case_Mul8_MC(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Mul8_AC(CNodePtr &node, AsmRegister reg) {
-    if (node->operator_code == COP_MUL && node->b->type == CNT_NUMBER && node->a->bi.alt.able &&
+    if (node->operator_code == COP_MUL && node->b->type == CNT_NUMBER && node->a->compiler.alt.able &&
         node->a->ctype.IsUnsigned()) {
         OutMul8(node->a, node->b, R8_D);
         return true;
@@ -183,7 +183,7 @@ bool Compiler8080::Case_Mul8_MCR(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Mul8_ACR(CNodePtr &node, AsmRegister reg) {
-    if (node->operator_code == COP_MUL && node->a->type == CNT_NUMBER && node->b->bi.alt.able &&
+    if (node->operator_code == COP_MUL && node->a->type == CNT_NUMBER && node->b->compiler.alt.able &&
         node->a->ctype.IsUnsigned()) {
         OutMul8(node->b, node->a, R8_D);
         return true;

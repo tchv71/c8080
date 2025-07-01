@@ -125,7 +125,7 @@ bool Compiler8080::Case_Set32_MM(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Set32_AM(CNodePtr &node, AsmRegister reg) {
-    if (node->a->a->bi.alt.able) {
+    if (node->a->a->compiler.alt.able) {
         Build(node->a->a, R16_DE);
         out.push_de();
         Build(node->b, R32_DEHL);

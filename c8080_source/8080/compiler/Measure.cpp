@@ -56,11 +56,11 @@ void Compiler8080::MeasureBegin() {
 void Compiler8080::MeasureResult(CNodePtr &node, AsmRegister reg) {
     if (out.measure) {
         if (reg != REG_NONE) {
-            CBuildCase &c = node->bi.Get(reg);
+            CBuildCase &c = node->compiler.Get(reg);
             if (!c.able || c.metric > out.measure_metric)
                 c.Set(out.measure_regs, out.measure_metric, out.measure_args_id, measure_proc);
         }
-        CBuildCase &n = node->bi.no_result;
+        CBuildCase &n = node->compiler.no_result;
         if (!n.able || n.metric > out.measure_metric)
             n.Set(out.measure_regs, out.measure_metric, out.measure_args_id, measure_proc);
     }
@@ -68,13 +68,13 @@ void Compiler8080::MeasureResult(CNodePtr &node, AsmRegister reg) {
 
 bool Compiler8080::MeasureReset(CNodePtr &node, AsmRegister reg) {
     if (reg == REG_PREPARE) {
-        node->bi.no_result.Reset();
-        node->bi.main.Reset();
-        node->bi.alt.Reset();
+        node->compiler.no_result.Reset();
+        node->compiler.main.Reset();
+        node->compiler.alt.Reset();
         return false;
     }
 
-    CBuildCase &c = node->bi.Get(reg);
+    const CBuildCase &c = node->compiler.Get(reg);
     if (c.build == nullptr)
         C_ERROR_INTERNAL(node, "No compilation cases");
 

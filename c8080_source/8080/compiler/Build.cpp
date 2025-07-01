@@ -19,7 +19,7 @@
 
 void Compiler8080::Build(CNodePtr &node, AsmRegister reg) {
     if (out.measure) {
-        CBuildCase &c = node->bi.Get(reg);
+        CBuildCase &c = node->compiler.Get(reg);
         if (!c.able) {
             C_ERROR_INTERNAL(node, "No compilation cases");
             return;
@@ -80,7 +80,7 @@ void Compiler8080::BuildOperator(CNodePtr &node) {
         AsmRegister main = GetResultReg(node->ctype, false, false, node);
         Measure(node, main, &Compiler8080::Case_If);
 
-        if (node->b->bi.alt.able && node->c->bi.alt.able) {
+        if (node->b->compiler.alt.able && node->c->compiler.alt.able) {
             AsmRegister alt = GetResultReg(node->ctype, true, false, node);
             Measure(node, alt, &Compiler8080::Case_If);
         }
@@ -141,7 +141,7 @@ void Compiler8080::BuildMonoOperator(CNodePtr &node) {
         case MOP_PLUS: {
             AsmRegister main_reg = GetResultReg(node->ctype, false, false, node);
             Measure(node, main_reg, &Compiler8080::Case_Direct);
-            if (node->a->bi.alt.able) {
+            if (node->a->compiler.alt.able) {
                 AsmRegister alt_reg = GetResultReg(node->ctype, true, false, node);
                 Measure(node, alt_reg, &Compiler8080::Case_Direct);
             }

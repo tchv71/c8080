@@ -20,8 +20,8 @@
 #include "ctype.h"
 #include "cerrorposition.h"
 #include "cnodeptr.h"
-#include "cvariablecompiler.h"
 #include "cattribute.h"
+#include "../8080/treeextensions/cvariable8080.h"
 
 struct CVariable {
     CType type;
@@ -41,7 +41,7 @@ struct CVariable {
     CLinkAttribute link_attribute;
     bool link_attribute_processed{};
 
-    struct CVariableCompiler c;
+    struct CVariable8080 c;
 };
 
 typedef std::shared_ptr<CVariable> CVariablePtr;

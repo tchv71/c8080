@@ -128,7 +128,7 @@ bool Compiler8080::Case_ConvertLoad_8(CNodePtr &node, AsmRegister reg) {
 
 bool Compiler8080::Case_ConvertLoad_8_A(CNodePtr &node, AsmRegister reg) {
     assert(reg == R8_A);
-    if (node->a->IsDeaddr() && node->a->a->bi.alt.able) {
+    if (node->a->IsDeaddr() && node->a->a->compiler.alt.able) {
         Build(node->a->a, R16_DE);
         out.ld_a_pde();
         return true;
@@ -151,7 +151,7 @@ bool Compiler8080::Case_Convert_U8_16_AM(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Convert_U8_16_MA(CNodePtr &node, AsmRegister reg) {
-    if (node->a->bi.alt.able) {
+    if (node->a->compiler.alt.able) {
         Build(node->a, R8_D);
         out.ld_r8_r8(R8_L, R8_D);
         out.ld_r8_number(R8_H, 0);
@@ -161,7 +161,7 @@ bool Compiler8080::Case_Convert_U8_16_MA(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Convert_U8_16_AA(CNodePtr &node, AsmRegister reg) {
-    if (node->a->bi.alt.able) {
+    if (node->a->compiler.alt.able) {
         Build(node->a, R8_D);
         out.ld_r8_r8(R8_E, R8_D);
         out.ld_r8_number(R8_D, 0);
@@ -218,7 +218,7 @@ bool Compiler8080::Case_Convert_16_8_M(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler8080::Case_Convert_16_8_A(CNodePtr &node, AsmRegister reg) {
-    if (node->a->bi.alt.able) {
+    if (node->a->compiler.alt.able) {
         Build(node->a, R16_DE);
         out.ld_r8_r8(reg, R8_E);
         return true;

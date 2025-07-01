@@ -17,11 +17,9 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <c8080/c8080.h>
-
-#define EXIT_FAILURE 1 /* Failing exit status. */
-#define EXIT_SUCCESS 0 /* Successful exit status. */
-
-int rand(void) __link("stdlib/rand.c");
-int abs(int x) __link("stdlib/abs.c");
+#ifndef __C8080_COMPILER
+#define __global
+#define __stack
+#define __link(FILE_NAME)
+#define __address(NUMBER)
+#endif
