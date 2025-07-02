@@ -18,18 +18,10 @@
 #include "CompileVariable.h"
 #include "prepare/prepare.h"
 
-void PrepareVariable(Asm2 &out, CProgramm &p, CVariablePtr &vd) {
-    if (!vd->c.prepared) {
-        vd->c.prepared = true;
-        if (vd->body)
-            Prepare8080Variable(p, vd->body, &out);
-    }
-}
-
 void CompileVariable(Asm2 &out, CProgramm &p, CVariablePtr &vd) {
     assert(!vd->address_attribute.exists);
 
-    PrepareVariable(out, p, vd);
+    Prepare8080Variable(p, vd, out);
 
     out.variable(vd->output_name);
 
@@ -52,7 +44,7 @@ void CompileVariable(Asm2 &out, CProgramm &p, CVariablePtr &vd) {
         } else if (j->IsConstNode()) {
             bytes_written += out.data(j);
         } else {
-            C_ERROR_UNSUPPORTED_NODE_TYPE(j);
+            p.Error(j->e, "initializer element is not constant");  // gcc
         }
     }
     out.ds(vd->type.SizeOf(vd->e) - bytes_written);

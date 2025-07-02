@@ -36,6 +36,6 @@ public:
     }
 };
 
-void PrepareFunction(CProgramm &cprogramm, CVariablePtr &p, const PrepareFunctionType *list, Asm2 *out);
+void PrepareFunction(CProgramm &cprogramm, CVariablePtr &p, const PrepareFunctionType *list, Asm2 &out);
 uint32_t PrepareInt(Prepare &p, CNodePtr *pnode);
 bool DeleteNodeSaveType(CNodePtr &node, char c);

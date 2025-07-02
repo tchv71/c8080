@@ -40,6 +40,7 @@ struct CVariable {
     CAddressAttribute address_attribute;
     CLinkAttribute link_attribute;
     bool link_attribute_processed{};
+    bool c_calc_const_executed{};
 
     struct CVariable8080 c;
 };

@@ -92,9 +92,9 @@ uint32_t PrepareInt(Prepare &p, CNodePtr *pnode) {
     return return_value;
 }
 
-void PrepareFunction(CProgramm &programm, CVariablePtr &f, const PrepareFunctionType *list, Asm2 *out) {
+void PrepareFunction(CProgramm &programm, CVariablePtr &f, const PrepareFunctionType *list, Asm2 &out) {
     Prepare p(programm, f, list);
-    p.out = out;
+    p.out = &out;
     PrepareFunctionStaticStack(p);
     PrepareInt(p, &p.function->body->a);
 }

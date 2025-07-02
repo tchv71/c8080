@@ -36,7 +36,7 @@ void Compiler8080::Compile(CParser &c, OutputFormat8080 output_format, CString o
         if (!fn->body)
             C_ERROR_INTERNAL(fn->e, "body is null");
 
-        Prepare8080Function(&p, fn->body, &out);
+        Prepare8080Function(p, fn->body, out);
 
         out.label(fn->output_name.c_str());
 

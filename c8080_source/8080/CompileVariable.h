@@ -18,5 +18,4 @@
 #include "asm/asm2.h"
 #include "../c/cprogramm.h"
 
-void PrepareVariable(Asm2 &out, CProgramm &p, CVariablePtr &vd);
 void CompileVariable(Asm2 &out, CProgramm &p, CVariablePtr &vd);

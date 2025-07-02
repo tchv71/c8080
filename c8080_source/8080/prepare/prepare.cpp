@@ -29,16 +29,20 @@ static const PrepareFunctionType prepare_function_list[] = {
     Prepare8080IncDec,
     Prepare8080Sub16ToAdd16,
     Prepare8080Jump,
+    Prepare8080LoadVariable,
     nullptr,
 };
 
-void Prepare8080Function(CProgramm *programm, CNodePtr &node, Asm2 *out) {
-    PrepareFunction(*programm, node->variable, prepare_function_list, out);
+void Prepare8080Function(CProgramm &programm, CNodePtr &node, Asm2 &out) {
+    PrepareFunction(programm, node->variable, prepare_function_list, out);
 }
 
-void Prepare8080Variable(CProgramm &programm, CNodePtr &node, Asm2 *out) {
-    CVariablePtr no_function;
-    Prepare p(programm, no_function, prepare_function_list);
-    p.out = out;
-    PrepareInt(p, &node);
+void Prepare8080Variable(CProgramm &programm, CVariablePtr &var, Asm2 &out) {
+    if (!var->c.prepared && var->body) {
+        var->c.prepared = true;  // Prevent recursion
+        CVariablePtr no_function;
+        Prepare p(programm, no_function, prepare_function_list);
+        p.out = &out;
+        PrepareInt(p, &var->body);
+    }
 }

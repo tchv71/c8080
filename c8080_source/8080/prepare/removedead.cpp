@@ -44,7 +44,7 @@ bool Prepare8080RemoveDead(Prepare &, CNodePtr &node) {
             node->a = nullptr;
             node->b = nullptr;
         } else {
-            node->a = nullptr; // No condition
+            node->a = nullptr;  // No condition
         }
         return true;
     }
@@ -53,10 +53,10 @@ bool Prepare8080RemoveDead(Prepare &, CNodePtr &node) {
     // do { B } while (1)  =>  for (;;) { B );
     if (node->type == CNT_DO && node->a != nullptr && node->a->type == CNT_NUMBER) {
         if (NumberIsZero(node->a)) {
-            node->a = nullptr; // No condition
+            node->a = nullptr;  // No condition
         } else {
             node->type = CNT_FOR;
-            node->a = nullptr; // No condition
+            node->a = nullptr;  // No condition
             node->d = node->b;
             node->b = nullptr;
         }

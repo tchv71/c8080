@@ -151,8 +151,10 @@ void Compiler8080::CompileCommand(CNodePtr &node) {
             out.label(start_label);
             CompileCommand(node->b);
             out.label(continue_label);
-            BuildJumpIf(true, node->a, true, start_label);
-            BuildJumpIf(false, node->a, true, start_label);
+            if (node->a) {
+                BuildJumpIf(true, node->a, true, start_label);
+                BuildJumpIf(false, node->a, true, start_label);
+            }
             out.label(break_label);
             continue_label = saved_continue_label;
             break_label = saved_break_label;

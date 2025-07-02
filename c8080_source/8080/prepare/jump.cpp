@@ -22,14 +22,14 @@ static bool Prepare8080Jump2(CNodePtr &node) {
     if (node && !node->IsJumpNode()) {
         CNodePtr ch = CNODE({CNT_NUMBER, ctype : node->ctype, e : node->e});
         node = MakeOperator(COP_CMP_NE, node, ch, node->e, false);
-        node->need_jump_node = true;
+        node->dont_replace_jump_node = true;
         assert(node->IsJumpNode());
         return true;
     }
     return false;
 }
 
-bool Prepare8080Jump(Prepare&, CNodePtr &node) {
+bool Prepare8080Jump(Prepare &, CNodePtr &node) {
     switch (node->type) {
         case CNT_OPERATOR:
             if (node->operator_code == COP_IF)

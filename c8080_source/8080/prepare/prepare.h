@@ -21,5 +21,5 @@
 
 class Asm2;
 
-void Prepare8080Function(CProgramm *programm, CNodePtr &node, Asm2 *out);
-void Prepare8080Variable(CProgramm &programm, CNodePtr &node, Asm2 *out);
+void Prepare8080Function(CProgramm &programm, CNodePtr &node, Asm2 &out);
+void Prepare8080Variable(CProgramm &programm, CVariablePtr &var, Asm2 &out);

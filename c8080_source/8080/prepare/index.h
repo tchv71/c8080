@@ -28,3 +28,4 @@ bool Prepare8080IncDec(Prepare &, CNodePtr &node);
 bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node);
 bool Prepare8080RemoveDead(Prepare &, CNodePtr &node);
 bool Prepare8080Jump(Prepare&, CNodePtr &node);
+bool Prepare8080LoadVariable(Prepare &p, CNodePtr &node);

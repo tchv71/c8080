@@ -58,7 +58,7 @@ struct CNode {
     std::string text;                        // Only in CONST or ASM
     CErrorPosition e;
     bool has_label{};                        // type == CNT_LABEL (and children)
-    bool need_jump_node{};
+    bool dont_replace_jump_node{};
 
     CNode8080 compiler;
 

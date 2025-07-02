@@ -16,42 +16,21 @@
  */
 
 #include "index.h"
-#include <stdexcept>
-#include "../c/tools/cthrow.h"
-#include "../c/tools/makecnode.h"
 
 // The C parser stores variables as CNT_LOAD_VARIABLE.
 // The C compiler does not support CNT_LOAD_VARIABLE.
-// Need to replace CNT_LOAD_VARIABLE with DEADDR(CNT_ARG_STACK_ADDRESS(N) / CNT_STACK_ADDRESS(N) / CNT_CONST).
+// Need to replace CNT_LOAD_VARIABLE with DEADDR(CNT_ARG_STACK_ADDRESS(N) / CNT_STACK_ADDRESS(N)).
 
 bool PrepareLoadVariable(Prepare &p, CNodePtr &node) {
     if (node->type == CNT_LOAD_VARIABLE) {
         CVariablePtr &v = node->variable;
-        assert(v != nullptr);
-
-        if (v->type.IsConst() && v->body && v->body->IsConstNode())
-            CThrow(node, "Internal erorr, is const");  // CCalcConst() must be called first
-
-        if (v->is_stack_variable && p.function != nullptr) {
-            if (p.function->type.GetVariableMode() != CVM_STACK)
-                CThrow(node, "Internal error, !CVM_STACK");  // PrepareStaticLoadVariable() must be called first
-
+        if (v->is_stack_variable) {
+            assert(p.function != nullptr);
+            assert(p.function->type.GetVariableMode() == CVM_STACK);
             node->type = (v->is_function_argument ? CNT_ARG_STACK_ADDRESS : CNT_STACK_ADDRESS);
             node->number.u = v->stack_offset;
-        } else {
-            node->type = CNT_CONST;  // TODO: No CNT_CONST in common code
-            assert(!v->output_name.empty());
-            node->text = v->output_name;
-            node->compiler.used_variables.push_back(v);
+            return true;
         }
-
-        if (!v->type.IsArray()) {
-            node = MakeCNodeDeaddr(node);
-            node->a->ctype.pointers.push_back(CPointer{0});
-        }
-
-        node->variable = nullptr;
-        return true;
     }
     return false;
 }
