@@ -56,9 +56,12 @@ void Compiler8080::Build(CNodePtr &node, AsmRegister reg) {
             return;
         }
         case CNT_STACK_ADDRESS:
-        case CNT_ARG_STACK_ADDRESS:
             Measure(node, REG_NONE, &Compiler8080::Case_Empty);
             Measure(node, R16_HL, &Compiler8080::Case_StackAddress);
+            return;
+        case CNT_ARG_STACK_ADDRESS:
+            Measure(node, REG_NONE, &Compiler8080::Case_Empty);
+            Measure(node, R16_HL, &Compiler8080::Case_ArgStackAddress);
             return;
         case CNT_FUNCTION_CALL:
         case CNT_FUNCTION_CALL_ADDR:
@@ -187,6 +190,12 @@ void Compiler8080::BuildMonoOperator(CNodePtr &node) {
 }
 
 bool Compiler8080::Case_StackAddress(CNodePtr &node, AsmRegister reg) {
+    out.ld_reg_stack_addr(R16_HL, node->number.u);
+    out.add_hl_sp();
+    return true;
+}
+
+bool Compiler8080::Case_ArgStackAddress(CNodePtr &node, AsmRegister reg) {
     out.ld_reg_arg_stack_addr(R16_HL, node->number.u);
     out.add_hl_sp();
     return true;

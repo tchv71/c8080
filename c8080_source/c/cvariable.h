@@ -34,6 +34,7 @@ struct CVariable {
     std::string output_name;
     std::vector<std::shared_ptr<CVariable>> function_arguments;
     size_t function_stack_frame_size{};
+    size_t function_stack_frame_size_0{};
     CErrorPosition e;
     uint64_t stack_offset{};
     size_t label_call_count{};

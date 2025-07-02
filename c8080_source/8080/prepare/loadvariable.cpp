@@ -21,9 +21,9 @@
 
 bool Prepare8080LoadVariable(Prepare &p, CNodePtr &node) {
     if (node->type == CNT_LOAD_VARIABLE) {
-        CVariablePtr v = node->variable;
+        CVariablePtr &v = node->variable;
         assert(v != nullptr);
-        assert(!v->is_stack_variable);  // Should be replaced by now
+        assert(!v->is_stack_variable);
         assert(!v->output_name.empty());
 
         Prepare8080Variable(p.programm, v, *p.out);
@@ -37,9 +37,10 @@ bool Prepare8080LoadVariable(Prepare &p, CNodePtr &node) {
         node->type = CNT_CONST;
         node->text = v->output_name;
         node->compiler.used_variables.push_back(v);
+        bool a = !v->type.IsArray();
         node->variable = nullptr;
 
-        if (!v->type.IsArray()) {
+        if (a) {
             node = MakeCNodeDeaddr(node);
             node->a->ctype.pointers.push_back(CPointer{0});
         }

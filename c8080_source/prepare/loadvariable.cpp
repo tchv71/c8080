@@ -16,6 +16,7 @@
  */
 
 #include "index.h"
+#include "../c/tools/makecnode.h"
 
 // The C parser stores variables as CNT_LOAD_VARIABLE.
 // The C compiler does not support CNT_LOAD_VARIABLE.
@@ -29,6 +30,12 @@ bool PrepareLoadVariable(Prepare &p, CNodePtr &node) {
             assert(p.function->type.GetVariableMode() == CVM_STACK);
             node->type = (v->is_function_argument ? CNT_ARG_STACK_ADDRESS : CNT_STACK_ADDRESS);
             node->number.u = v->stack_offset;
+            bool a = !v->type.IsArray();
+            node->variable = nullptr;
+            if (a) {
+                node = MakeCNodeDeaddr(node);
+                node->a->ctype.pointers.push_back(CPointer{0});
+            }
             return true;
         }
     }

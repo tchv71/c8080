@@ -63,6 +63,7 @@ protected:
     bool Case_If(CNodePtr &node, AsmRegister reg);
     bool Case_Comma(CNodePtr &node, AsmRegister reg);
     bool Case_StackAddress(CNodePtr &node, AsmRegister reg);
+    bool Case_ArgStackAddress(CNodePtr &node, AsmRegister reg);
     bool Case_JumpNode(CNodePtr &node, AsmRegister reg);
 
     void BuildCall(CNodePtr &node);
