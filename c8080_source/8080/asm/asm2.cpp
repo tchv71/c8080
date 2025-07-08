@@ -20,6 +20,7 @@
 
 std::string Asm2::GetConst(const CNodePtr &node, std::vector<CVariablePtr> *use) {
     switch (node->type) {
+        // TODO: Replace CNT_CONST_STRING with CNT_LOAD_VARIABLE
         case CNT_CONST_STRING:
             if (node->const_string == nullptr)
                 C_ERROR_INTERNAL(node->e, "null pointer");

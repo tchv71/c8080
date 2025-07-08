@@ -57,3 +57,41 @@ uint32_t RegToUsed(AsmRegister reg) {
     }
     return 0;
 }
+
+bool IsAsmRegister16SpAf(AsmRegister reg) {
+    switch (reg) {
+        case R16_AF:
+        case R16_BC:
+        case R16_DE:
+        case R16_HL:
+        case R16_SP:
+            return true;
+    }
+    return false;
+}
+
+bool IsAsmRegister16Sp(AsmRegister r) {
+    switch (r) {
+        case R16_BC:
+        case R16_DE:
+        case R16_HL:
+        case R16_SP:
+            return true;
+    }
+    return false;
+}
+
+bool IsAsmRegister8(AsmRegister r) {
+    switch (r) {
+        case R8_A:
+        case R8_B:
+        case R8_C:
+        case R8_D:
+        case R8_E:
+        case R8_H:
+        case R8_L:
+        case R8_M:
+            return true;
+    }
+    return false;
+}

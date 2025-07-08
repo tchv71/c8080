@@ -24,7 +24,8 @@
 // Replace stack variables with global variables
 
 static bool LastAgumentInCpuRegister(CVariable &f) {
-    if (f.type.GetVariableMode() == CVM_GLOBAL && f.type.function_args.size() >= 2u) {  // Min 1 argument
+    if (f.type.GetVariableMode() == CVM_GLOBAL && f.type.function_args.size() >= 2u &&
+        !f.type.many_function_args) {  // Min 1 argument
         switch (f.type.function_args.back().type.GetAsmType()) {
             case CBT_CHAR:
             case CBT_UNSIGNED_CHAR:  // 8 bit
@@ -67,6 +68,8 @@ static void PrepareFunctionStaticStack(Prepare &p, CVariable &f) {
     p.programm.AddVariable(s);
     f.c.static_stack = s;
 
+    f.function_stack_frame_size_0 = f.function_stack_frame_size;
+
     // Allocate space for function arguments in the static stack
     for (size_t i = 0; i < f.function_arguments.size(); i++) {
         auto &arg = f.function_arguments[i];
@@ -94,50 +97,64 @@ bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node) {
         node->a = nullptr;
 
         CNodeList body;
-        for (size_t i = 1; i < arg_list.size(); i++) {
-            if (arg == nullptr)
-                C_ERROR_INTERNAL(node, "not enough arguments");
+        size_t arg_n = 1;
+        size_t offset = node->variable->function_stack_frame_size_0;
+        while (arg) {
+            if (!node->variable->type.many_function_args && arg_n == arg_list.size())
+                p.programm.Error(node->e, "too many arguments");
 
             CNodePtr next_arg = arg->next_node;
             arg->next_node = nullptr;
 
             CNodePtr command = nullptr;
-            if (i + 1 == arg_list.size() && LastAgumentInCpuRegister(*node->variable)) {
-                command = CNODE({CNT_SAVE_TO_REGISTER, a : arg, ctype : arg_list[i].type, e : arg->e});
+            if (arg_n + 1 == arg_list.size() && LastAgumentInCpuRegister(*node->variable) &&
+                !node->variable->type.many_function_args) {
+                command = CNODE({CNT_SAVE_TO_REGISTER, a : arg, ctype : arg_list[arg_n].type, e : arg->e});
             } else {
-                CVariablePtr &av = arg_variables[i - 1];
-                assert(av != nullptr);
+                std::string arg_text;
+                CType arg_type;
+                if (arg_n - 1 < arg_variables.size() && arg_n < arg_list.size()) {
+                    CVariablePtr &av = arg_variables[arg_n - 1];
+                    assert(av != nullptr);
+                    arg_text = av->output_name;
+                    arg_type = arg_list[arg_n].type;
+                    offset += arg_type.SizeOf(arg->e);
+                } else {
+                    arg_text = node->variable->c.static_stack->output_name + " + " + std::to_string(offset);
+                    arg_type = arg->ctype;
+                    offset += arg_type.SizeOf(arg->e);
+                }
+
+                assert(!arg_text.empty());
 
                 CNodePtr aa = CNODE({
                     CNT_CONST,
-                    ctype : arg_list[i].type,
-                    text : av->output_name,
+                    ctype : arg_type,
+                    text : arg_text,
                     e : arg->e
                 });  // TODO: Replace with CNT_LOAD_VARIABLE
+
                 aa->ctype.pointers.push_back(CPointer{0});
 
-                assert(!aa->text.empty());
-
-                CNodePtr a = CNODE({
-                    CNT_MONO_OPERATOR,
-                    a : aa,
-                    ctype : arg_list[i].type,
-                    mono_operator_code : MOP_DEADDR,
-                    variable : av,
-                    e : arg->e
-                });
+                CNodePtr a =
+                    CNODE({CNT_MONO_OPERATOR, a : aa, ctype : arg_type, mono_operator_code : MOP_DEADDR, e : arg->e});
 
                 command = MakeOperator(COP_SET, a, arg, arg->e, p.programm.cmm);
             }
             body.PushBack(command);
 
             arg = next_arg;
+            arg_n++;
         }
 
-        if (arg != nullptr)
-            C_ERROR_INTERNAL(node, "extra arguments");
+        if (arg_n < arg_list.size())
+            C_ERROR_INTERNAL(node, "not enough arguments");
 
         node->c = body.first;
+
+        if (node->variable->function_stack_frame_size < offset)
+            node->variable->function_stack_frame_size = offset;
+
         return true;
     }
     return false;
@@ -169,7 +186,7 @@ static void PrepareLastFunctionArgCode(Prepare &p) {
         return;
 
     CVariable &f = *p.function;
-    if (f.type.GetVariableMode() == CVM_GLOBAL && LastAgumentInCpuRegister(f)) {
+    if (f.type.GetVariableMode() == CVM_GLOBAL && LastAgumentInCpuRegister(f) && !f.type.many_function_args) {
         CVariablePtr &register_argument = p.function->function_arguments.back();
         if (p.programm.asm_names.find(register_argument->output_name) == p.programm.asm_names.end()) {
             CNodePtr a = CNODE({

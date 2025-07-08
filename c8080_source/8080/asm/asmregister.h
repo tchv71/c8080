@@ -54,16 +54,8 @@ static const uint32_t U_DEHL = U_DE | U_HL;
 
 uint32_t RegToUsed(AsmRegister reg);
 
-static inline bool IsAsmRegister16(AsmRegister reg) {
-    switch (reg) {
-        case R16_AF:
-        case R16_BC:
-        case R16_DE:
-        case R16_HL:
-        case R16_SP:
-            return true;
-    }
-    return false;
-}
+bool IsAsmRegister16SpAf(AsmRegister reg);
+bool IsAsmRegister16Sp(AsmRegister r);
+bool IsAsmRegister8(AsmRegister r);
 
 const char *ToString(AsmRegister value);
