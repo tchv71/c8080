@@ -41,8 +41,7 @@ void Prepare8080Variable(CProgramm &programm, CVariablePtr &var, Asm2 &out) {
     if (!var->c.prepared && var->body) {
         var->c.prepared = true;  // Prevent recursion
         CVariablePtr no_function;
-        Prepare p(programm, no_function, prepare_function_list);
-        p.out = &out;
+        Prepare p(programm, out, no_function, prepare_function_list);
         PrepareInt(p, &var->body);
     }
 }

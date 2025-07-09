@@ -17,25 +17,7 @@
 
 #pragma once
 
-#include "../c/cprogramm.h"
+#include "../asm/asm2.h"
+#include "../../c/cprogramm.h"
 
-class Prepare;
-
-typedef bool (*PrepareFunctionType)(Prepare &p, CNodePtr &node);
-
-class Asm2;
-
-class Prepare {
-public:
-    CProgramm &programm;
-    CVariablePtr function;
-    const PrepareFunctionType *list;
-    Asm2 &out;
-
-    Prepare(CProgramm &p, Asm2 &o, CVariablePtr f, const PrepareFunctionType *l) : programm(p), function(f), list(l), out(o) {
-    }
-};
-
-void PrepareFunction(CProgramm &cprogramm, CVariablePtr &p, const PrepareFunctionType *list, Asm2 &out);
-uint32_t PrepareInt(Prepare &p, CNodePtr *pnode);
-bool DeleteNodeSaveType(CNodePtr &node, char c);
+void PrepareCmm(Asm2 &out, CProgramm &programm, CNodePtr &node);

@@ -19,29 +19,29 @@
 #include "../asm/asm2.h"
 #include "../../c/tools/ccalcconst.h"
 
-static void Prepare8080ConstConvert(CNodePtr to_node, CNodePtr node, CType to_type, Asm2 *out) {
+static void Prepare8080ConstConvert(CNodePtr to_node, CNodePtr node, CType to_type, Asm2 &out) {
     std::vector<std::shared_ptr<CVariable>> use;  // to_name == node
     switch (to_type.GetAsmType()) {
         case CBT_CHAR:
         case CBT_UNSIGNED_CHAR:
-            to_node->text = "0FFh & (" + out->GetConst(node, &use) + ")";
+            to_node->text = "0FFh & (" + out.GetConst(node, &use) + ")";
             break;
         case CBT_SHORT:
         case CBT_UNSIGNED_SHORT:
-            to_node->text = "0FFFFh & (" + out->GetConst(node, &use) + ")";
+            to_node->text = "0FFFFh & (" + out.GetConst(node, &use) + ")";
             break;
         case CBT_LONG:
         case CBT_UNSIGNED_LONG:
-            to_node->text = "0FFFFFFFFh & (" + out->GetConst(node, &use) + ")";
+            to_node->text = "0FFFFFFFFh & (" + out.GetConst(node, &use) + ")";
             break;
         case CBT_LONG_LONG:
         case CBT_UNSIGNED_LONG_LONG:
-            to_node->text = "0FFFFFFFFFFFFFFFFh & (" + out->GetConst(node, &use) + ")";
+            to_node->text = "0FFFFFFFFFFFFFFFFh & (" + out.GetConst(node, &use) + ")";
             break;
         case CBT_FLOAT:
         case CBT_DOUBLE:
         case CBT_LONG_DOUBLE:
-            to_node->text = out->GetConst(node, &use);
+            to_node->text = out.GetConst(node, &use);
             break;
         default:
             C_ERROR_UNSUPPORTED_ASM_TYPE_INT(to_node, to_type);
@@ -52,8 +52,8 @@ static void Prepare8080ConstConvert(CNodePtr to_node, CNodePtr node, CType to_ty
 
 static bool Prepare8080ConstOperator(Prepare &p, CString op, CNodePtr node) {
     if (node->a->IsConstNode() && node->b->IsConstNode()) {
-        node->text = "(" + p.out->GetConst(node->a, &node->compiler.used_variables) + ") " + op + " (" +
-                     p.out->GetConst(node->b, &node->compiler.used_variables) + ")";
+        node->text = "(" + p.out.GetConst(node->a, &node->compiler.used_variables) + ") " + op + " (" +
+                     p.out.GetConst(node->b, &node->compiler.used_variables) + ")";
         node->type = CNT_CONST;
         node->a = nullptr;
         node->b = nullptr;
@@ -65,7 +65,7 @@ static bool Prepare8080ConstOperator(Prepare &p, CString op, CNodePtr node) {
 
 static bool Prepare8080ConstMono(Prepare &p, CString op, CNodePtr node) {
     if (node->a->IsConstNode()) {
-        node->text = op + " (" + p.out->GetConst(node->a, &node->compiler.used_variables) + ")";
+        node->text = op + " (" + p.out.GetConst(node->a, &node->compiler.used_variables) + ")";
         node->type = CNT_CONST;
         node->a = nullptr;
         Prepare8080ConstConvert(node, node, node->ctype, p.out);
@@ -77,7 +77,7 @@ static bool Prepare8080ConstMono(Prepare &p, CString op, CNodePtr node) {
 bool Prepare8080Const(Prepare &p, CNodePtr &node) {
     switch (node->type) {
         case CNT_CONST_STRING:
-            node->text = p.out->GetConst(node, &node->compiler.used_variables);
+            node->text = p.out.GetConst(node, &node->compiler.used_variables);
             node->type = CNT_CONST;
             node->const_string = nullptr;
             return true;

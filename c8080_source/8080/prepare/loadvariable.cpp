@@ -26,7 +26,7 @@ bool Prepare8080LoadVariable(Prepare &p, CNodePtr &node) {
         assert(!v->is_stack_variable);
         assert(!v->output_name.empty());
 
-        Prepare8080Variable(p.programm, v, *p.out);
+        Prepare8080Variable(p.programm, v, p.out);
 
         if (v->type.IsConst() && v->body && v->body->IsConstNode()) {
             node->c = CopyNode(node->variable->body);
