@@ -78,9 +78,7 @@ void Compiler8080::Compile(CParser &c, OutputFormat8080 output_format, CString o
 
     // *** Make assembler file ***
 
-    out.buffer =
-        "    device zxspectrum48 ; It has nothing to do with ZX Spectrum 48K, it is needed for the sjasmplus "
-        "compiler.\n";
+    out.InitBuffer();
 
     if (output_format == OF_I1080) {
         out.buffer += "    org 100h - 16h\n";

@@ -95,6 +95,8 @@ int GetAssemblerCommandSize(enum AssemblerCommand c) {
             return 1;
         case AC_DI:
             return 1;
+        case AC_DAA:
+            return 1;
         case AC_NOP:
             return 1;
     }

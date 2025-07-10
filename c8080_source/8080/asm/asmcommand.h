@@ -63,6 +63,7 @@ enum AssemblerCommand {
     AC_STC,
     AC_EI,
     AC_DI,
+    AC_DAA,
     AC_NOP,
 };
 

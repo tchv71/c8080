@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "8080_assembler.h"
+#include "asm.h"
 #include "../../c/cnode.h"
 #include "../../c/tools/getnumberasuint64.h"
 
@@ -130,6 +130,10 @@ public:
         Add(AC_DI);
     }
 
+    void daa() {
+        Add(AC_DAA);
+    }
+
     void nop() {
         Add(AC_NOP);
     }
@@ -213,7 +217,7 @@ public:
     void label(AsmLabel *label) {
         Add(AC_LABEL, label);
         if (!measure)
-            label->destination = lines_.size();
+            label->destination = lines.size();
     }
 
     void jmp_label(AsmLabel *label) {

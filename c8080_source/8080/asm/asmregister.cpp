@@ -70,6 +70,17 @@ bool IsAsmRegister16SpAf(AsmRegister reg) {
     return false;
 }
 
+bool IsAsmRegister16Af(AsmRegister reg) {
+    switch (reg) {
+        case R16_AF:
+        case R16_BC:
+        case R16_DE:
+        case R16_HL:
+            return true;
+    }
+    return false;
+}
+
 bool IsAsmRegister16Sp(AsmRegister r) {
     switch (r) {
         case R16_BC:
@@ -81,7 +92,7 @@ bool IsAsmRegister16Sp(AsmRegister r) {
     return false;
 }
 
-bool IsAsmRegister8(AsmRegister r) {
+bool IsAsmRegister8M(AsmRegister r) {
     switch (r) {
         case R8_A:
         case R8_B:

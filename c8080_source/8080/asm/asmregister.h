@@ -55,7 +55,8 @@ static const uint32_t U_DEHL = U_DE | U_HL;
 uint32_t RegToUsed(AsmRegister reg);
 
 bool IsAsmRegister16SpAf(AsmRegister reg);
+bool IsAsmRegister16Af(AsmRegister reg);
 bool IsAsmRegister16Sp(AsmRegister r);
-bool IsAsmRegister8(AsmRegister r);
+bool IsAsmRegister8M(AsmRegister r);
 
 const char *ToString(AsmRegister value);
