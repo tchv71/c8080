@@ -65,8 +65,8 @@ static void ParseOptions(int argc, char **argv, Options &o, CParser &c) {
     for (int i = 1; i < argc; i++) {
         char *s = argv[i];
         if (s[0] == '-' && !disable_options) {
-            if (s[1] == 0 || s[2] == 0) {
-                switch (s[1]) {  // short
+            if (s[2] == 0) {
+                switch (s[1]) {
                     case 'V':
                         o.print_expression_tree = true;
                         continue;
@@ -76,45 +76,38 @@ static void ParseOptions(int argc, char **argv, Options &o, CParser &c) {
                     case 'm':
                         c.programm.cmm = true;
                         continue;
-                    case 'o':
-                        if (i + 1 >= argc)
-                            throw std::runtime_error("No file name after -o");
-                        i++;
-                        o.bin_file_name = argv[i];
-                        continue;
-                    case 'a':
-                        if (i + 1 >= argc)
-                            throw std::runtime_error("No file name after -a");
-                        i++;
-                        o.asm_file_name = argv[i];
-                        continue;
-                }
-            } else {
-                const char *value = s + 2;
-                switch (s[1]) {  // long
-                    case 'I':
-                        c.include_dirs.push_back(value);
-                        continue;
-                    case 'O':
-                        if (I8080::ParseOutputFormat(o.output_format, value))
-                            continue;
-                        break;
-                    case 'D':
-                        c.default_defines.push_back(value);  // TODO: NAME=VALUE
-                        continue;
-                    case 'o':
-                        o.bin_file_name = value;
-                        continue;
-                    case 'a':
-                        o.asm_file_name = value;
-                        continue;
-                    case 'A':
-                        o.assembler = value;
-                        o.assembler_need_path = false;
-                        continue;
                 }
             }
-            throw std::runtime_error("Unsupported option " + std::string(s));
+            const char *value = s + 2;
+            if (value[0] == 0) {
+                if (i + 1 >= argc)
+                    throw std::runtime_error(std::string("missing value after '") + s + "'"); // gcc
+                i++;
+                value = argv[i];
+            }
+            switch (s[1]) {
+                case 'I':
+                    c.include_dirs.push_back(value);
+                    continue;
+                case 'O':
+                    if (I8080::ParseOutputFormat(o.output_format, value))
+                        continue;
+                    break;
+                case 'D':
+                    c.default_defines.push_back(value);  // TODO: NAME=VALUE
+                    continue;
+                case 'o':
+                    o.bin_file_name = value;
+                    continue;
+                case 'a':
+                    o.asm_file_name = value;
+                    continue;
+                case 'A':
+                    o.assembler = value;
+                    o.assembler_need_path = false;
+                    continue;
+            }
+            throw std::runtime_error("unrecognized command-line option '" + std::string(s) + "'");  // gcc
         }
         c.AddSourceFile(s);
     }
@@ -200,7 +193,7 @@ int main(int argc, char **argv) {
         if (r != 0)
             throw std::runtime_error("Assembler error (" + asm_cmd_line + ")");
 
-        system("./go");  // TODO: Remove
+//        system("./go");  // TODO: Remove
 
         std::cout << "Done" << std::endl;
         return 0;
