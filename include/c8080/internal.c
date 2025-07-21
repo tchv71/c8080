@@ -16,11 +16,28 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 #include <c8080/div16mod.h>
 #include <c8080/div32mod.h>
 
 uint16_t __div_16_mod;
 uint32_t __div_32_mod;
+
+int main(int argc, char **argv);
+
+void __init() {
+    asm {
+        ld   de, __bss
+        xor  a
+__init_loop:
+        ld   (de), a
+        inc  de
+        ld   hl, 10000h - __end
+        add  hl, de
+        jp   nc, __init_loop
+    }
+    main(0, NULL);
+}
 
 // Example: void (*hl)(); hl();
 // Input: hl

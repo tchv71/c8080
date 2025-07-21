@@ -26,11 +26,11 @@ namespace I8080 {
 void Compiler::Compile(CParser &c, OutputFormat output_format, CString output_file_bin, CString asm_file_name) {
     o.Init(p);  // Find internal functions
 
-    static const char *main_function_name = "main";
-    CVariablePtr main = p.FindVariable(main_function_name);
-    if (main == nullptr || !main->type.IsFunction() || main->only_extern)
+    static const char *main_function_name = "__init";
+    CVariablePtr init = p.FindVariable(main_function_name);
+    if (init == nullptr || !init->type.IsFunction() || init->only_extern)
         throw std::runtime_error(std::string("function ") + main_function_name + " not found");
-    out.AddToCompileQueue(main);
+    out.AddToCompileQueue(init);
 
     for (size_t i = 0; i < out.compile_queue.size(); i++) {
         CVariablePtr fn = out.compile_queue[i];
@@ -41,10 +41,6 @@ void Compiler::Compile(CParser &c, OutputFormat output_format, CString output_fi
         PrepareFunction(p, fn->body, out);
 
         out.label(fn->output_name.c_str());
-
-        // In the first function, clear BSS
-        if (i == 0)
-            out.assembler(c.LoadGlobalIncludeFile("asm/__init"));
 
         out.source(fn->body->e, true);
 

@@ -1,9 +1,19 @@
-// -OCPM -DARCH_CPM -aoutput.asm font.c  hal.c  lines.c  music.c  path.c  test.c  unmlz.c graph/imgBalls.c
-// graph/imgBoard.c  graph/imgKingLose.c  graph/imgPlayer.c  graph/imgPlayerD.c  graph/imgPlayerWin.c  graph/imgScreen.c
-// graph/imgTitle.c iskra1080/drawimage.c  iskra1080/drawtext.c  iskra1080/fillrect.c  iskra1080/keyboard.c
-// iskra1080/palette.c  iskra1080/playtone.c
-
-// /home/alemorf/a/work/c8080/lines_for_iskra_1080
+/*
+ * c8080 compiler
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <iostream>
 #include <assert.h>
@@ -65,6 +75,18 @@ static void ParseOptions(int argc, char **argv, Options &o, CParser &c) {
                         continue;
                     case 'm':
                         c.programm.cmm = true;
+                        continue;
+                    case 'o':
+                        if (i + 1 >= argc)
+                            throw std::runtime_error("No file name after -o");
+                        i++;
+                        o.bin_file_name = argv[i];
+                        continue;
+                    case 'a':
+                        if (i + 1 >= argc)
+                            throw std::runtime_error("No file name after -a");
+                        i++;
+                        o.asm_file_name = argv[i];
                         continue;
                 }
             } else {
@@ -160,8 +182,6 @@ int main(int argc, char **argv) {
 
         if (programm.error)
             return 1;
-
-        //        Dump(programm.first_node, "");
 
         if (programm.cmm) {
             I8080::CompileCmm(programm, o.asm_file_name);
