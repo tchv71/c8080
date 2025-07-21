@@ -19,13 +19,15 @@
 #include "SaveReg.h"
 #include "PushMainPopDe.h"
 
+namespace I8080 {
+
 enum BuildArgsMode {
     BAM_ANY,
     BAM_A_MAIN,
     BAM_B_MAIN,
 };
 
-bool Compiler8080::Case_Args2_MM(CNodePtr &a, CNodePtr &b, AsmRegister main, AsmRegister alt, unsigned bam) {
+bool Compiler::Case_Args2_MM(CNodePtr &a, CNodePtr &b, AsmRegister main, AsmRegister alt, unsigned bam) {
     if (bam == BAM_A_MAIN && main == R8_A) {
         Build(a, R8_A);
         out.push_reg(R16_AF);
@@ -44,7 +46,7 @@ bool Compiler8080::Case_Args2_MM(CNodePtr &a, CNodePtr &b, AsmRegister main, Asm
     return true;
 }
 
-bool Compiler8080::Case_Args2_MA(CNodePtr &a, CNodePtr &b, AsmRegister main, AsmRegister alt, unsigned bam) {
+bool Compiler::Case_Args2_MA(CNodePtr &a, CNodePtr &b, AsmRegister main, AsmRegister alt, unsigned bam) {
     if (!b->compiler.alt.able)
         return false;
 
@@ -66,7 +68,7 @@ bool Compiler8080::Case_Args2_MA(CNodePtr &a, CNodePtr &b, AsmRegister main, Asm
     return true;
 }
 
-bool Compiler8080::Case_Args2_AM(CNodePtr &a, CNodePtr &b, AsmRegister main, AsmRegister alt, unsigned bam) {
+bool Compiler::Case_Args2_AM(CNodePtr &a, CNodePtr &b, AsmRegister main, AsmRegister alt, unsigned bam) {
     if (!a->compiler.alt.able)
         return false;
 
@@ -88,8 +90,8 @@ bool Compiler8080::Case_Args2_AM(CNodePtr &a, CNodePtr &b, AsmRegister main, Asm
     return true;
 }
 
-void Compiler8080::BuildArgs2(const CNodePtr &node, AsmRegister reg, CNodePtr &a, CNodePtr &b, AsmRegister main,
-                              AsmRegister alt, bool can_swap) {
+void Compiler::BuildArgs2(const CNodePtr &node, AsmRegister reg, CNodePtr &a, CNodePtr &b, AsmRegister main,
+                          AsmRegister alt, bool can_swap) {
     if (out.measure) {
         assert(out.measure_metric == 0);
         assert(out.measure_regs == 0);
@@ -144,3 +146,5 @@ void Compiler8080::BuildArgs2(const CNodePtr &node, AsmRegister reg, CNodePtr &a
             C_ERROR_INTERNAL(node->e, __PRETTY_FUNCTION__);
     }
 }
+
+}  // namespace I8080

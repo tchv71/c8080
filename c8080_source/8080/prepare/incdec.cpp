@@ -20,6 +20,8 @@
 #include "../../c/tools/makecnode.h"
 #include "../../c/tools/cthrow.h"
 
+namespace I8080 {
+
 static inline void IncDec(CNodePtr &node) {
     const size_t item_size = node->ctype.SizeOfElement(node->e);
     CNodePtr number = Convert(CType{node->ctype.GetAsmType()}, MakeCNodeNumberSizeT(item_size, node->e));
@@ -60,7 +62,7 @@ static inline void IncDec(CNodePtr &node) {
     }
 }
 
-bool Prepare8080IncDec(Prepare &, CNodePtr &node) {
+bool PrepareIncDec(Prepare &, CNodePtr &node) {
     if (node->type == CNT_MONO_OPERATOR) {
         switch (node->mono_operator_code) {
             case MOP_INC:
@@ -73,3 +75,5 @@ bool Prepare8080IncDec(Prepare &, CNodePtr &node) {
     }
     return false;
 }
+
+}  // namespace I8080

@@ -15,8 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "CInternalFunctions8080.h"
+#include "CInternalFunctions.h"
 #include <stdexcept>
+
+namespace I8080 {
 
 static CVariablePtr RegisterInternalFunction(CProgramm &p, const char *name) {
     CVariablePtr v = p.FindVariable(name);
@@ -27,7 +29,7 @@ static CVariablePtr RegisterInternalFunction(CProgramm &p, const char *name) {
     return v;
 }
 
-void CInternalFunctions8080::Init(CProgramm &p) {
+void CInternalFunctions::Init(CProgramm &p) {
     sub_16 = RegisterInternalFunction(p, "__o_sub_16");
     mul_u8 = RegisterInternalFunction(p, "__o_mul_u8");
     mul_i8 = RegisterInternalFunction(p, "__o_mul_i8");
@@ -75,3 +77,5 @@ void CInternalFunctions8080::Init(CProgramm &p) {
     minus_32 = RegisterInternalFunction(p, "__o_minus_32");
     neg_32 = RegisterInternalFunction(p, "__o_neg_32");
 }
+
+}  // namespace I8080

@@ -16,39 +16,52 @@
  */
 
 #include "asmcondition.h"
-#include <array>
 #include <stdexcept>
 
-bool InvertAsmJumpCondition(AsmCondition &jump_condition) {
-    switch (jump_condition) {
+namespace I8080 {
+
+AsmCondition InvertAsmCondition(AsmCondition condition) {
+    switch (condition) {
         case JC_Z:
-            jump_condition = JC_NZ;
-            return true;
+            return JC_NZ;
         case JC_NZ:
-            jump_condition = JC_Z;
-            return true;
+            return JC_Z;
         case JC_C:
-            jump_condition = JC_NC;
-            return true;
+            return JC_NC;
         case JC_NC:
-            jump_condition = JC_C;
-            return true;
+            return JC_C;
         case JC_P:
-            jump_condition = JC_M;
-            return true;
+            return JC_M;
         case JC_M:
-            jump_condition = JC_P;
-            return true;
-        default:
-            return false;
+            return JC_P;
+        case JC_PO:
+            return JC_PE;
+        case JC_PE:
+            return JC_PO;
     }
+    throw std::runtime_error("Incorrect AsmCondition " + std::to_string(int(condition)));
 }
 
-const char *ToString(AsmCondition value) {
-    static const char *strings[] = {"z", "nz", "c", "nc", "p", "m", "pe", "po"};
-
-    if (value >= std::size(strings))
-        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " " + std::to_string(int(value)));
-
-    return strings[value];
+const char *ToString(AsmCondition condition) {
+    switch (condition) {
+        case JC_Z:
+            return "z";
+        case JC_NZ:
+            return "nz";
+        case JC_C:
+            return "c";
+        case JC_NC:
+            return "nc";
+        case JC_P:
+            return "p";
+        case JC_M:
+            return "m";
+        case JC_PO:
+            return "po";
+        case JC_PE:
+            return "pe";
+    }
+    return "?";
 }
+
+}  // namespace I8080

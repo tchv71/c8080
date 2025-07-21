@@ -17,12 +17,16 @@
 
 #pragma once
 
+namespace I8080 {
+
 #include <stddef.h>
 
 class AsmLabel {
 public:
     size_t number{};
-    size_t destination = SIZE_MAX;
+    size_t destination{SIZE_MAX};
     size_t used{};
     bool jump_back{};
 };
+
+}  // namespace I8080

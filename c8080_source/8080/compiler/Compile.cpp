@@ -16,12 +16,14 @@
  */
 
 #include "Compiler.h"
-#include "../asm/8080_assembler_optimize.h"
+#include "../asm/optimize/index.h"
 #include "../../prepare/staticstack.h"
 #include "../prepare/prepare.h"
 #include "../CompileVariable.h"
 
-void Compiler8080::Compile(CParser &c, OutputFormat8080 output_format, CString output_file_bin, CString asm_file_name) {
+namespace I8080 {
+
+void Compiler::Compile(CParser &c, OutputFormat output_format, CString output_file_bin, CString asm_file_name) {
     o.Init(p);  // Find internal functions
 
     static const char *main_function_name = "main";
@@ -36,7 +38,7 @@ void Compiler8080::Compile(CParser &c, OutputFormat8080 output_format, CString o
         if (!fn->body)
             C_ERROR_INTERNAL(fn->e, "body is null");
 
-        Prepare8080Function(p, fn->body, out);
+        PrepareFunction(p, fn->body, out);
 
         out.label(fn->output_name.c_str());
 
@@ -74,11 +76,9 @@ void Compiler8080::Compile(CParser &c, OutputFormat8080 output_format, CString o
 
     CalculateStaticStack(p);
 
-    Assembler8080Optimize(out);
+    AsmOptimize(out);
 
     // *** Make assembler file ***
-
-    out.InitBuffer();
 
     if (output_format == OF_I1080) {
         out.buffer += "    org 100h - 16h\n";
@@ -132,5 +132,7 @@ void Compiler8080::Compile(CParser &c, OutputFormat8080 output_format, CString o
     // Save directive // TODO: Quote name
     out.buffer += "    savebin \"" + output_file_bin + "\", __begin, __bss - __begin\n";
 
-    out.SaveFile(asm_file_name);
+    out.SaveAsmFile(asm_file_name);
 }
+
+}  // namespace I8080

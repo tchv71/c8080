@@ -145,9 +145,9 @@ __o_div_u8_2:
 // Output: a
 
 void __o_mod_u8() {
-    (void)__o_mod_u8;
+    (void)__o_div_u8;
     asm {
-        call __o_mod_u8
+        call __o_div_u8
         ld   a, l
     }
 }

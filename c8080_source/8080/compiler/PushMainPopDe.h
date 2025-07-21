@@ -17,15 +17,17 @@
 
 #pragma once
 
-#include "../asm/asm2.h"
+#include "../asm/asm.h"
 #include "Compiler.h"
+
+namespace I8080 {
 
 class PushMainPopDe {
 public:
-    Asm2 &out;
+    Asm &out;
     bool enabled{};
 
-    PushMainPopDe(Asm2 &out_, AsmRegister reg, const CBuildCase &c) : out(out_) {
+    PushMainPopDe(Asm &out_, AsmRegister reg, const CBuildCase &c) : out(out_) {
         switch (reg) {
             case R16_HL:
             case R16_DE:
@@ -59,3 +61,5 @@ public:
         assert(!enabled);
     }
 };
+
+}  // namespace I8080

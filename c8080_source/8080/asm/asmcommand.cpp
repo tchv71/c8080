@@ -17,16 +17,18 @@
 
 #include "asmcommand.h"
 
-int GetAssemblerCommandSize(enum AssemblerCommand c) {
+namespace I8080 {
+
+int GetAsmCommandSize(enum AssemblerCommand c) {
     switch (c) {
         case AC_MVI:
             return 2;
         case AC_LXI:
             return 3;
-        case AC_LD_REG_STACK_ADDR:
-            return 3;  // LXI
-        case AC_LD_REG_ARG_STACK_ADDR:
-            return 3;  // LXI
+        case AC_LXI_STACK_ADDR:
+            return 3;
+        case AC_LXI_ARG_STACK_ADDR:
+            return 3;
         case AC_LHLD:
             return 3;
         case AC_SHLD:
@@ -35,11 +37,11 @@ int GetAssemblerCommandSize(enum AssemblerCommand c) {
             return 3;
         case AC_LDA:
             return 3;
-        case AC_LD_A_PREG:
+        case AC_LDAX:
             return 1;
-        case AC_LD_PREG_A:
+        case AC_STAX:
             return 1;
-        case AC_LD_REG_REG:
+        case AC_MOV:
             return 1;
         case AC_XCHG:
             return 1;
@@ -65,19 +67,19 @@ int GetAssemblerCommandSize(enum AssemblerCommand c) {
             return 1;
         case AC_CALL:
             return 3;
-        case AC_ALU_A_CONST:
+        case AC_ALU_CONST:
             return 2;
-        case AC_ALU_A_REG:
+        case AC_ALU_REG:
             return 1;
-        case AC_ADD_HL_REG:
+        case AC_DAD:
             return 1;
         case AC_SPHL:
             return 1;
         case AC_CPL:
             return 1;
-        case AC_INC_REG:
+        case AC_INC:
             return 1;
-        case AC_DEC_REG:
+        case AC_DEC:
             return 1;
         case AC_CALL_CONDITION:
             return 3;
@@ -102,3 +104,5 @@ int GetAssemblerCommandSize(enum AssemblerCommand c) {
     }
     return 0;
 }
+
+}  // namespace I8080

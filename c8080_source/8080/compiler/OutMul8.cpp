@@ -18,7 +18,9 @@
 #include "Compiler.h"
 #include "../../c/tools/getnumberasuint64.h"
 
-void Compiler8080::OutMul8(CNodePtr &var, CNodePtr &number_node, AsmRegister reg) {
+namespace I8080 {
+
+void Compiler::OutMul8(CNodePtr &var, CNodePtr &number_node, AsmRegister reg) {
     assert(var != nullptr);
     assert(var->ctype.Is8BitType());
     assert(var->ctype.IsUnsigned());
@@ -56,3 +58,5 @@ void Compiler8080::OutMul8(CNodePtr &var, CNodePtr &number_node, AsmRegister reg
             out.add_d();
     }
 }
+
+}  // namespace I8080

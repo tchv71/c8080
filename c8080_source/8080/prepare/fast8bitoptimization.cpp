@@ -19,6 +19,8 @@
 #include "../../c/tools/is8bitconst.h"
 #include "../../c/tools/convert.h"
 
+namespace I8080 {
+
 static unsigned CanConvertTo8Bit(CNodePtr &node) {
     if (node->type == CNT_CONVERT) {
         switch (node->a->ctype.GetAsmType()) {
@@ -32,7 +34,7 @@ static unsigned CanConvertTo8Bit(CNodePtr &node) {
     return Is8BitConst(node);
 }
 
-bool Prepare8080Fast8BitOptimization(Prepare &, CNodePtr &node) {
+bool PrepareFast8BitOptimization(Prepare &, CNodePtr &node) {
     if (node->type == CNT_OPERATOR && !node->a->ctype.Is8BitType()) {
         switch (node->operator_code) {
             case COP_CMP_E:
@@ -123,3 +125,5 @@ bool Prepare8080Fast8BitOptimization(Prepare &, CNodePtr &node) {
     }
     return false;
 }
+
+}  // namespace I8080

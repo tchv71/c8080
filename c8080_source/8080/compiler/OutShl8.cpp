@@ -18,7 +18,9 @@
 #include "Compiler.h"
 #include "../../c/tools/getnumberasuint64.h"
 
-void Compiler8080::OutShl8(CNodePtr &node, AsmRegister reg) {
+namespace I8080 {
+
+void Compiler::OutShl8(CNodePtr &node, AsmRegister reg) {
     assert(node->type == CNT_OPERATOR);
     assert(node->operator_code == COP_SHL);
     assert(node->a != nullptr);
@@ -58,3 +60,5 @@ void Compiler8080::OutShl8(CNodePtr &node, AsmRegister reg) {
     for (unsigned i = 0; i < value; i++)
         out.add_a();
 }
+
+}  // namespace I8080

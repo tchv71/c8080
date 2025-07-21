@@ -21,8 +21,12 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include "../asm/asmcondition.h"
+#include "../asm/asmregister.h"
 
 class CVariable;
+
+namespace I8080 {
 
 struct CVariable8080 {
     uint64_t function_stack_frame_offset{};
@@ -38,7 +42,11 @@ struct CVariable8080 {
     std::vector<CalledBy> called_by;
     bool called_by_processed{};
     size_t call_count{};
-    size_t internal_cmm_name{};  // Used when compiling CMM
+    size_t internal_cmm_name{};          // Used when compiling CMM
+    enum AsmCondition asm_condition {};  // Used when compiling CMM
+    enum AsmRegister asm_register {};    // Used when compiling CMM
 
     bool prepared{};
 };
+
+};  // namespace I8080

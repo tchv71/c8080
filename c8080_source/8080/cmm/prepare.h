@@ -17,7 +17,11 @@
 
 #pragma once
 
-#include "../asm/asm2.h"
+#include "../asm/asm.h"
 #include "../../c/cprogramm.h"
 
-void PrepareCmm(Asm2 &out, CProgramm &programm, CNodePtr &node);
+namespace I8080 {
+
+void PrepareCmm(Asm &out, CProgramm &programm, CNodePtr &node);
+
+}

@@ -20,6 +20,8 @@
 #include "../prepare/index.h"
 #include "../../prepare/prepare.h"
 
+namespace I8080 {
+
 bool PrepareCmmVariables(Prepare &, CNodePtr &node) {
     if (node->type != CNT_LOAD_VARIABLE)
         return false;
@@ -47,17 +49,27 @@ bool PrepareCmmVariables(Prepare &, CNodePtr &node) {
         node->a->ctype.pointers.push_back(CPointer{0});
         node->a->compiler.used_variables.push_back(v);
     }
-
     return true;
 }
 
+static bool PrepareCmmConvert(Prepare &, CNodePtr &node) {
+    if (node->type == CNT_CONVERT) {
+        DeleteNode(node, 'a');  // TODO: Check
+        return true;
+    }
+    return false;
+}
+
 static const PrepareFunctionType prepare_function_list_cmm[] = {
-    Prepare8080Const,
+    PrepareConst,
     PrepareCmmVariables,
+    PrepareCmmConvert,
     nullptr,
 };
 
-void PrepareCmm(Asm2 &out, CProgramm &programm, CNodePtr &node) {
+void PrepareCmm(Asm &out, CProgramm &programm, CNodePtr &node) {
     Prepare p(programm, out, node->variable, prepare_function_list_cmm);
     PrepareInt(p, &p.function->body->a);
 }
+
+}  // namespace I8080

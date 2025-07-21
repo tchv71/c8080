@@ -17,7 +17,9 @@
 
 #include "Compiler.h"
 
-void Compiler8080::OutSubSpN(size_t value) {
+namespace I8080 {
+
+void Compiler::OutSubSpN(size_t value) {
     // value 1  = 5t 1b
     // value 2  = 10t 1b
     // value 3  = 15t 2b
@@ -41,7 +43,7 @@ void Compiler8080::OutSubSpN(size_t value) {
     }
 }
 
-void Compiler8080::OutAddSpN(AsmRegister save, size_t value) {
+void Compiler::OutAddSpN(AsmRegister save, size_t value) {
     // value 1  = 5t 1b
     // value 2  = 10t 1b
     // value 3  = 15t 2b
@@ -69,3 +71,5 @@ void Compiler8080::OutAddSpN(AsmRegister save, size_t value) {
             out.ex_hl_de();  // 1 byte, 4 ticks
     }
 }
+
+}  // namespace I8080

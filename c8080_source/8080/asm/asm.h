@@ -17,15 +17,21 @@
 
 #pragma once
 
-#include "asm.h"
+#include "asmbase.h"
 #include "../../c/cnode.h"
 #include "../../c/tools/getnumberasuint64.h"
+#include "../../c/cprogramm.h"
 
-class Asm2 : public Assembler {
+namespace I8080 {
+
+class Asm : public AsmBase {
 public:
     static const unsigned CALL_METRICS = 100;
 
-    std::string GetConst(const CNodePtr &node, std::vector<CVariablePtr> *use = nullptr);
+    Asm(CProgramm &p_) : AsmBase(p_) {
+    }
+
+    std::string GetConst(const CNodePtr &node, bool *error = nullptr, std::vector<CVariablePtr> *use = nullptr);
 
     void ld_pstring_hl(CString string) {
         Add(AC_SHLD, string);
@@ -189,12 +195,12 @@ public:
 
     void dec_reg(AsmRegister reg) {
         ChangedReg(reg);
-        Add(AC_DEC_REG, reg);
+        Add(AC_DEC, reg);
     }
 
     void inc_reg(AsmRegister reg) {
         ChangedReg(reg);
-        Add(AC_INC_REG, reg);
+        Add(AC_INC, reg);
     }
 
     void in(CString string) {
@@ -266,7 +272,7 @@ public:
 
     void add_hl_reg(AsmRegister reg) {
         assert(reg == R16_BC || reg == R16_DE || reg == R16_HL || reg == R16_SP);
-        Add(AC_ADD_HL_REG, reg);
+        Add(AC_DAD, reg);
     }
 
     void assembler(CString string) {
@@ -286,7 +292,7 @@ public:
             case R16_BC:
             case R16_DE:
                 ChangedReg(R8_A);
-                Add(AC_LD_A_PREG, reg);
+                Add(AC_LDAX, reg);
                 break;
             default:
                 throw std::runtime_error(__PRETTY_FUNCTION__);
@@ -296,13 +302,13 @@ public:
     void ld_r8_r8(AsmRegister reg_a, AsmRegister reg_b) {
         assert(reg_a != R8_M || reg_b != R8_M);
         ChangedReg(reg_a);
-        Add(AC_LD_REG_REG, reg_a, reg_b);
+        Add(AC_MOV, reg_a, reg_b);
     }
 
     void ld_reg_phl(AsmRegister reg) {
         assert(reg != R8_M);
         ChangedReg(reg);
-        Add(AC_LD_REG_REG, reg, R8_M);
+        Add(AC_MOV, reg, R8_M);
     }
 
     void ld_preg_a(AsmRegister reg) {
@@ -312,7 +318,7 @@ public:
                 break;
             case R16_BC:
             case R16_DE:
-                Add(AC_LD_PREG_A, reg);
+                Add(AC_STAX, reg);
                 break;
             default:
                 throw std::runtime_error(__PRETTY_FUNCTION__);
@@ -330,23 +336,23 @@ public:
     void ld_reg_stack_addr(AsmRegister reg, uint16_t offset) {
         assert(reg == R16_HL || reg == R16_DE || reg == R16_BC);
         ChangedReg(reg);
-        Add(AC_LD_REG_STACK_ADDR, reg, offset);
+        Add(AC_LXI_STACK_ADDR, reg, offset);
     }
 
     void ld_reg_arg_stack_addr(AsmRegister reg, uint16_t offset) {
         assert(reg == R16_HL || reg == R16_DE || reg == R16_BC);
         ChangedReg(reg);
-        Add(AC_LD_REG_ARG_STACK_ADDR, reg, offset);
+        Add(AC_LXI_ARG_STACK_ADDR, reg, offset);
     }
 
     void alu_a_reg(AsmAlu alu, AsmRegister reg) {
         ChangedReg(R8_A);
-        Add(AC_ALU_A_REG, reg, alu);
+        Add(AC_ALU_REG, reg, alu);
     }
 
     void alu_a_string(AsmAlu alu, CString string) {
         ChangedReg(R8_A);
-        Add(AC_ALU_A_CONST, string, alu);
+        Add(AC_ALU_CONST, string, alu);
     }
 
     void alu_a_number(AsmAlu alu, uint8_t number) {
@@ -359,7 +365,7 @@ public:
             return;
         }
         ChangedReg(R8_A);
-        Add(AC_ALU_A_CONST, number, alu);
+        Add(AC_ALU_CONST, number, alu);
     }
 
     void alu_a_const(AsmAlu alu, const CNodePtr &number) {
@@ -444,7 +450,7 @@ public:
         Add(AC_JMP_CONDITION, label, condition);
     }
 
-    void call2_condition(AsmCondition condition, CString name) {
+    void call_condition(AsmCondition condition, CString name) {
         AllRegistersChanged();
         Add(AC_CALL_CONDITION, name, condition);
     }
@@ -807,3 +813,5 @@ public:
         return 0;
     }
 };
+
+}  // namespace I8080

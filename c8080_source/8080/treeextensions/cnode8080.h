@@ -23,9 +23,11 @@
 #include "../asm/asmalu.h"
 #include "../asm/asmlabel.h"
 
-class Compiler8080;
+namespace I8080 {
 
-typedef bool (Compiler8080::*CBuildProc)(CNodePtr &node, AsmRegister reg);
+class Compiler;
+
+typedef bool (Compiler::*CBuildProc)(CNodePtr &node, AsmRegister reg);
 
 class CBuildCase {
 public:
@@ -74,3 +76,5 @@ struct CNode8080 {
         }
     }
 };
+
+}  // namespace I8080

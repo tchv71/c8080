@@ -51,6 +51,7 @@ enum { PREPARE_CHANGED = 1, PREPARE_LABEL = 2 };
 
 uint32_t PrepareInt(Prepare &p, CNodePtr *pnode) {
     uint32_t return_value = 0;
+    assert(pnode);
     while (*pnode != nullptr) {
         uint32_t r;
         do {
@@ -71,28 +72,26 @@ uint32_t PrepareInt(Prepare &p, CNodePtr *pnode) {
                 if (i(p, *pnode))
                     r |= PREPARE_CHANGED;
                 if (*pnode == nullptr)
-                    break;
+                    return return_value;
             }
-
-            if (*pnode == nullptr)
-                break;
 
             for (auto i = p.list; *i; i++) {
                 if ((*i)(p, *pnode))
                     r |= PREPARE_CHANGED;
                 if (*pnode == nullptr)
-                    break;
+                    return return_value;
             }
 
             return_value |= r;
         } while (r & PREPARE_CHANGED);
 
         pnode = &(*pnode)->next_node;
+        assert(pnode);
     }
     return return_value;
 }
 
-void PrepareFunction(CProgramm &programm, CVariablePtr &f, const PrepareFunctionType *list, Asm2 &out) {
+void PrepareFunction(CProgramm &programm, CVariablePtr &f, const PrepareFunctionType *list, I8080::Asm &out) {
     Prepare p(programm, out, f, list);
     PrepareFunctionStaticStack(p);
     PrepareInt(p, &p.function->body->a);

@@ -19,6 +19,8 @@
 #include <array>
 #include <stdexcept>
 
+namespace I8080 {
+
 const char *ToString(AsmAlu value) {
     static const char *strings[] = {"xor", "or", "and", "sub", "add", "cp", "adc", "sbc"};
 
@@ -27,3 +29,5 @@ const char *ToString(AsmAlu value) {
 
     return strings[value];
 }
+
+}  // namespace I8080

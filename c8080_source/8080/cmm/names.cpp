@@ -16,48 +16,54 @@
  */
 
 #include "names.h"
+#include "../asm/asmcondition.h"
 
-static void RegisterInternalCmmName(CProgramm &p, const char *name, const CType &type, enum CmmName id) {
+namespace I8080 {
+
+static CVariablePtr RegisterInternalCmmName(CProgramm &p, const char *name, const CType &type, enum CmmName id,
+                                            enum AsmCondition c = JC_Z) {
     CVariablePtr v = std::make_shared<CVariable>();
     v->name = name;
     v->output_name = name;
     v->c.internal_cmm_name = id;
+    v->c.asm_condition = c;
     v->type = type;
     p.AddVariable(v);
     p.variables[v->name] = v;
+    return v;
 }
 
-void RegisterInternalCmmNames8080(CProgramm &p) {
+void RegisterInternalCmmNames(CProgramm &p) {
     CType u8_any;
     u8_any.base_type = CBT_FUNCTION;
     u8_any.function_args.push_back(CStructItem{CBT_UNSIGNED_CHAR});
     u8_any.many_function_args = true;
 
-    RegisterInternalCmmName(p, "flag_z", u8_any, CMM_NAME_FLAG_Z);
-    RegisterInternalCmmName(p, "flag_nz", u8_any, CMM_NAME_FLAG_NZ);
-    RegisterInternalCmmName(p, "flag_c", u8_any, CMM_NAME_FLAG_C);
-    RegisterInternalCmmName(p, "flag_nc", u8_any, CMM_NAME_FLAG_NC);
-    RegisterInternalCmmName(p, "flag_m", u8_any, CMM_NAME_FLAG_M);
-    RegisterInternalCmmName(p, "flag_p", u8_any, CMM_NAME_FLAG_P);
-    RegisterInternalCmmName(p, "flag_pe", u8_any, CMM_NAME_FLAG_PE);
-    RegisterInternalCmmName(p, "flag_po", u8_any, CMM_NAME_FLAG_PO);
+    RegisterInternalCmmName(p, "flag_z", u8_any, CMM_NAME_FLAG, JC_Z);
+    RegisterInternalCmmName(p, "flag_nz", u8_any, CMM_NAME_FLAG, JC_NZ);
+    RegisterInternalCmmName(p, "flag_c", u8_any, CMM_NAME_FLAG, JC_C);
+    RegisterInternalCmmName(p, "flag_nc", u8_any, CMM_NAME_FLAG, JC_NC);
+    RegisterInternalCmmName(p, "flag_m", u8_any, CMM_NAME_FLAG, JC_M);
+    RegisterInternalCmmName(p, "flag_p", u8_any, CMM_NAME_FLAG, JC_P);
+    RegisterInternalCmmName(p, "flag_pe", u8_any, CMM_NAME_FLAG, JC_PE);
+    RegisterInternalCmmName(p, "flag_po", u8_any, CMM_NAME_FLAG, JC_PO);
 
     const CType reg8_type{CBT_UNSIGNED_CHAR};
 
-    RegisterInternalCmmName(p, "a", reg8_type, CMM_NAME_A);
-    RegisterInternalCmmName(p, "b", reg8_type, CMM_NAME_B);
-    RegisterInternalCmmName(p, "c", reg8_type, CMM_NAME_C);
-    RegisterInternalCmmName(p, "d", reg8_type, CMM_NAME_D);
-    RegisterInternalCmmName(p, "e", reg8_type, CMM_NAME_E);
-    RegisterInternalCmmName(p, "h", reg8_type, CMM_NAME_H);
-    RegisterInternalCmmName(p, "l", reg8_type, CMM_NAME_L);
+    RegisterInternalCmmName(p, "a", reg8_type, CMM_NAME_REG)->c.asm_register = R8_A;
+    RegisterInternalCmmName(p, "b", reg8_type, CMM_NAME_REG)->c.asm_register = R8_B;
+    RegisterInternalCmmName(p, "c", reg8_type, CMM_NAME_REG)->c.asm_register = R8_C;
+    RegisterInternalCmmName(p, "d", reg8_type, CMM_NAME_REG)->c.asm_register = R8_D;
+    RegisterInternalCmmName(p, "e", reg8_type, CMM_NAME_REG)->c.asm_register = R8_E;
+    RegisterInternalCmmName(p, "h", reg8_type, CMM_NAME_REG)->c.asm_register = R8_H;
+    RegisterInternalCmmName(p, "l", reg8_type, CMM_NAME_REG)->c.asm_register = R8_L;
 
     const CType reg16_type{CBT_UNSIGNED_SHORT};
 
-    RegisterInternalCmmName(p, "bc", reg16_type, CMM_NAME_BC);
-    RegisterInternalCmmName(p, "de", reg16_type, CMM_NAME_DE);
-    RegisterInternalCmmName(p, "hl", reg16_type, CMM_NAME_HL);
-    RegisterInternalCmmName(p, "sp", reg16_type, CMM_NAME_SP);
+    RegisterInternalCmmName(p, "bc", reg16_type, CMM_NAME_REG)->c.asm_register = R16_BC;
+    RegisterInternalCmmName(p, "de", reg16_type, CMM_NAME_REG)->c.asm_register = R16_DE;
+    RegisterInternalCmmName(p, "hl", reg16_type, CMM_NAME_REG)->c.asm_register = R16_HL;
+    RegisterInternalCmmName(p, "sp", reg16_type, CMM_NAME_REG)->c.asm_register = R16_SP;
 
     CType v;
     v.base_type = CBT_FUNCTION;
@@ -106,3 +112,5 @@ void RegisterInternalCmmNames8080(CProgramm &p) {
 
     RegisterInternalCmmName(p, "swap", v_u16_u16, CMM_NAME_SWAP);
 }
+
+}  // namespace I8080

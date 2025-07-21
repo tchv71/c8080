@@ -57,10 +57,10 @@ struct CNode {
     bool extern_flag{};                      // Only in DECLARE_VARIABLE
     std::string text;                        // Only in CONST or ASM
     CErrorPosition e;
-    bool has_label{};                        // type == CNT_LABEL (and children)
+    bool has_label{};  // type == CNT_LABEL (and children)
     bool dont_replace_jump_node{};
 
-    CNode8080 compiler;
+    I8080::CNode8080 compiler;
 
     bool IsConstNode() const {
         return type == CNT_CONST || type == CNT_CONST_STRING || type == CNT_NUMBER;

@@ -18,47 +18,51 @@
 #include "Compiler.h"
 #include "../../c/tools/getnumberasuint64.h"
 
-bool Compiler8080::Case_Const0(CNodePtr &node, AsmRegister reg) {
+namespace I8080 {
+
+bool Compiler::Case_Const0(CNodePtr &node, AsmRegister reg) {
     out.GetConst(node);  // ref counter
     return true;
 }
 
-bool Compiler8080::Case_Const8(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Const8(CNodePtr &node, AsmRegister reg) {
     out.ld_r8_const(reg, node);
     return true;
 }
 
-bool Compiler8080::Case_Const16(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Const16(CNodePtr &node, AsmRegister reg) {
     out.ld_r16_const(reg, node);
     return true;
 }
 
-bool Compiler8080::Case_Const32(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Const32(CNodePtr &node, AsmRegister reg) {
     out.ld_dehl_const(node);
     return true;
 }
 
-void Compiler8080::BuildConst(CNodePtr &node) {
+void Compiler::BuildConst(CNodePtr &node) {
     assert(node->IsConstNode());
 
-    Measure(node, REG_NONE, &Compiler8080::Case_Const0);
+    Measure(node, REG_NONE, &Compiler::Case_Const0);
 
     switch (node->ctype.GetAsmType()) {
         case CBT_CHAR:
         case CBT_UNSIGNED_CHAR:
-            Measure(node, R8_A, &Compiler8080::Case_Const8);
-            Measure(node, R8_D, &Compiler8080::Case_Const8);
+            Measure(node, R8_A, &Compiler::Case_Const8);
+            Measure(node, R8_D, &Compiler::Case_Const8);
             break;
         case CBT_SHORT:
         case CBT_UNSIGNED_SHORT:
-            Measure(node, R16_HL, &Compiler8080::Case_Const16);
-            Measure(node, R16_DE, &Compiler8080::Case_Const16);
+            Measure(node, R16_HL, &Compiler::Case_Const16);
+            Measure(node, R16_DE, &Compiler::Case_Const16);
             break;
         case CBT_LONG:
         case CBT_UNSIGNED_LONG:
-            Measure(node, R32_DEHL, &Compiler8080::Case_Const32);
+            Measure(node, R32_DEHL, &Compiler::Case_Const32);
             break;
         default:
             C_ERROR_UNSUPPORTED_ASM_TYPE(node);
     }
 }
+
+}  // namespace I8080

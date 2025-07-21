@@ -17,10 +17,12 @@
 
 #include "index.h"
 
+namespace I8080 {
+
 // i8080 have not "sub hl, de" instruction
 // Replace "hl -= const" with "hl += -const"
 
-bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node) {
+bool PrepareSub16ToAdd16(Prepare &, CNodePtr &node) {
     if (node->type == CNT_OPERATOR && node->operator_code == COP_SUB) {
         if (node->b->type == CNT_NUMBER) {
             switch (node->ctype.GetAsmType()) {
@@ -41,3 +43,5 @@ bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node) {
     }
     return false;
 }
+
+}  // namespace I8080

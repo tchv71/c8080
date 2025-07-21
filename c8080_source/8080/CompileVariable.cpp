@@ -18,10 +18,12 @@
 #include "CompileVariable.h"
 #include "prepare/prepare.h"
 
-void CompileVariable(Asm2 &out, CProgramm &p, CVariablePtr &vd) {
+namespace I8080 {
+
+void CompileVariable(Asm &out, CProgramm &p, CVariablePtr &vd) {
     assert(!vd->address_attribute.exists);
 
-    Prepare8080Variable(p, vd, out);
+    PrepareVariable(p, vd, out);
 
     out.variable(vd->output_name);
 
@@ -49,3 +51,5 @@ void CompileVariable(Asm2 &out, CProgramm &p, CVariablePtr &vd) {
     }
     out.ds(vd->type.SizeOf(vd->e) - bytes_written);
 }
+
+}  // namespace I8080

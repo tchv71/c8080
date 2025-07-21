@@ -17,7 +17,9 @@
 
 #include "Compiler.h"
 
-AsmRegister Compiler8080::GetResultReg(CType &type, bool alt, bool no_result, CNodePtr &e) {
+namespace I8080 {
+
+AsmRegister Compiler::GetResultReg(CType &type, bool alt, bool no_result, CNodePtr &e) {
     if (no_result)
         return REG_NONE;
     switch (type.GetAsmType()) {
@@ -39,3 +41,5 @@ AsmRegister Compiler8080::GetResultReg(CType &type, bool alt, bool no_result, CN
             return REG_NONE;
     }
 }
+
+}  // namespace I8080

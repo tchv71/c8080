@@ -21,12 +21,16 @@
 
 class CParser;
 
-enum OutputFormat8080 {
+namespace I8080 {
+
+enum OutputFormat {
     OF_I1080,
     OF_CPM,
 };
 
-bool ParseOutputFormat8080(enum OutputFormat8080 &result, CString str);
-void RegisterInternalNames8080(CProgramm &programm);
-void Compile8080(CParser &parser, CProgramm &programm, OutputFormat8080 output_format, CString output_file_bin,
-                 CString asm_file_name);
+bool ParseOutputFormat(enum OutputFormat &result, CString str);
+void RegisterInternalNames(CProgramm &programm);
+void Compile(CParser &parser, CProgramm &programm, OutputFormat output_format, CString output_file_bin,
+             CString asm_file_name);
+
+}  // namespace I8080

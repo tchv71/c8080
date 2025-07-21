@@ -17,7 +17,9 @@
 
 #include "Compile.h"
 
-void RegisterInternalNames8080(CProgramm &programm) {
+namespace I8080 {
+
+void RegisterInternalNames(CProgramm &programm) {
     programm.output_names["__begin"] = 1;
     programm.output_names["__entry"] = 1;
     programm.output_names["__bss"] = 1;
@@ -42,3 +44,5 @@ void RegisterInternalNames8080(CProgramm &programm) {
     programm.output_names["ixl"] = 1;
     programm.output_names["iyl"] = 1;
 }
+
+}  // namespace I8080

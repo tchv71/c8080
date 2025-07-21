@@ -19,11 +19,13 @@
 #include <array>
 #include <stdexcept>
 
+namespace I8080 {
+
 const char *ToString(AsmRegister value) {
     static const char *strings[] = {"?", "a", "b", "c", "d", "e", "h", "l", "(hl)", "af", "bc", "de", "hl", "sp"};
 
     if (value >= std::size(strings))
-        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " " + std::to_string(int(value)));
+        return "?";
 
     return strings[value];
 }
@@ -106,3 +108,5 @@ bool IsAsmRegister8M(AsmRegister r) {
     }
     return false;
 }
+
+}  // namespace I8080

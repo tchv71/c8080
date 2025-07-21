@@ -21,22 +21,24 @@
 #include "../Compile.h"
 #include "../../c/cprogramm.h"
 #include "../../c/tools/cthrow.h"
-#include "../asm/asm2.h"
-#include "../CInternalFunctions8080.h"
+#include "../asm/asm.h"
+#include "../CInternalFunctions.h"
 
 class CParser;  // todo: remove
 
-class Compiler8080 {
+namespace I8080 {
+
+class Compiler {
 protected:
     CProgramm &p;
-    Asm2 out;
+    Asm out;
     AsmLabel *return_label{};
     AsmLabel *break_label{};
     AsmLabel *continue_label{};
     CVariablePtr current_function;
     CVariablePtr static_stack;
     std::vector<CVariablePtr> call_in_call;
-    CInternalFunctions8080 o;
+    CInternalFunctions o;
     CBuildProc measure_proc{};
 
     void CompileCommand(CNodePtr &node);
@@ -183,8 +185,10 @@ protected:
     void OutShl8(CNodePtr &node, AsmRegister reg);
 
 public:
-    Compiler8080(CProgramm &p_) : p(p_) {
+    Compiler(CProgramm &p_) : p(p_), out(p_) {
     }
 
-    void Compile(CParser &c, OutputFormat8080 output_format, CString output_file_bin, CString asm_file_name);
+    void Compile(CParser &c, OutputFormat output_format, CString output_file_bin, CString asm_file_name);
 };
+
+}  // namespace I8080

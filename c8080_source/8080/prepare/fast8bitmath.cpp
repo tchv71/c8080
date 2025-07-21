@@ -18,7 +18,9 @@
 #include "index.h"
 #include "../../c/tools/convert.h"
 
-bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node) {
+namespace I8080 {
+
+bool PrepareFast8BitMath(Prepare &, CNodePtr &node) {
     // Replace
     // CNT_CONVERT(8_BIT_TYPE, CNT_OPERATOR(A, B))
     // with
@@ -56,3 +58,5 @@ bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node) {
 
     return false;
 }
+
+}  // namespace I8080

@@ -18,7 +18,9 @@
 #include "index.h"
 #include "../../c/tools/numberiszero.h"
 
-bool Prepare8080RemoveDead(Prepare &, CNodePtr &node) {
+namespace I8080 {
+
+bool PrepareRemoveDead(Prepare &, CNodePtr &node) {
     // 0 ? B : C  => C
     // 1 ? B : C  => B
     if (node->type == CNT_OPERATOR && node->operator_code == COP_IF && node->a->type == CNT_NUMBER) {
@@ -78,3 +80,5 @@ bool Prepare8080RemoveDead(Prepare &, CNodePtr &node) {
     }
     return false;
 }
+
+}  // namespace I8080

@@ -15,10 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "asm2.h"
+#include "asm.h"
 #include "../../c/tools/cthrow.h"
 
-std::string Asm2::GetConst(const CNodePtr &node, std::vector<CVariablePtr> *use) {
+namespace I8080 {
+
+std::string Asm::GetConst(const CNodePtr &node, bool *error, std::vector<CVariablePtr> *use) {
     switch (node->type) {
         // TODO: Replace CNT_CONST_STRING with CNT_LOAD_VARIABLE
         case CNT_CONST_STRING:
@@ -68,6 +70,11 @@ std::string Asm2::GetConst(const CNodePtr &node, std::vector<CVariablePtr> *use)
             assert(!node->text.empty());
             return node->text;
     }
-    CThrow(node, "initializer element is not constant");  // TODO: programm->error
-    return "";
+    if (error)
+        *error = true;
+    else
+        p.Error(node->e, "only constant");  // TODO: programm->error
+    return "0";
 }
+
+}  // namespace I8080

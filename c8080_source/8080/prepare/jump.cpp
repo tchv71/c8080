@@ -18,7 +18,9 @@
 #include "index.h"
 #include "../../c/tools/makeoperator.h"
 
-static bool Prepare8080Jump2(CNodePtr &node) {
+namespace I8080 {
+
+static bool PrepareJump2(CNodePtr &node) {
     if (node && !node->IsJumpNode()) {
         CNodePtr ch = CNODE({CNT_NUMBER, ctype : node->ctype, e : node->e});
         node = MakeOperator(COP_CMP_NE, node, ch, node->e, false);
@@ -29,27 +31,29 @@ static bool Prepare8080Jump2(CNodePtr &node) {
     return false;
 }
 
-bool Prepare8080Jump(Prepare &, CNodePtr &node) {
+bool PrepareJump(Prepare &, CNodePtr &node) {
     switch (node->type) {
         case CNT_OPERATOR:
             if (node->operator_code == COP_IF)
-                return Prepare8080Jump2(node->a);
+                return PrepareJump2(node->a);
             if (node->operator_code == COP_LAND || node->operator_code == COP_LOR) {
-                const bool b = Prepare8080Jump2(node->a);
-                const bool a = Prepare8080Jump2(node->b);
+                const bool b = PrepareJump2(node->a);
+                const bool a = PrepareJump2(node->b);
                 return a || b;
             }
             return false;
         case CNT_MONO_OPERATOR:
             if (node->mono_operator_code == MOP_NOT)
-                return Prepare8080Jump2(node->a);
+                return PrepareJump2(node->a);
             return false;
         case CNT_IF:
         case CNT_WHILE:
         case CNT_DO:
-            return Prepare8080Jump2(node->a);
+            return PrepareJump2(node->a);
         case CNT_FOR:
-            return Prepare8080Jump2(node->b);
+            return PrepareJump2(node->b);
     }
     return false;
 }
+
+}  // namespace I8080

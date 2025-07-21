@@ -19,4 +19,8 @@
 
 #include "../../c/cprogramm.h"
 
-void CompileCmm8080(CProgramm &p, CString asm_file_name);
+namespace I8080 {
+
+void CompileCmm(CProgramm &p, CString asm_file_name);
+
+}

@@ -18,82 +18,50 @@
 #include "cmm.h"
 #include "names.h"
 #include <limits.h>
-#include "../asm/asm2.h"
+#include "../asm/asm.h"
 #include "../CompileVariable.h"
 #include "../cmm/prepare.h"
+#include "../../tools/strtouint64.h"
 #include "../../c/tools/cthrow.h"
-#include "../../tools/fs_tools.h"
+#include "arg.h"
 
-class Cmm8080 {
-private:
-    class Arg {
-    public:
-        AsmRegister reg{REG_NONE};
-        bool addr{};
-        std::string text;
+namespace I8080 {
 
-        bool IsReg(AsmRegister r) {
-            return !addr && reg == r;
-        }
-
-        bool IsA() {
-            return IsReg(R8_A);
-        }
-
-        bool IsHl() {
-            return IsReg(R16_HL);
-        }
-
-        bool Is16Sp() {
-            return !addr && IsAsmRegister16Sp(reg);
-        }
-
-        bool Is16Af() {
-            return !addr && IsAsmRegister16Af(reg);
-        }
-
-        bool IsConst() {
-            return !addr && !text.empty();
-        }
-
-        bool IsConstAddr() {
-            return addr && !text.empty();
-        }
-    };
-
+class Cmm {
+public:
     CProgramm &p;
-    Asm2 out;
+    Asm out;
     AsmLabel *break_label{};
     AsmLabel *continue_label{};
 
-    void CompileDeclareVariable(CNodePtr &i);
+    typedef CmmArg Arg;
+
+    Cmm(CProgramm &p_) : p(p_), out(p) {
+    }
+    void Compile(CString asm_file_name);
+    void CompileDeclareVariable(CNodePtr &n);
     AsmCondition CompileCond(CNode &n);
-    AsmRegister CompileRegister(CNodePtr &n);
     void CompileArg(CNodePtr &n, Arg &arg);
-    void CompileLine(CNodePtr &n, Arg &arg);
+    void CompileLine(CNodePtr &n, Arg &out_arg);
+    void CompileOperatorError(CNodePtr &n, Arg &a, Arg &b);
+    void CompileAlu(CNodePtr &n, AsmAlu alu, Arg &a, Arg &b);
     void CompileLevel(CNodePtr &n);
-    void CompileSpecialFunctions(CNodePtr &n, Arg &arg);
+    void CompileInternalFunctionCall(CNodePtr &n, Arg &result_value);
     void CompileRotate(CNodePtr &n, AssemblerCommand opcode);
     void CompileAlu(CNodePtr &n, AsmAlu alu);
     bool IsDoNothingArgs(CNodePtr &n);
-    void CompileCmm(CNodePtr &n);
     AsmCondition CmmNameToAsmCondition(CNode &v);
     void CompileArgs_Empty(CNodePtr &n);
     void CompileArgs_A(CNodePtr &n);
     uint64_t CompileArgs_A_OptionalNumber(CNodePtr &n, uint64_t value, uint64_t max_value);
-    void CompileArgs_A_R8_M_Number(CNodePtr &n, Arg &arg);
-
-public:
-    Cmm8080(CProgramm &p_) : p(p_) {
-    }
-    void Compile(CString asm_file_name);
+    void CompilePushPop(CNodePtr &n, bool push, bool pop);
 };
 
-void Cmm8080::CompileArg(CNodePtr &n, Arg &arg) {
-    while (n->type == CNT_CONVERT)  // TODO: Remove
-        n = n->a;
-    bool addr = n->type == CNT_MONO_OPERATOR && n->mono_operator_code == MOP_DEADDR;
+void Cmm::CompileArg(CNodePtr &n, Arg &arg) {
+    bool addr = n->IsDeaddr();
     CompileLine(addr ? n->a : n, arg);
+    if (arg.addr)
+        p.Error(n->e, "can't compile");
     arg.addr = addr;
     if (arg.addr && arg.reg == R16_HL) {
         arg.addr = false;
@@ -101,52 +69,33 @@ void Cmm8080::CompileArg(CNodePtr &n, Arg &arg) {
     }
 }
 
-AsmCondition Cmm8080::CmmNameToAsmCondition(CNode &n) {
-    switch (n.variable->c.internal_cmm_name) {
-        case CMM_NAME_FLAG_Z:
-            return JC_Z;
-        case CMM_NAME_FLAG_NZ:
-            return JC_NZ;
-        case CMM_NAME_FLAG_C:
-            return JC_C;
-        case CMM_NAME_FLAG_NC:
-            return JC_NC;
-        case CMM_NAME_FLAG_M:
-            return JC_M;
-        case CMM_NAME_FLAG_P:
-            return JC_P;
-        case CMM_NAME_FLAG_PE:
-            return JC_PE;
-        case CMM_NAME_FLAG_PO:
-            return JC_PO;
-    }
+AsmCondition Cmm::CmmNameToAsmCondition(CNode &n) {
+    if (n.variable->c.internal_cmm_name == CMM_NAME_FLAG)
+        return n.variable->c.asm_condition;
     p.Error(n.e, "only flag_");
     return JC_Z;
 }
 
-AsmCondition Cmm8080::CompileCond(CNode &n) {
+AsmCondition Cmm::CompileCond(CNode &n) {
     switch (n.type) {
-        case CNT_CONVERT:
-            return CompileCond(*n.a);  // TODO: Remove
         case CNT_OPERATOR: {
-            if (!n.a || !n.b)
-                C_ERROR_INTERNAL(n.e, "only two arguments");
+            assert(n.a && n.b);
 
             Arg a, b;
             CompileArg(n.a, a);
             CompileArg(n.b, b);
 
             if (!a.IsA())
-                p.Error(n.a->e, "only a");
+                p.Error(n.a->e, "only register a as left argument of operator");
 
-            if (b.text == "0" && (n.operator_code == COP_CMP_E || n.operator_code == COP_CMP_NE))
+            if ((n.operator_code == COP_CMP_E || n.operator_code == COP_CMP_NE) && b.Is0())
                 out.alu_a_reg(ALU_OR, R8_A);
-            else if (!b.addr && IsAsmRegister8M(b.reg))
+            else if (b.Is8M())
                 out.alu_a_reg(ALU_CMP, b.reg);
-            else if (!b.addr && !b.text.empty())
+            else if (b.IsConst())
                 out.alu_a_string(ALU_CMP, b.text);
             else
-                p.Error(n.b->e, "only 8 bit register, *hl or const");
+                p.Error(n.b->e, "only 8 bit register, *hl or const as right argument of operator");
 
             switch (n.operator_code) {
                 case COP_CMP_L:
@@ -162,165 +111,109 @@ AsmCondition Cmm8080::CompileCond(CNode &n) {
             p.Error(n.e, "only < >= == !=");
             return JC_Z;
         }
-        case CNT_MONO_OPERATOR:
-            // Example: if (flag_z) ...
+        case CNT_MONO_OPERATOR:  // Example: if (flag_z) ...
             if (n.mono_operator_code == MOP_ADDR && n.a->type == CNT_LOAD_VARIABLE)
                 return CmmNameToAsmCondition(*n.a);
             p.Error(n.e, std::string("unsupported mono operator ") + ToString(n.mono_operator_code));
             return JC_Z;
-        case CNT_FUNCTION_CALL:
-            // Example: if (flag_z(...)) ...
+        case CNT_FUNCTION_CALL:  // Example: if (flag_z(...)) ...
             CompileLevel(n.a);
             return CmmNameToAsmCondition(n);
     }
-    p.Error(n.e, "unsupported node " + ToString(n.type));
+    p.Error(n.e, "can't compile node " + ToString(n.type));
     return JC_Z;
 }
 
-AsmRegister Cmm8080::CompileRegister(CNodePtr &n) {
-    switch (n->variable->c.internal_cmm_name) {
-        case CMM_NAME_A:
-            return R8_A;
-        case CMM_NAME_B:
-            return R8_B;
-        case CMM_NAME_C:
-            return R8_C;
-        case CMM_NAME_D:
-            return R8_D;
-        case CMM_NAME_E:
-            return R8_E;
-        case CMM_NAME_H:
-            return R8_H;
-        case CMM_NAME_L:
-            return R8_L;
-        case CMM_NAME_BC:
-            return R16_BC;
-        case CMM_NAME_DE:
-            return R16_DE;
-        case CMM_NAME_HL:
-            return R16_HL;
-        case CMM_NAME_SP:
-            return R16_SP;
-    }
-    p.Error(n->e, "only register");
-    return R8_A;
-}
-
-void Cmm8080::CompileArgs_Empty(CNodePtr &n) {
+void Cmm::CompileArgs_Empty(CNodePtr &n) {
     if (n->a)
         p.Error(n->e, "only ()");
 }
 
-void Cmm8080::CompileArgs_A(CNodePtr &n) {
-    if (n->a) {
+void Cmm::CompileArgs_A(CNodePtr &n) {
+    if (n->a && !n->a->next_node) {
         Arg a;
         CompileArg(n->a, a);
-        if (a.IsA() && !n->a->next_node)
+        if (a.IsA())
             return;
     }
     p.Error(n->e, "only (a)");
 }
 
-uint64_t Cmm8080::CompileArgs_A_OptionalNumber(CNodePtr &n, uint64_t default_value, uint64_t max_value) {
-    if (!n->a) {
-        p.Error(n->e, "only (a) or (a, const)");
-        return default_value;
-    }
-
-    Arg a;
-    CompileArg(n->a, a);
-    if (!a.IsA()) {
-        p.Error(n->e, "only (a) or (a, const)");
-        return default_value;
-    }
-
-    if (!n->a->next_node)
-        return default_value;
-
-    Arg b;
-    CompileArg(n->a->next_node, b);
-    if (b.text.empty()) {
-        p.Error(n->e, "only (a) or (a, const)");
-        return default_value;
-    }
-
-    char *end = nullptr;
-    errno = 0;
-    const uint64_t value = strtoul(b.text.c_str(), &end, 0);
-    if (end[0] != 0 || errno != 0) {
-        p.Error(n->e, "only (a) or (a, const)");
-        return default_value;
-    }
-
-    if (value > max_value) {
-        p.Error(n->e, "maximal value is " + std::to_string(max_value));
-        return default_value;
-    }
-
-    if (n->a->next_node->next_node)
-        p.Error(n->e, "only (a) or (a, const)");
-
-    return value;
-}
-
-void Cmm8080::CompileArgs_A_R8_M_Number(CNodePtr &n, Arg &arg) {
-    if (n->a && n->a->next_node && !n->a->next_node->next_node) {
-        Arg a;
+uint64_t Cmm::CompileArgs_A_OptionalNumber(CNodePtr &n, uint64_t default_value, uint64_t max_value) {
+    if (n->a && (!n->a->next_node || !n->a->next_node->next_node)) {
+        Arg a, b;
         CompileArg(n->a, a);
         if (a.IsA()) {
-            Arg b;
-            CompileArg(n->a->next_node, arg);
-            if (!arg.addr && IsAsmRegister8M(arg.reg))
-                return;
-            if (!arg.addr && !arg.text.empty())
-                return;
+            if (!n->a->next_node)
+                return default_value;
+            CompileArg(n->a->next_node, b);
+            uint64_t value = 0;
+            if (b.IsConstNumber(value)) {
+                if (value > max_value) {
+                    p.Error(n->b->e, "maximal value is " + std::to_string(max_value));
+                    value = max_value;
+                }
+                return value;
+            }
         }
     }
-    arg = Arg{R8_A};
-    p.Error(n->e, "only (a, r8) or (a, *hl) or (a, const)");
+    p.Error(n->e, "only (a) or (a, const number)");
+    return default_value;
 }
 
-void Cmm8080::CompileRotate(CNodePtr &n, AssemblerCommand opcode) {
+void Cmm::CompileRotate(CNodePtr &n, AssemblerCommand opcode) {
     uint64_t count = CompileArgs_A_OptionalNumber(n, 1, 8);
     for (uint64_t i = 0; i < count; i++)
         out.rotate(opcode);
 }
 
-void Cmm8080::CompileAlu(CNodePtr &n, AsmAlu alu) {
-    Arg a;
-    CompileArgs_A_R8_M_Number(n, a);
-    if (a.text.empty())
-        out.alu_a_reg(alu, a.reg);
-    else
-        out.alu_a_string(alu, a.text);
+void Cmm::CompilePushPop(CNodePtr &n, bool push, bool pop) {
+    if (pop && !IsDoNothingArgs(n->a))
+        p.Error(n->e, "only register names in arguments");
+
+    std::vector<AsmRegister> items;
+
+    for (auto i = n->a; i; i = i->next_node) {
+        Arg a;
+        CompileArg(i, a);
+        if (a.IsA()) {
+            a.reg = R16_AF;
+        } else if (!a.Is16Af()) {
+            p.Error(n->e, "only a, bc, de, hl");
+            a.reg = R16_HL;
+        }
+        if (pop)
+            items.push_back(a.reg);
+        if (push)
+            out.push_reg(a.reg);
+    }
+
+    CompileLevel(n->b);
+
+    for (auto i = items.rbegin(); i != items.rend(); i++)
+        out.pop_reg(*i);
 }
 
-void Cmm8080::CompileSpecialFunctions(CNodePtr &n, Arg &arg) {
+void Cmm::CompileInternalFunctionCall(CNodePtr &n, Arg &result_value) {
     switch (n->variable->c.internal_cmm_name) {
         case CMM_NAME_SET_FLAG_C:
             CompileArgs_Empty(n);
-            out.stc();
-            return;
+            return out.stc();
         case CMM_NAME_INVERT:
             CompileArgs_A(n);
-            out.cpl();
-            return;
+            return out.cpl();
         case CMM_NAME_ENABLE_INTERRUPTS:
             CompileArgs_Empty(n);
-            out.ei();
-            return;
+            return out.ei();
         case CMM_NAME_DISABLE_INTERRUPTS:
             CompileArgs_Empty(n);
-            out.di();
-            return;
+            return out.di();
         case CMM_NAME_NOP:
             CompileArgs_Empty(n);
-            out.nop();
-            return;
+            return out.nop();
         case CMM_NAME_DAA:
             CompileArgs_Empty(n);
-            out.daa();
-            return;
+            return out.daa();
         case CMM_NAME_CYCLIC_ROTATE_LEFT:
             return CompileRotate(n, AC_RLCA);
         case CMM_NAME_CYCLIC_ROTATE_RIGHT:
@@ -336,165 +229,138 @@ void Cmm8080::CompileSpecialFunctions(CNodePtr &n, Arg &arg) {
         case CMM_NAME_CARRY_SUB:
             return CompileAlu(n, ALU_SBC);
         case CMM_NAME_PUSH:
-            for (auto i = n->a; i; i = i->next_node) {
-                Arg a;
-                CompileArg(i, a);
-                if (a.reg == R8_A)
-                    a.reg = R16_AF;
-                if (!a.Is16Af()) {
-                    p.Error(n->e, "only a, bc, de, hl");
-                    a.reg = R16_HL;
-                }
-                out.push_reg(a.reg);
-            }
-            break;
-        case CMM_NAME_POP: {
-            if (!IsDoNothingArgs(n->a))
-                p.Error(n->e, "only registers in arguments");
-            std::vector<CNodePtr> items;
-            for (auto i = n->a; i; i = i->next_node)
-                items.push_back(i);
-            for (auto i = items.rbegin(); i != items.rend(); i++) {
-                Arg a;
-                CompileArg(*i, a);
-                if (a.reg == R8_A)
-                    a.reg = R16_AF;
-                if (!a.Is16Af()) {
-                    p.Error(n->e, "only a, bc, de, hl");
-                    a.reg = R16_HL;
-                }
-                out.pop_reg(a.reg);
-            }
-            break;
-        }
+            return CompilePushPop(n, true, false);
+        case CMM_NAME_POP:
+            return CompilePushPop(n, false, true);
         case CMM_NAME_IN:
-            if (!n->a || n->a->next_node)
-                p.Error(n->e, "only (const)");
-            arg.reg = R32_DEHL;
-            arg.text = out.GetConst(n->a);
-            break;
+            if (n->a && !n->a->next_node)
+                return result_value.SetPort(out.GetConst(n->a));
+            result_value.SetPort(0);
+            return p.Error(n->e, "only (const)");
         case CMM_NAME_OUT:
             if (n->a && n->a->next_node && !n->a->next_node->next_node) {
                 Arg a, b;
                 CompileArg(n->a, a);
                 CompileArg(n->a->next_node, b);
-                if (a.IsConst() && b.IsA()) {
-                    out.out(a.text);
-                    break;
-                }
+                if (a.IsConst() && b.IsA())
+                    return out.out(a.text);
             }
-            p.Error(n->e, "only (const, a)");
-            break;
+            return p.Error(n->e, "only (const, a)");
         case CMM_NAME_SWAP:
             if (n->a && n->a->next_node && !n->a->next_node->next_node) {
                 Arg a, b;
                 CompileArg(n->a, a);
                 CompileArg(n->a->next_node, b);
-
-                if (a.reg > b.reg)
-                    std::swap(a, b);
-
-                if (!a.addr && !b.addr && a.reg == R16_DE && b.reg == R16_HL) {
-                    out.ex_hl_de();
-                    return;
-                }
-
-                if (!a.addr && b.addr && a.reg == R16_HL && b.reg == R16_SP) {
-                    out.ex_psp_hl();
-                    return;
-                }
+                if ((a.IsReg(R16_DE) && b.IsHl()) || (b.IsReg(R16_DE) && a.IsHl()))
+                    return out.ex_hl_de();
+                if ((a.IsRegAddr(R16_SP) && b.IsHl()) || (b.IsRegAddr(R16_SP) && a.IsHl()))
+                    return out.ex_psp_hl();
             }
-            p.Error(n->e, "only (hl, de) or (*sp, hl)");
-            break;
+            return p.Error(n->e, "only (hl, de) or (*sp, hl)");
         default:
-            p.Error(n->e, "syntax error");
+            p.Error(n->e, "can't compile " + n->variable->name + "()");
     }
 }
 
-bool Cmm8080::IsDoNothingArgs(CNodePtr &n) {
+bool Cmm::IsDoNothingArgs(CNodePtr &n) {
     for (CNodePtr i = n; i; i = i->next_node)
         if (i->type != CNT_CONST && i->type != CNT_NUMBER && i->type != CNT_LOAD_VARIABLE)
             return false;
     return true;
 }
 
-void Cmm8080::CompileLine(CNodePtr &n, Arg &arg) {
+void Cmm::CompileOperatorError(CNodePtr &n, Arg &a, Arg &b) {
+    p.Error(n->e, std::string("can't compile ") + ToString(a) + " " + ToString(n->operator_code) + " " + ToString(b));
+}
+
+void Cmm::CompileAlu(CNodePtr &n, AsmAlu alu) {
+    if (n->a && n->a->next_node && !n->a->next_node->next_node) {
+        Arg a, b;
+        CompileArg(n->a, a);
+        CompileArg(n->a->next_node, b);
+        if (a.IsA()) {
+            if (b.Is8M())
+                return out.alu_a_reg(alu, b.reg);
+            if (b.IsConst())
+                return out.alu_a_string(alu, b.text);
+        }
+    }
+    p.Error(n->e, "only (a, 8 bit register) or (a, *hl) or (a, const)");
+}
+
+void Cmm::CompileAlu(CNodePtr &n, AsmAlu alu, Arg &a, Arg &b) {
+    if (a.IsA()) {
+        if (b.Is8M())
+            return out.alu_a_reg(alu, b.reg);
+        if (b.IsConst())
+            return out.alu_a_string(alu, b.text);
+    }
+    CompileOperatorError(n, a, b);
+}
+
+void Cmm::CompileLine(CNodePtr &n, Arg &out_arg) {
+    bool error = false;
+    Arg b;
     out.source(n->e);
     switch (n->type) {
         case CNT_LOAD_VARIABLE:
-            arg.reg = CompileRegister(n);
-            return;
-        case CNT_LEVEL:
-            CompileLevel(n->a);
-            return;
-        case CNT_CONVERT:
-            CompileLine(n->a, arg);
-            return;
-        case CNT_CONST:
-            assert(!n->text.empty());
-            arg.text = n->text;
-            return;
-        case CNT_NUMBER:
-            arg.text = out.GetConst(n);
-            return;
-        case CNT_FUNCTION_CALL:
-            if (n->variable->c.internal_cmm_name != 0) {
-                CompileSpecialFunctions(n, arg);
+            if (n->variable->c.internal_cmm_name == CMM_NAME_REG) {
+                out_arg.reg = n->variable->c.asm_register;
                 return;
             }
+            p.Error(n->e, "can't get address of internal function");
+            out_arg.SetReg(R8_A);
+            return;
+        case CNT_LEVEL:
+            return CompileLevel(n->a);
+        case CNT_CONST:
+            return out_arg.SetConst(out.GetConst(n));
+        case CNT_NUMBER:
+            return out_arg.SetConst(out.GetConst(n));
+        case CNT_PUSH_POP:
+            return CompilePushPop(n, true, true);
+        case CNT_FUNCTION_CALL:
+            if (n->variable->c.internal_cmm_name)
+                return CompileInternalFunctionCall(n, out_arg);
             CompileLevel(n->a);
-            out.call(n->variable->output_name);
-            break;
-        case CNT_FUNCTION_CALL_ADDR: {
+            return out.call(n->variable->output_name);
+        case CNT_FUNCTION_CALL_ADDR:
             CompileLevel(n->a);
-            Arg a;
-            CompileArg(n->b, a);
-            if (a.text.empty())
+            CompileArg(n->b, b);
+            if (!b.IsConst())
                 p.Error(n->b->e, "only const");
-            out.call(a.text);
-            break;
-        }
-        case CNT_RETURN: {
+            return out.call(b.text);
+        case CNT_RETURN:
             if (n->a) {
-                CNodePtr i = n->a;
-                while (i->type == CNT_CONVERT)  // TODO: Remove
-                    i = i->a;
-                if (i->type == CNT_FUNCTION_CALL && i->variable && i->variable->c.internal_cmm_name == CMM_NAME_HL) {
-                    if (i->a)
+                if (n->a->type == CNT_FUNCTION_CALL && n->a->variable->c.internal_cmm_name == CMM_NAME_REG &&
+                    n->a->variable->c.asm_register == R16_HL) {
+                    if (n->a->a)
                         p.Error(n->e, "only return hl()");
-                    out.pchl();
-                    return;
+                    return out.pchl();
                 }
                 Arg arg2;
                 CompileLine(n->a, arg2);
             }
-            bool need_ret = true;
             if (!out.lines.empty()) {
                 auto &b = out.lines.back();
                 if (b.opcode == AC_CALL) {
                     b.opcode = AC_JMP;
-                    need_ret = false;
-                } else if (b.opcode == AC_CALL_CONDITION) {
+                    return;
+                }
+                if (b.opcode == AC_CALL_CONDITION) {
                     b.opcode = AC_JMP_CONDITION;
-                    need_ret = false;
+                    return;
                 }
             }
-            if (need_ret)
-                out.ret();
-            return;
-        }
+            return out.ret();
         case CNT_BREAK:
             if (!break_label)
-                p.Error(n->e, "break without loop");
-            else
-                out.jmp_label(break_label);
-            break;
+                return p.Error(n->e, "break without loop");  // TODO: Move to parser
+            return out.jmp_label(break_label);
         case CNT_CONTINUE:
             if (!continue_label)
-                p.Error(n->e, "continue without loop");
-            else
-                out.jmp_label(continue_label);
-            break;
+                return p.Error(n->e, "continue without loop");  // TODO: Move to parser
+            return out.jmp_label(continue_label);
         case CNT_FOR: {
             CompileLevel(n->a);
             const auto continue_label_ = continue_label;
@@ -504,7 +370,7 @@ void Cmm8080::CompileLine(CNodePtr &n, Arg &arg) {
             break_label = out.AllocLabel();
             out.label(n->c ? for_label : continue_label);
             if (n->b)
-                CompileCond(*n->b);  // TODO
+                out.jmp_condition_label(InvertAsmCondition(CompileCond(*n->b)), break_label);
             CompileLevel(n->d);
             if (n->c) {
                 out.label(continue_label);
@@ -541,56 +407,40 @@ void Cmm8080::CompileLine(CNodePtr &n, Arg &arg) {
         case CNT_IF: {
             AsmCondition cond = CompileCond(*n->a);
 
+            // One "true" command and no "else" commands
             if (n->b && !n->b->next_node && !n->c) {
                 out.source(n->b->e);
 
                 if (n->b->type == CNT_RETURN) {
-                    if (!n->b->a) {
-                        out.ret_condition(cond);
-                        return;
-                    }
+                    if (!n->b->a)
+                        return out.ret_condition(cond);
                     if (n->b->a->type == CNT_FUNCTION_CALL && n->b->a->variable->c.internal_cmm_name == 0 &&
                         IsDoNothingArgs(n->b->a->a) && !n->b->a->next_node) {
-                        out.jmp_condition(cond, n->b->a->variable->output_name);
-                        return;
+                        return out.jmp_condition(cond, n->b->a->variable->output_name);
                     }
                 }
                 if (n->b->type == CNT_FUNCTION_CALL && n->b->variable->c.internal_cmm_name == 0 &&
                     IsDoNothingArgs(n->b->a)) {
-                    out.call2_condition(cond, n->b->variable->output_name);
-                    return;
+                    return out.call_condition(cond, n->b->variable->output_name);
                 }
-                if (n->b->type == CNT_GOTO) {
-                    out.jmp_condition(cond, n->b->variable->output_name);
-                    return;
-                }
+                if (n->b->type == CNT_GOTO)
+                    return out.jmp_condition(cond, n->b->variable->output_name);
                 if (n->b->type == CNT_BREAK) {
                     if (!break_label)
-                        p.Error(n->e, "break without loop");
-                    out.jmp_condition_label(cond, break_label);
-                    return;
+                        return p.Error(n->e, "break without loop");
+                    return out.jmp_condition_label(cond, break_label);
                 }
                 if (n->b->type == CNT_CONTINUE) {
                     if (!continue_label)
-                        p.Error(n->e, "continue without loop");
-                    out.jmp_condition_label(cond, continue_label);
-                    return;
+                        return p.Error(n->e, "continue without loop");
+                    return out.jmp_condition_label(cond, continue_label);
                 }
             }
 
-            if (!InvertAsmJumpCondition(cond))
-                throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " InvertJumpCondition " +
-                                         std::to_string(cond));
-
             const auto else_label = out.AllocLabel();
             const auto endif_label = out.AllocLabel();
-            if (n->a)
-                out.jmp_condition_label(cond, else_label);
-            else
-                out.jmp_label(else_label);
-
+            out.jmp_condition_label(InvertAsmCondition(cond), else_label);
             CompileLevel(n->b);
-
             if (n->c)
                 out.jmp_label(endif_label);
             out.label(else_label);
@@ -600,184 +450,105 @@ void Cmm8080::CompileLine(CNodePtr &n, Arg &arg) {
             }
             break;
         }
-        case CNT_PUSH_POP: {
-            if (!IsDoNothingArgs(n->a))
-                p.Error(n->e, "only registers in arguments");
-
-            std::vector<AsmRegister> items;
-            for (auto i = n->a; i; i = i->next_node) {
-                Arg a;
-                CompileArg(i, a);
-                if (a.reg == R8_A)
-                    a.reg = R16_AF;
-                if (a.addr || !IsAsmRegister16Af(a.reg))
-                    p.Error(n->e, "only a, bc, de, hl");
-                items.push_back(a.reg);
-                out.push_reg(a.reg);
-            }
-            CompileLevel(n->b);
-            for (auto i = items.rbegin(); i != items.rend(); i++)
-                out.pop_reg(*i);
-            break;
-        }
-        case CNT_OPERATOR: {
-            Arg b;
-            CompileArg(n->a, arg);
+        case CNT_OPERATOR:
+            CompileArg(n->a, out_arg);
             CompileArg(n->b, b);
-
-            if (n->operator_code == COP_SET_ADD && arg.IsHl() && b.Is16Sp()) {
-                out.add_hl_reg(b.reg);
-                return;
-            }
-
-            if (n->operator_code == COP_SET) {
-                if (!b.addr && b.reg == R32_DEHL) {
-                    if (!arg.IsA())
-                        p.Error(n->e, "only a = in(number)");
-                    out.in(b.text);
-                    return;
-                }
-                if (!arg.addr && IsAsmRegister8M(arg.reg) && !b.addr && IsAsmRegister8M(b.reg)) {
-                    if (arg.reg == R8_M && b.reg == R8_M) {
-                        p.Error(n->e, "*hl = *hl is prohibited");
-                        arg.reg = R8_A;
-                    }
-                    out.ld_r8_r8(arg.reg, b.reg);
-                    return;
-                }
-                if (!arg.addr && IsAsmRegister8M(arg.reg) && b.IsConst()) {
-                    out.ld_r8_string(arg.reg, b.text);
-                    return;
-                }
-                if (arg.Is16Sp() && b.IsConst()) {
-                    out.ld_r16_string(arg.reg, b.text);
-                    return;
-                }
-                if (arg.IsConstAddr() && b.IsA()) {
-                    out.ld_pstring1_a(arg.text);
-                    return;
-                }
-                if (arg.IsConstAddr() && b.IsHl()) {
-                    out.ld_pstring_hl(arg.text);
-                    return;
-                }
-                if (arg.IsA() && b.IsConstAddr()) {
-                    out.ld_a_pstring(b.text);
-                    return;
-                }
-                if (arg.IsHl() && b.IsConstAddr()) {
-                    out.ld_hl_pstring(b.text);
-                    return;
-                }
-                if (arg.IsReg(R16_SP) && b.IsHl()) {
-                    out.ld_sp_hl();
-                    return;
-                }
-                if (arg.IsA() && b.addr && (b.reg == R16_BC || b.reg == R16_DE)) {
-                    out.ld_a_preg(b.reg);
-                    return;
-                }
-                if (arg.addr && (arg.reg == R16_BC || arg.reg == R16_DE) && b.IsA()) {
-                    out.ld_preg_a(arg.reg);
-                    return;
-                }
-                p.Error(n->e, "operation not supported");
-                return;
-            }
-
-            if (arg.reg != R8_A)
-                p.Error(n->e, "only A or HL");
-
-            enum AsmAlu alu = ALU_XOR;
             switch (n->operator_code) {
+                case COP_SET:
+                    if (b.IsPort() && out_arg.IsA())
+                        return out.in(b.text);
+                    if (out_arg.Is8M() && b.Is8M() && !(out_arg.reg == R8_M && b.reg == R8_M))
+                        return out.ld_r8_r8(out_arg.reg, b.reg);
+                    if (out_arg.Is8M() && b.IsConst())
+                        return out.ld_r8_string(out_arg.reg, b.text);
+                    if (out_arg.Is16Sp() && b.IsConst())
+                        return out.ld_r16_string(out_arg.reg, b.text);
+                    if (out_arg.IsConstAddr() && b.IsA())
+                        return out.ld_pstring1_a(out_arg.text);
+                    if (out_arg.IsConstAddr() && b.IsHl())
+                        return out.ld_pstring_hl(out_arg.text);
+                    if (out_arg.IsA() && b.IsConstAddr())
+                        return out.ld_a_pstring(b.text);
+                    if (out_arg.IsHl() && b.IsConstAddr())
+                        return out.ld_hl_pstring(b.text);
+                    if (out_arg.IsReg(R16_SP) && b.IsHl())
+                        return out.ld_sp_hl();
+                    if (out_arg.IsA() && (b.IsRegAddr(R16_BC) || b.IsRegAddr(R16_DE)))
+                        return out.ld_a_preg(b.reg);
+                    if ((out_arg.IsRegAddr(R16_BC) || out_arg.IsRegAddr(R16_DE)) && b.IsA())
+                        return out.ld_preg_a(out_arg.reg);
+                    return CompileOperatorError(n, out_arg, b);
                 case COP_SET_ADD:
-                    alu = ALU_ADD;
-                    break;
+                    if (out_arg.IsHl() && b.Is16Sp())
+                        return out.add_hl_reg(b.reg);
+                    return CompileAlu(n, ALU_ADD, out_arg, b);
                 case COP_SET_AND:
-                    alu = ALU_AND;
-                    break;
+                    return CompileAlu(n, ALU_AND, out_arg, b);
                 case COP_SET_OR:
-                    alu = ALU_OR;
-                    break;
+                    return CompileAlu(n, ALU_OR, out_arg, b);
                 case COP_SET_XOR:
-                    alu = ALU_XOR;
-                    break;
+                    return CompileAlu(n, ALU_XOR, out_arg, b);
                 case COP_SET_SUB:
-                    alu = ALU_SUB;
-                    break;
-                default:
-                    arg.text = out.GetConst(n);
-                    return;
+                    return CompileAlu(n, ALU_SUB, out_arg, b);
             }
-
-            if (IsAsmRegister8M(b.reg))
-                out.alu_a_reg(alu, b.reg);
-            else if (!b.text.empty())
-                out.alu_a_string(alu, b.text);
-            else
-                p.Error(n->e, "Incorrect argument");
-
+            out_arg.SetConst(out.GetConst(n, &error));  // Build an expression for assembler
+            if (error)
+                CompileOperatorError(n, out_arg, b);
             return;
-        }
         case CNT_MONO_OPERATOR:
             switch (n->mono_operator_code) {
                 case MOP_POST_INC:
-                    CompileArg(n->a, arg);
-                    if (!arg.Is16Sp() && !IsAsmRegister8M(arg.reg))
-                        p.Error(n->e, "Incorrect argument");
-                    out.inc_reg(arg.reg);
-                    return;
-                case MOP_POST_DEC:
-                    CompileArg(n->a, arg);
-                    if (!arg.Is16Sp() && !IsAsmRegister8M(arg.reg))
-                        p.Error(n->e, "Incorrect argument");
-                    out.dec_reg(arg.reg);
-                    return;
-                case MOP_ADDR:
-                    if (n->a->type == CNT_LOAD_VARIABLE) {
-                        arg.reg = CompileRegister(n->a);
-                        return;
+                    CompileArg(n->a, out_arg);
+                    if (!out_arg.Is16Sp() && !out_arg.Is8M()) {
+                        p.Error(n->a->e, "only register or *hl");
+                        out_arg.SetReg(R8_A);
                     }
-                    arg.text = out.GetConst(n->a);
+                    return out.inc_reg(out_arg.reg);
+                case MOP_POST_DEC:
+                    CompileArg(n->a, out_arg);
+                    if (!out_arg.Is16Sp() && !out_arg.Is8M()) {
+                        p.Error(n->a->e, "only register or *hl");
+                        out_arg.SetReg(R8_A);
+                    }
+                    return out.dec_reg(out_arg.reg);
+                case MOP_ADDR:
+                    out_arg.SetConst(out.GetConst(n->a));
                     return;
                 default:
-                    p.Error(n->e, "Unsupported monooperator " + std::to_string(n->operator_code));
+                    CompileArg(n->a, out_arg);
+                    p.Error(n->e, std::string("can't compile ") + ToString(n->mono_operator_code) + ToString(out_arg));
+                    out_arg.SetReg(R8_A);
             }
             break;
         case CNT_LABEL:
             if (n->variable->label_call_count > 0)  // No goto
                 out.label(n->variable->output_name);
-            break;
+            return;
         case CNT_GOTO:
-            out.jmp(n->variable->output_name);
-            break;
+            return out.jmp(n->variable->output_name);
         case CNT_ASM:
-            out.assembler(n->text.c_str());
-            break;
+            return out.assembler(n->text.c_str());
         case CNT_DECLARE_VARIABLE:
             out.MakeFile();
-            CompileVariable(out, p, n->variable);
-            break;
+            return CompileVariable(out, p, n->variable);
         default:
-            p.Error(n->e, "Unsupported node " + ToString(n->type));
+            p.Error(n->e, "unsupported node " + ToString(n->type));
     }
 }
 
-void Cmm8080::CompileLevel(CNodePtr &n) {
+void Cmm::CompileLevel(CNodePtr &n) {
     for (CNodePtr i = n; i; i = i->next_node) {
         Arg arg;
         CompileLine(i, arg);
     }
 }
 
-void Cmm8080::CompileDeclareVariable(CNodePtr &i) {
-    CVariable &v = *i->variable;
+void Cmm::CompileDeclareVariable(CNodePtr &n) {
+    CVariable &v = *n->variable;
 
-    assert(!v.output_name.empty());
-
-    if (i->extern_flag || (v.type.pointers.empty() && v.type.flag_const)) {
+    if (n->extern_flag || (v.type.pointers.empty() && v.type.flag_const)) {
         if (v.address_attribute.exists) {
-            out.source(i->e);
+            out.source(n->e);
             out.equ(v.output_name, std::to_string(v.address_attribute.value));
         }
         return;
@@ -790,15 +561,15 @@ void Cmm8080::CompileDeclareVariable(CNodePtr &i) {
             out.lines.pop_back();
     }
 
-    out.source(i->e);
+    out.source(n->e);
 
     if (!v.type.IsFunction()) {
         out.MakeFile();
-        CompileVariable(out, p, i->variable);
+        CompileVariable(out, p, n->variable);
         return;
     }
 
-    PrepareCmm(out, p, i);
+    PrepareCmm(out, p, n);
 
     out.label(v.output_name);
 
@@ -823,9 +594,7 @@ void Cmm8080::CompileDeclareVariable(CNodePtr &i) {
         out.ret();
 }
 
-void Cmm8080::Compile(CString asm_file_name) {
-    out.InitBuffer();
-
+void Cmm::Compile(CString asm_file_name) {
     for (CNodePtr i = p.first_node; i; i = i->next_node) {
         switch (i->type) {
             case CNT_TYPEDEF:
@@ -837,16 +606,15 @@ void Cmm8080::Compile(CString asm_file_name) {
                 CompileDeclareVariable(i);
                 break;
             default:
-                p.Error(i->e, "unsupported node " + ToString(i->type));
+                p.Error(i->e, "can't compile node " + ToString(i->type));
         }
     }
-
     out.MakeFile();
-
-    FsTools::SaveFile(asm_file_name, out.buffer);
+    out.SaveAsmFile(asm_file_name);
 }
 
-void CompileCmm8080(CProgramm &p, CString asm_file_name) {
-    Cmm8080 c(p);
-    c.Compile(asm_file_name);
+void CompileCmm(CProgramm &p, CString asm_file_name) {
+    Cmm(p).Compile(asm_file_name);
 }
+
+}  // namespace I8080

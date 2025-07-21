@@ -17,12 +17,14 @@
 
 #include "Compiler.h"
 
-void Compiler8080::BuildCall(CNodePtr &node) {
+namespace I8080 {
+
+void Compiler::BuildCall(CNodePtr &node) {
     AsmRegister result_reg = GetResultReg(node->ctype, false, false, node);
-    Measure(node, result_reg, &Compiler8080::Case_Call);
+    Measure(node, result_reg, &Compiler::Case_Call);
 }
 
-bool Compiler8080::Case_Call(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Call(CNodePtr &node, AsmRegister reg) {
     if (out.measure) {
         out.measure_metric += out.CALL_METRICS;
         out.measure_regs |= U_ALL;
@@ -99,7 +101,7 @@ bool Compiler8080::Case_Call(CNodePtr &node, AsmRegister reg) {
     return true;
 }
 
-void Compiler8080::InternalCall(CVariablePtr &fn) {
+void Compiler::InternalCall(CVariablePtr &fn) {
     MakeCallTreeBegin(fn);
 
     if (fn->address_attribute.exists)
@@ -122,7 +124,7 @@ static void AddCalledBy(CVariable8080 &self, CVariablePtr &function, bool call) 
     function->c.call_count++;
 }
 
-void Compiler8080::MakeCallTreeBegin(CVariablePtr &fn) {
+void Compiler::MakeCallTreeBegin(CVariablePtr &fn) {
     assert(fn->type.IsFunction());
 
     if (out.measure)
@@ -137,9 +139,11 @@ void Compiler8080::MakeCallTreeBegin(CVariablePtr &fn) {
     out.AddToCompileQueue(fn);
 }
 
-void Compiler8080::MakeCallTreeEnd() {
+void Compiler::MakeCallTreeEnd() {
     if (out.measure)
         return;
 
     call_in_call.pop_back();
 }
+
+}  // namespace I8080

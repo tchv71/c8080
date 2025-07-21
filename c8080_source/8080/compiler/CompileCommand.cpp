@@ -17,7 +17,9 @@
 
 #include "Compiler.h"
 
-void Compiler8080::CompileCommand(CNodePtr &node) {
+namespace I8080 {
+
+void Compiler::CompileCommand(CNodePtr &node) {
     if (node->e.cursor)
         out.source(node->e);
 
@@ -170,3 +172,5 @@ void Compiler8080::CompileCommand(CNodePtr &node) {
             Build(node, REG_NONE);
     }
 }
+
+}  // namespace I8080

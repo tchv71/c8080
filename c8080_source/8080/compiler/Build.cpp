@@ -17,7 +17,9 @@
 
 #include "Compiler.h"
 
-void Compiler8080::Build(CNodePtr &node, AsmRegister reg) {
+namespace I8080 {
+
+void Compiler::Build(CNodePtr &node, AsmRegister reg) {
     if (out.measure) {
         CBuildCase &c = node->compiler.Get(reg);
         if (!c.able) {
@@ -31,8 +33,8 @@ void Compiler8080::Build(CNodePtr &node, AsmRegister reg) {
 
     if (node->IsJumpNode()) {
         BuildJumpIf(true, node, false, nullptr);
-        Measure(node, R8_A, &Compiler8080::Case_JumpNode);
-        Measure(node, REG_NONE, &Compiler8080::Case_JumpNode);
+        Measure(node, R8_A, &Compiler::Case_JumpNode);
+        Measure(node, REG_NONE, &Compiler::Case_JumpNode);
         return;
     }
 
@@ -52,16 +54,16 @@ void Compiler8080::Build(CNodePtr &node, AsmRegister reg) {
             return BuildOperator(node);
         case CNT_LOAD_FROM_REGISTER: {
             AsmRegister real_reg = GetResultReg(node->ctype, false, false, node);
-            Measure(node, real_reg, &Compiler8080::Case_Empty);
+            Measure(node, real_reg, &Compiler::Case_Empty);
             return;
         }
         case CNT_STACK_ADDRESS:
-            Measure(node, REG_NONE, &Compiler8080::Case_Empty);
-            Measure(node, R16_HL, &Compiler8080::Case_StackAddress);
+            Measure(node, REG_NONE, &Compiler::Case_Empty);
+            Measure(node, R16_HL, &Compiler::Case_StackAddress);
             return;
         case CNT_ARG_STACK_ADDRESS:
-            Measure(node, REG_NONE, &Compiler8080::Case_Empty);
-            Measure(node, R16_HL, &Compiler8080::Case_ArgStackAddress);
+            Measure(node, REG_NONE, &Compiler::Case_Empty);
+            Measure(node, R16_HL, &Compiler::Case_ArgStackAddress);
             return;
         case CNT_FUNCTION_CALL:
         case CNT_FUNCTION_CALL_ADDR:
@@ -72,20 +74,20 @@ void Compiler8080::Build(CNodePtr &node, AsmRegister reg) {
     }
 }
 
-void Compiler8080::BuildOperator(CNodePtr &node) {
+void Compiler::BuildOperator(CNodePtr &node) {
     if (node->operator_code == COP_IF) {
         BuildJumpIf(true, node->a, false, nullptr);
         Build(node->b);
         Build(node->c);
 
-        Measure(node, REG_NONE, &Compiler8080::Case_If);
+        Measure(node, REG_NONE, &Compiler::Case_If);
 
         AsmRegister main = GetResultReg(node->ctype, false, false, node);
-        Measure(node, main, &Compiler8080::Case_If);
+        Measure(node, main, &Compiler::Case_If);
 
         if (node->b->compiler.alt.able && node->c->compiler.alt.able) {
             AsmRegister alt = GetResultReg(node->ctype, true, false, node);
-            Measure(node, alt, &Compiler8080::Case_If);
+            Measure(node, alt, &Compiler::Case_If);
         }
         return;
     }
@@ -98,11 +100,11 @@ void Compiler8080::BuildOperator(CNodePtr &node) {
         return;
     }
 
-    Measure(node, REG_NONE, &Compiler8080::Case_Comma);
+    Measure(node, REG_NONE, &Compiler::Case_Comma);
 
     if (node->operator_code == COP_COMMA) {
         AsmRegister main = GetResultReg(node->ctype, false, false, node);
-        Measure(node, main, &Compiler8080::Case_Comma);
+        Measure(node, main, &Compiler::Case_Comma);
         return;
     }
 
@@ -124,18 +126,18 @@ void Compiler8080::BuildOperator(CNodePtr &node) {
     }
 }
 
-void Compiler8080::BuildMonoOperator(CNodePtr &node) {
+void Compiler::BuildMonoOperator(CNodePtr &node) {
     assert(node->type == CNT_MONO_OPERATOR);
 
     Build(node->a);
 
-    Measure(node, REG_NONE, &Compiler8080::Case_Direct);
+    Measure(node, REG_NONE, &Compiler::Case_Direct);
 
     switch (node->mono_operator_code) {
         case MOP_ADDR: {
             p.Error(node->e, "lvalue required");  // gcc
             AsmRegister result_reg = GetResultReg(node->ctype, false, false, node);
-            Measure(node, result_reg, &Compiler8080::Case_Empty);
+            Measure(node, result_reg, &Compiler::Case_Empty);
             break;
         }
         case MOP_DEADDR:
@@ -143,10 +145,10 @@ void Compiler8080::BuildMonoOperator(CNodePtr &node) {
             break;
         case MOP_PLUS: {
             AsmRegister main_reg = GetResultReg(node->ctype, false, false, node);
-            Measure(node, main_reg, &Compiler8080::Case_Direct);
+            Measure(node, main_reg, &Compiler::Case_Direct);
             if (node->a->compiler.alt.able) {
                 AsmRegister alt_reg = GetResultReg(node->ctype, true, false, node);
-                Measure(node, alt_reg, &Compiler8080::Case_Direct);
+                Measure(node, alt_reg, &Compiler::Case_Direct);
             }
             break;
         }
@@ -154,15 +156,15 @@ void Compiler8080::BuildMonoOperator(CNodePtr &node) {
             switch (node->ctype.GetAsmType()) {
                 case CBT_CHAR:
                 case CBT_UNSIGNED_CHAR:
-                    Measure(node, R8_A, &Compiler8080::Case_Minus8);
+                    Measure(node, R8_A, &Compiler::Case_Minus8);
                     break;
                 case CBT_SHORT:
                 case CBT_UNSIGNED_SHORT:
-                    Measure(node, R16_HL, &Compiler8080::Case_Minus16);
+                    Measure(node, R16_HL, &Compiler::Case_Minus16);
                     break;
                 case CBT_LONG:
                 case CBT_UNSIGNED_LONG:
-                    Measure(node, R32_DEHL, &Compiler8080::Case_Minus32);
+                    Measure(node, R32_DEHL, &Compiler::Case_Minus32);
                     break;
                 default:
                     C_ERROR_UNSUPPORTED_ASM_TYPE(node);
@@ -172,15 +174,15 @@ void Compiler8080::BuildMonoOperator(CNodePtr &node) {
             switch (node->ctype.GetAsmType()) {
                 case CBT_CHAR:
                 case CBT_UNSIGNED_CHAR:
-                    Measure(node, R8_A, &Compiler8080::Case_Neg8);
+                    Measure(node, R8_A, &Compiler::Case_Neg8);
                     break;
                 case CBT_SHORT:
                 case CBT_UNSIGNED_SHORT:
-                    Measure(node, R16_HL, &Compiler8080::Case_Neg16);
+                    Measure(node, R16_HL, &Compiler::Case_Neg16);
                     break;
                 case CBT_LONG:
                 case CBT_UNSIGNED_LONG:
-                    Measure(node, R32_DEHL, &Compiler8080::Case_Neg32);
+                    Measure(node, R32_DEHL, &Compiler::Case_Neg32);
                     break;
                 default:
                     C_ERROR_UNSUPPORTED_ASM_TYPE(node);
@@ -189,25 +191,25 @@ void Compiler8080::BuildMonoOperator(CNodePtr &node) {
     }
 }
 
-bool Compiler8080::Case_StackAddress(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_StackAddress(CNodePtr &node, AsmRegister reg) {
     out.ld_reg_stack_addr(R16_HL, node->number.u);
     out.add_hl_sp();
     return true;
 }
 
-bool Compiler8080::Case_ArgStackAddress(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_ArgStackAddress(CNodePtr &node, AsmRegister reg) {
     out.ld_reg_arg_stack_addr(R16_HL, node->number.u);
     out.add_hl_sp();
     return true;
 }
 
-bool Compiler8080::Case_Comma(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Comma(CNodePtr &node, AsmRegister reg) {
     Build(node->a, REG_NONE);
     Build(node->b, reg);
     return true;
 }
 
-bool Compiler8080::Case_If(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_If(CNodePtr &node, AsmRegister reg) {
     const auto label1 = out.AllocLabel();
     const auto label2 = out.AllocLabel();
     BuildJumpIf(false, node->a, false, label1);
@@ -219,7 +221,7 @@ bool Compiler8080::Case_If(CNodePtr &node, AsmRegister reg) {
     return true;
 }
 
-bool Compiler8080::Case_JumpNode(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_JumpNode(CNodePtr &node, AsmRegister reg) {
     const auto label_false = out.AllocLabel();
     BuildJumpIf(false, node, false, label_false);
     if (reg == REG_NONE) {
@@ -235,17 +237,17 @@ bool Compiler8080::Case_JumpNode(CNodePtr &node, AsmRegister reg) {
     return true;
 }
 
-bool Compiler8080::Case_Empty(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Empty(CNodePtr &node, AsmRegister reg) {
     return true;
 }
 
-bool Compiler8080::Case_Direct(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Direct(CNodePtr &node, AsmRegister reg) {
     assert(reg == REG_NONE);
     Build(node->a, REG_NONE);
     return true;
 }
 
-bool Compiler8080::Case_Minus8(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Minus8(CNodePtr &node, AsmRegister reg) {
     assert(reg == R8_A);
     Build(node->a, R8_A);
     out.cpl();
@@ -253,37 +255,39 @@ bool Compiler8080::Case_Minus8(CNodePtr &node, AsmRegister reg) {
     return true;
 }
 
-bool Compiler8080::Case_Minus16(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Minus16(CNodePtr &node, AsmRegister reg) {
     assert(reg == R16_HL);
     Build(node->a, R16_HL);
     InternalCall(o.minus_16);
     return true;
 }
 
-bool Compiler8080::Case_Minus32(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Minus32(CNodePtr &node, AsmRegister reg) {
     assert(reg == R32_DEHL);
     Build(node->a, R32_DEHL);
     InternalCall(o.minus_32);
     return true;
 }
 
-bool Compiler8080::Case_Neg8(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Neg8(CNodePtr &node, AsmRegister reg) {
     assert(reg == R8_A);
     Build(node->a, R8_A);
     out.cpl();
     return true;
 }
 
-bool Compiler8080::Case_Neg16(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Neg16(CNodePtr &node, AsmRegister reg) {
     assert(reg == R16_HL);
     Build(node->a, R16_HL);
     InternalCall(o.neg_16);
     return true;
 }
 
-bool Compiler8080::Case_Neg32(CNodePtr &node, AsmRegister reg) {
+bool Compiler::Case_Neg32(CNodePtr &node, AsmRegister reg) {
     assert(reg == R32_DEHL);
     Build(node->a, R32_DEHL);
     InternalCall(o.neg_32);
     return true;
 }
+
+}  // namespace I8080

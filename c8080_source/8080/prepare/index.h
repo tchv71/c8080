@@ -19,13 +19,17 @@
 
 #include "../../prepare/prepare.h"
 
-bool Prepare8080Const(Prepare &, CNodePtr &node);
-bool Prepare8080SetOperators(Prepare &, CNodePtr &node);
-bool Prepare8080Fast8BitOptimization(Prepare &, CNodePtr &node);
-bool PrepareCompareOperators8080(Prepare &, CNodePtr &node);
-bool Prepare8080Sub16ToAdd16(Prepare &, CNodePtr &node);
-bool Prepare8080IncDec(Prepare &, CNodePtr &node);
-bool Prepare8080Fast8BitMath(Prepare &, CNodePtr &node);
-bool Prepare8080RemoveDead(Prepare &, CNodePtr &node);
-bool Prepare8080Jump(Prepare&, CNodePtr &node);
-bool Prepare8080LoadVariable(Prepare &p, CNodePtr &node);
+namespace I8080 {
+
+bool PrepareConst(Prepare &, CNodePtr &node);
+bool PrepareSetOperators(Prepare &, CNodePtr &node);
+bool PrepareFast8BitOptimization(Prepare &, CNodePtr &node);
+bool PrepareCompareOperators(Prepare &, CNodePtr &node);
+bool PrepareSub16ToAdd16(Prepare &, CNodePtr &node);
+bool PrepareIncDec(Prepare &, CNodePtr &node);
+bool PrepareFast8BitMath(Prepare &, CNodePtr &node);
+bool PrepareRemoveDead(Prepare &, CNodePtr &node);
+bool PrepareJump(Prepare &, CNodePtr &node);
+bool PrepareLoadVariable(Prepare &p, CNodePtr &node);
+
+}  // namespace I8080

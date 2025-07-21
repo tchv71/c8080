@@ -17,6 +17,8 @@
 
 #include "index.h"
 
+namespace I8080 {
+
 static bool ReplaceOpUnsigned(CNodePtr &node, COperatorCode op, uint64_t max) {
     if (node->a->number.u == max)
         return false;
@@ -57,7 +59,7 @@ static bool ReplaceOp(CNodePtr &node, COperatorCode op) {
     return false;
 }
 
-bool PrepareCompareOperators8080(Prepare &, CNodePtr &node) {
+bool PrepareCompareOperators(Prepare &, CNodePtr &node) {
     if (node->type != CNT_OPERATOR)
         return false;
 
@@ -87,3 +89,5 @@ bool PrepareCompareOperators8080(Prepare &, CNodePtr &node) {
 
     return false;
 }
+
+}  // namespace I8080

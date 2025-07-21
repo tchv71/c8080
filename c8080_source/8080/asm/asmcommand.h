@@ -17,21 +17,20 @@
 
 #pragma once
 
+namespace I8080 {
+
 enum AssemblerCommand {
+    AC_NOP,
     AC_REMOVED,
     AC_MVI,
     AC_LXI,
-    AC_LD_REG_STACK_ADDR,
-    AC_LD_REG_ARG_STACK_ADDR,
-    AC_STACK_CORRECTION,
-    AC_STACK_CORRECTION_RESET,
     AC_LHLD,
     AC_SHLD,
-    AC_STA,
     AC_LDA,
-    AC_LD_A_PREG,
-    AC_LD_PREG_A,
-    AC_LD_REG_REG,
+    AC_STA,
+    AC_LDAX,
+    AC_STAX,
+    AC_MOV,
     AC_XCHG,
     AC_XTHL,
     AC_RLA,
@@ -40,23 +39,19 @@ enum AssemblerCommand {
     AC_RLCA,
     AC_JMP,
     AC_JMP_CONDITION,
-    AC_LABEL,
     AC_PUSH,
     AC_POP,
     AC_RET,
+    AC_RET_CONDITION,
     AC_CALL,
-    AC_ALU_A_CONST,
-    AC_ALU_A_REG,
-    AC_ADD_HL_REG,
+    AC_CALL_CONDITION,
+    AC_ALU_CONST,
+    AC_ALU_REG,
+    AC_DAD,
     AC_SPHL,
     AC_CPL,
-    AC_INC_REG,
-    AC_DEC_REG,
-    AC_LINE,
-    AC_ASSEMBLER,
-    AC_REMARK,
-    AC_CALL_CONDITION,
-    AC_RET_CONDITION,
+    AC_INC,
+    AC_DEC,
     AC_IN,
     AC_OUT,
     AC_PCHL,
@@ -64,7 +59,17 @@ enum AssemblerCommand {
     AC_EI,
     AC_DI,
     AC_DAA,
-    AC_NOP,
+
+    AC_LINE,
+    AC_ASSEMBLER,
+    AC_REMARK,
+    AC_LABEL,
+    AC_STACK_CORRECTION,
+    AC_STACK_CORRECTION_RESET,
+    AC_LXI_STACK_ADDR,
+    AC_LXI_ARG_STACK_ADDR,
 };
 
-int GetAssemblerCommandSize(enum AssemblerCommand c);
+int GetAsmCommandSize(enum AssemblerCommand c);
+
+}  // namespace I8080

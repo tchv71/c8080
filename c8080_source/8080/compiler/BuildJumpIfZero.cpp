@@ -17,7 +17,9 @@
 
 #include "Compiler.h"
 
-void Compiler8080::BuildJumpIfZero(bool prepare, CNodePtr &node, bool invert1, bool invert2, AsmLabel *label) {
+namespace I8080 {
+
+void Compiler::BuildJumpIfZero(bool prepare, CNodePtr &node, bool invert1, bool invert2, AsmLabel *label) {
     if (prepare) {
         Build(node);
         return;
@@ -61,3 +63,5 @@ void Compiler8080::BuildJumpIfZero(bool prepare, CNodePtr &node, bool invert1, b
     else
         out.jz_label(label);
 }
+
+}  // namespace I8080

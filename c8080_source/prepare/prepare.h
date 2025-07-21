@@ -23,19 +23,22 @@ class Prepare;
 
 typedef bool (*PrepareFunctionType)(Prepare &p, CNodePtr &node);
 
-class Asm2;
+namespace I8080 {
+class Asm;
+}
 
 class Prepare {
 public:
     CProgramm &programm;
     CVariablePtr function;
     const PrepareFunctionType *list;
-    Asm2 &out;
+    I8080::Asm &out;
 
-    Prepare(CProgramm &p, Asm2 &o, CVariablePtr f, const PrepareFunctionType *l) : programm(p), function(f), list(l), out(o) {
+    Prepare(CProgramm &p, I8080::Asm &o, CVariablePtr f, const PrepareFunctionType *l)
+        : programm(p), function(f), list(l), out(o) {
     }
 };
 
-void PrepareFunction(CProgramm &cprogramm, CVariablePtr &p, const PrepareFunctionType *list, Asm2 &out);
+void PrepareFunction(CProgramm &cprogramm, CVariablePtr &p, const PrepareFunctionType *list, I8080::Asm &out);
 uint32_t PrepareInt(Prepare &p, CNodePtr *pnode);
 bool DeleteNodeSaveType(CNodePtr &node, char c);

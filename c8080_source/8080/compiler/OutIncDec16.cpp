@@ -18,7 +18,9 @@
 #include "Compiler.h"
 #include "../../c/tools/getnumberasuint64.h"
 
-bool Compiler8080::OutIncDec16(AsmRegister reg, CNodePtr &a, CNodePtr &b) {
+namespace I8080 {
+
+bool Compiler::OutIncDec16(AsmRegister reg, CNodePtr &a, CNodePtr &b) {
     uint16_t value = GetNumberAsUint64(b);
     if (value <= 3 || value >= 0x10000 - 3) {
         Build(a, reg);
@@ -33,3 +35,5 @@ bool Compiler8080::OutIncDec16(AsmRegister reg, CNodePtr &a, CNodePtr &b) {
     }
     return false;
 }
+
+}  // namespace I8080

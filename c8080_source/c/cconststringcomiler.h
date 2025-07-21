@@ -19,6 +19,7 @@
 
 #include <string>
 #include <stddef.h>
+#include <stdint.h>
 #include "../tools/number_size.h"
 
 struct CConstStringCompiler {

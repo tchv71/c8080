@@ -17,12 +17,14 @@
 
 #include "Compiler.h"
 
-void Compiler8080::MeasureArgsBegin() {
+namespace I8080 {
+
+void Compiler::MeasureArgsBegin() {
     out.measure_metric = 0;
     out.measure_regs = 0;
 }
 
-void Compiler8080::MeasureArgsEnd(unsigned id) {
+void Compiler::MeasureArgsEnd(unsigned id) {
     if (out.measure_args_id == 0 || out.measure_args_metric > out.measure_metric) {
         out.measure_args_id = id;
         out.measure_args_metric = out.measure_metric;
@@ -30,7 +32,7 @@ void Compiler8080::MeasureArgsEnd(unsigned id) {
     }
 }
 
-void Compiler8080::Measure(CNodePtr &node, AsmRegister reg, CBuildProc proc) {
+void Compiler::Measure(CNodePtr &node, AsmRegister reg, CBuildProc proc) {
     MeasureBegin();
     measure_proc = proc;
     if ((this->*proc)(node, reg))
@@ -39,12 +41,12 @@ void Compiler8080::Measure(CNodePtr &node, AsmRegister reg, CBuildProc proc) {
     measure_proc = nullptr;
 }
 
-void Compiler8080::MeasureBegin(AsmRegister reg) {
+void Compiler::MeasureBegin(AsmRegister reg) {
     if (reg == REG_PREPARE)
         MeasureBegin();
 }
 
-void Compiler8080::MeasureBegin() {
+void Compiler::MeasureBegin() {
     assert(!out.measure);
     out.measure = true;
     out.measure_metric = 0;
@@ -53,7 +55,7 @@ void Compiler8080::MeasureBegin() {
     out.measure_args_id = 0;
 }
 
-void Compiler8080::MeasureResult(CNodePtr &node, AsmRegister reg) {
+void Compiler::MeasureResult(CNodePtr &node, AsmRegister reg) {
     if (out.measure) {
         if (reg != REG_NONE) {
             CBuildCase &c = node->compiler.Get(reg);
@@ -66,7 +68,7 @@ void Compiler8080::MeasureResult(CNodePtr &node, AsmRegister reg) {
     }
 }
 
-bool Compiler8080::MeasureReset(CNodePtr &node, AsmRegister reg) {
+bool Compiler::MeasureReset(CNodePtr &node, AsmRegister reg) {
     if (reg == REG_PREPARE) {
         node->compiler.no_result.Reset();
         node->compiler.main.Reset();
@@ -81,3 +83,5 @@ bool Compiler8080::MeasureReset(CNodePtr &node, AsmRegister reg) {
     (this->*(c.build))(node, reg);
     return true;
 }
+
+}  // namespace I8080

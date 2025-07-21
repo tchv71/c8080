@@ -19,14 +19,16 @@
 #include "prepare.h"
 #include "../../c/tools/makecnode.h"
 
-bool Prepare8080LoadVariable(Prepare &p, CNodePtr &node) {
+namespace I8080 {
+
+bool PrepareLoadVariable(Prepare &p, CNodePtr &node) {
     if (node->type == CNT_LOAD_VARIABLE) {
         CVariablePtr &v = node->variable;
         assert(v != nullptr);
         assert(!v->is_stack_variable);
         assert(!v->output_name.empty());
 
-        Prepare8080Variable(p.programm, v, p.out);
+        PrepareVariable(p.programm, v, p.out);
 
         if (v->type.IsConst() && v->body && v->body->IsConstNode()) {
             node->c = CopyNode(node->variable->body);
@@ -48,3 +50,5 @@ bool Prepare8080LoadVariable(Prepare &p, CNodePtr &node) {
     }
     return false;
 }
+
+}  // namespace I8080

@@ -25,6 +25,8 @@
 #include "asmlabel.h"
 #include "../../tools/cstring.h"
 
+namespace I8080 {
+
 enum AsmArgumentType { AAT_NONE = 0, AAT_REG, AAT_STRING, AAT_NUMBER, AAT_LABEL };
 
 struct AsmArgument {
@@ -95,4 +97,17 @@ struct AsmArgument {
         label = l;
         label->used++;
     }
+
+    bool Is0() const {
+        switch (type) {
+            case AAT_STRING:
+                return string == "0";
+            case AAT_NUMBER:
+                return number == 0;
+            default:
+                return false;
+        }
+    }
 };
+
+}  // namespace I8080

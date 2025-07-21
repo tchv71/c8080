@@ -17,6 +17,8 @@
 
 #pragma once
 
+namespace I8080 {
+
 enum AsmAlu {
     ALU_XOR,
     ALU_OR,
@@ -29,3 +31,5 @@ enum AsmAlu {
 };
 
 const char *ToString(AsmAlu value);
+
+}  // namespace I8080

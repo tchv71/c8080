@@ -19,26 +19,11 @@
 
 #include "../../c/cprogramm.h"
 
+namespace I8080 {
+
 enum CmmName {
-    CMM_NAME_FLAG_Z = 1,
-    CMM_NAME_FLAG_NZ,
-    CMM_NAME_FLAG_C,
-    CMM_NAME_FLAG_NC,
-    CMM_NAME_FLAG_P,
-    CMM_NAME_FLAG_M,
-    CMM_NAME_FLAG_PE,
-    CMM_NAME_FLAG_PO,
-    CMM_NAME_A,
-    CMM_NAME_B,
-    CMM_NAME_C,
-    CMM_NAME_D,
-    CMM_NAME_E,
-    CMM_NAME_H,
-    CMM_NAME_L,
-    CMM_NAME_BC,
-    CMM_NAME_DE,
-    CMM_NAME_HL,
-    CMM_NAME_SP,
+    CMM_NAME_FLAG = 1,
+    CMM_NAME_REG,
     CMM_NAME_SET_FLAG_C,
     CMM_NAME_INVERT,
     CMM_NAME_COMPARE,
@@ -59,4 +44,6 @@ enum CmmName {
     CMM_NAME_DAA,
 };
 
-void RegisterInternalCmmNames8080(CProgramm &p);
+void RegisterInternalCmmNames(CProgramm &p);
+
+}  // namespace I8080

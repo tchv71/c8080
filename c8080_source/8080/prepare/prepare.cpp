@@ -19,29 +19,33 @@
 #include "index.h"
 #include "../../prepare/prepare.h"
 
+namespace I8080 {
+
 static const PrepareFunctionType prepare_function_list[] = {
-    Prepare8080Const,
-    Prepare8080SetOperators,
-    Prepare8080Fast8BitMath,
-    Prepare8080Fast8BitOptimization,
-    PrepareCompareOperators8080,
-    Prepare8080RemoveDead,
-    Prepare8080IncDec,
-    Prepare8080Sub16ToAdd16,
-    Prepare8080Jump,
-    Prepare8080LoadVariable,
+    PrepareConst,
+    PrepareSetOperators,
+    PrepareFast8BitMath,
+    PrepareFast8BitOptimization,
+    PrepareCompareOperators,
+    PrepareRemoveDead,
+    PrepareIncDec,
+    PrepareSub16ToAdd16,
+    PrepareJump,
+    PrepareLoadVariable,
     nullptr,
 };
 
-void Prepare8080Function(CProgramm &programm, CNodePtr &node, Asm2 &out) {
+void PrepareFunction(CProgramm &programm, CNodePtr &node, Asm &out) {
     PrepareFunction(programm, node->variable, prepare_function_list, out);
 }
 
-void Prepare8080Variable(CProgramm &programm, CVariablePtr &var, Asm2 &out) {
-    if (!var->c.prepared && var->body) {
+void PrepareVariable(CProgramm &programm, CVariablePtr &var, Asm &out) {
+    if (!var->c.prepared && var->body && !var->type.IsFunction()) {
         var->c.prepared = true;  // Prevent recursion
         CVariablePtr no_function;
         Prepare p(programm, out, no_function, prepare_function_list);
         PrepareInt(p, &var->body);
     }
 }
+
+}  // namespace I8080

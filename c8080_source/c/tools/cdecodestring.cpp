@@ -16,6 +16,8 @@
  */
 
 #include "cdecodestring.h"
+#include <limits.h>
+#include <stdint.h>
 
 const char *CDecodeString(std::string &str) {
     char *begin = &str[0];

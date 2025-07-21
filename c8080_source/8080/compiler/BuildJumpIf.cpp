@@ -18,7 +18,9 @@
 #include "Compiler.h"
 #include "../../c/tools/numberiszero.h"
 
-void Compiler8080::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, AsmLabel *label) {
+namespace I8080 {
+
+void Compiler::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, AsmLabel *label) {
     switch (node->type) {
         case CNT_MONO_OPERATOR:
             if (node->mono_operator_code == MOP_NOT)
@@ -69,10 +71,11 @@ void Compiler8080::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, A
                     return;
                 case COP_LAND:
                     if (jmp_if_true) {
-                        auto label2 = out.AllocLabel();
+                        AsmLabel *label2 = prepare ? nullptr : out.AllocLabel();
                         BuildJumpIf(prepare, node->a, false, label2);
                         BuildJumpIf(prepare, node->b, true, label);
-                        out.label(label2);
+                        if (!prepare)
+                            out.label(label2);
                     } else {
                         BuildJumpIf(prepare, node->a, false, label);
                         BuildJumpIf(prepare, node->b, false, label);
@@ -83,13 +86,16 @@ void Compiler8080::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, A
                         BuildJumpIf(prepare, node->a, true, label);
                         BuildJumpIf(prepare, node->b, true, label);
                     } else {
-                        auto label2 = out.AllocLabel();
+                        AsmLabel *label2 = prepare ? nullptr : out.AllocLabel();
                         BuildJumpIf(prepare, node->a, true, label2);
                         BuildJumpIf(prepare, node->b, false, label);
-                        out.label(label2);
+                        if (!prepare)
+                            out.label(label2);
                     }
                     return;
             }
     }
     C_ERROR_UNSUPPORTED_NODE_TYPE(node);
 }
+
+}  // namespace I8080

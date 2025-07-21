@@ -18,8 +18,10 @@
 #include "Compiler.h"
 #include "SaveReg.h"
 
-bool Compiler8080::BuildDouble(CNodePtr &node, AsmRegister reg, CNodePtr &a, AsmRegister a_reg, CNodePtr &b,
-                               AsmRegister b_reg) {
+namespace I8080 {
+
+bool Compiler::BuildDouble(CNodePtr &node, AsmRegister reg, CNodePtr &a, AsmRegister a_reg, CNodePtr &b,
+                           AsmRegister b_reg) {
     CBuildCase a_case = a->compiler.Get(a_reg);
     CBuildCase b_case = b->compiler.Get(b_reg);
 
@@ -61,9 +63,11 @@ bool Compiler8080::BuildDouble(CNodePtr &node, AsmRegister reg, CNodePtr &a, Asm
     return true;
 }
 
-void Compiler8080::Case_Double(CNodePtr &a, AsmRegister a_reg, CNodePtr &b, AsmRegister b_reg, CBuildCase &b_case) {
+void Compiler::Case_Double(CNodePtr &a, AsmRegister a_reg, CNodePtr &b, AsmRegister b_reg, CBuildCase &b_case) {
     Build(a, a_reg);
     SaveReg sr(out, b_case, a_reg);
     Build(b, b_reg);
     sr.Pop();
 }
+
+}  // namespace I8080

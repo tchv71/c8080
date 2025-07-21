@@ -15,7 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "asm/asm2.h"
+#include "asm/asm.h"
 #include "../c/cprogramm.h"
 
-void CompileVariable(Asm2 &out, CProgramm &p, CVariablePtr &vd);
+namespace I8080 {
+
+void CompileVariable(Asm &out, CProgramm &p, CVariablePtr &vd);
+
+}

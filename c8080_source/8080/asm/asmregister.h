@@ -19,6 +19,8 @@
 
 #include <stdint.h>
 
+namespace I8080 {
+
 enum AsmRegister {
     REG_NONE,
     R8_A,
@@ -60,3 +62,5 @@ bool IsAsmRegister16Sp(AsmRegister r);
 bool IsAsmRegister8M(AsmRegister r);
 
 const char *ToString(AsmRegister value);
+
+}  // namespace I8080

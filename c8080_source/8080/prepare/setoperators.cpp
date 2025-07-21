@@ -18,6 +18,8 @@
 #include "index.h"
 #include "../../c/tools/cthrow.h"
 
+namespace I8080 {
+
 // TODO: Замена ADD на INC  ( (*word)++ )
 
 static bool SetOperators(CNodePtr &node, COperatorCode op) {
@@ -37,7 +39,7 @@ static bool SetOperators(CNodePtr &node, COperatorCode op) {
     return true;
 }
 
-bool Prepare8080SetOperators(Prepare &, CNodePtr &node) {
+bool PrepareSetOperators(Prepare &, CNodePtr &node) {
     assert(node != nullptr);
     if (node->type == CNT_OPERATOR) {
         switch (node->operator_code) {
@@ -65,3 +67,5 @@ bool Prepare8080SetOperators(Prepare &, CNodePtr &node) {
     }
     return false;
 }
+
+}  // namespace I8080

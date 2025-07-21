@@ -19,7 +19,9 @@
 #include "../../c/tools/prepareswitch.h"
 #include <limits.h>
 
-void Compiler8080::CompileSwitch(CNodePtr &node) {
+namespace I8080 {
+
+void Compiler::CompileSwitch(CNodePtr &node) {
     std::vector<CNodePtr> cases;
     if (!PrepareSwitch(p, node, cases))
         return;
@@ -52,7 +54,7 @@ void Compiler8080::CompileSwitch(CNodePtr &node) {
 
 // TODO: Optimize. Value-pointer array. Binary search.
 
-void Compiler8080::CompileSwitch8(CNodePtr &node, std::vector<CNodePtr> &cases, AsmLabel *default_label) {
+void Compiler::CompileSwitch8(CNodePtr &node, std::vector<CNodePtr> &cases, AsmLabel *default_label) {
     Build(node->a);
     Build(node->a, R8_A);
 
@@ -72,7 +74,7 @@ void Compiler8080::CompileSwitch8(CNodePtr &node, std::vector<CNodePtr> &cases, 
     out.jmp_label(default_label);
 }
 
-void Compiler8080::CompileSwitch16(CNodePtr &node, std::vector<CNodePtr> &cases, AsmLabel *default_label) {
+void Compiler::CompileSwitch16(CNodePtr &node, std::vector<CNodePtr> &cases, AsmLabel *default_label) {
     Build(node->a);
     Build(node->a, R16_HL);
 
@@ -91,3 +93,5 @@ void Compiler8080::CompileSwitch16(CNodePtr &node, std::vector<CNodePtr> &cases,
 
     out.jmp_label(default_label);
 }
+
+}  // namespace I8080

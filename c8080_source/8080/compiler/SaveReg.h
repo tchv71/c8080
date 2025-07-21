@@ -17,16 +17,18 @@
 
 #pragma once
 
-#include "../asm/asm2.h"
+#include "../asm/asm.h"
 #include "Compiler.h"
+
+namespace I8080 {
 
 class SaveReg {
 public:
-    Asm2 &out;
+    Asm &out;
     bool enabled{};
     AsmRegister reg{};
 
-    SaveReg(Asm2 &out_, const CBuildCase &c, AsmRegister reg_) : out(out_), reg(reg_) {
+    SaveReg(Asm &out_, const CBuildCase &c, AsmRegister reg_) : out(out_), reg(reg_) {
         enabled = (c.regs & RegToUsed(reg));
         if (enabled)
             out.push_reg(reg);
@@ -43,3 +45,5 @@ public:
         assert(!enabled);
     }
 };
+
+}  // namespace I8080

@@ -43,7 +43,7 @@ struct CVariable {
     bool link_attribute_processed{};
     bool c_calc_const_executed{};
 
-    struct CVariable8080 c;
+    struct I8080::CVariable8080 c;
 };
 
 typedef std::shared_ptr<CVariable> CVariablePtr;

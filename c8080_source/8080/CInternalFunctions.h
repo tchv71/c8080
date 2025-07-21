@@ -19,7 +19,9 @@
 
 #include "../c/cprogramm.h"
 
-class CInternalFunctions8080 {
+namespace I8080 {
+
+class CInternalFunctions {
 public:
     CVariablePtr call_hl;
 
@@ -72,3 +74,5 @@ public:
 
     void Init(CProgramm &p);
 };
+
+}  // namespace I8080

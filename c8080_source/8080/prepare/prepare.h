@@ -19,7 +19,11 @@
 
 #include "../../c/cprogramm.h"
 
-class Asm2;
+namespace I8080 {
 
-void Prepare8080Function(CProgramm &programm, CNodePtr &node, Asm2 &out);
-void Prepare8080Variable(CProgramm &programm, CVariablePtr &var, Asm2 &out);
+class Asm;
+
+void PrepareFunction(CProgramm &programm, CNodePtr &node, Asm &out);
+void PrepareVariable(CProgramm &programm, CVariablePtr &var, Asm &out);
+
+}  // namespace I8080

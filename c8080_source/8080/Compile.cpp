@@ -17,20 +17,24 @@
 
 #include "compiler/Compiler.h"
 
-bool ParseOutputFormat8080(enum OutputFormat8080 &result, CString str) {
-    if (0 == strcasecmp(str.c_str(), "i1080")) {
+namespace I8080 {
+
+bool ParseOutputFormat(enum OutputFormat &result, CString str) {
+    if (0 == str.CaseCmp("i1080")) {
         result = OF_I1080;
         return true;
     }
-    if (0 == strcasecmp(str.c_str(), "cpm")) {
+    if (0 == str.CaseCmp("cpm")) {
         result = OF_CPM;
         return true;
     }
     return false;
 }
 
-void Compile8080(CParser &parser, CProgramm &programm, OutputFormat8080 output_format, CString output_file_bin,
-                 CString asm_file_name) {
-    Compiler8080 compile8080(programm);
-    compile8080.Compile(parser, output_format, output_file_bin, asm_file_name);
+void Compile(CParser &parser, CProgramm &programm, OutputFormat output_format, CString output_file_bin,
+             CString asm_file_name) {
+    Compiler compile(programm);
+    compile.Compile(parser, output_format, output_file_bin, asm_file_name);
 }
+
+}  // namespace I8080

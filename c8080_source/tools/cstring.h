@@ -40,7 +40,7 @@ public:
 
     CString(const char a[]) {
         string_start = a;
-        string_size = SIZE_MAX;
+        string_size = std::numeric_limits<size_t>::max();
         assert(string_start != nullptr);
     }
 
@@ -61,7 +61,7 @@ public:
     }
 
     size_t size() const {
-        if (string_size == SIZE_MAX)
+        if (string_size == std::numeric_limits<size_t>::max())
             string_size = strlen(string_start);
         return string_size;
     }
@@ -220,5 +220,9 @@ public:
         if (s == bs)
             return 0 < memcmp(a.string_start, b.c_str(), s);
         return s < bs;
+    }
+
+    int CaseCmp(CString b) {
+        return strcasecmp(c_str(), b.c_str());
     }
 };

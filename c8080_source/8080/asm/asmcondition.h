@@ -17,6 +17,8 @@
 
 #pragma once
 
+namespace I8080 {
+
 enum AsmCondition {
     JC_Z,
     JC_NZ,
@@ -28,5 +30,7 @@ enum AsmCondition {
     JC_PO,
 };
 
-bool InvertAsmJumpCondition(AsmCondition &jump_condition);
+AsmCondition InvertAsmCondition(AsmCondition condition);
 const char *ToString(AsmCondition value);
+
+}  // namespace I8080
