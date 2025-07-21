@@ -25,4 +25,4 @@ extern char *__printf_out_pointer;
 extern char *__printf_out_end;
 extern size_t __printf_out_total;
 
-__link("__printf.c") void __printf(const char *format, va_list va);
+void __printf(const char *format, va_list va) __link("__printf.c");

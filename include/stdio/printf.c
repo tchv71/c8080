@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include "__printf.h"
 
-int __stdcall printf(const char *format, ...) {
+int printf(const char *format, ...) {
     va_list va;
     va_start(va, format);
     __printf_out_pointer = NULL;

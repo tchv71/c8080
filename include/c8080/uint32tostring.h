@@ -23,4 +23,4 @@
 
 static const size_t UINT32_TO_STRING_SIZE = 11;  // 4294967295\0
 
-__link("c8080/uint32tostring.c") char *Uint32ToString(char *outputBuffer, uint32_t value, uint8_t radix);
+char *Uint32ToString(char *outputBuffer, uint32_t value, uint8_t radix) __link("c8080/uint32tostring.c");

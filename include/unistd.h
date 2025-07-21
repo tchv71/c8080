@@ -17,4 +17,4 @@
 
 #pragma once
 
-__link("unistd/sleep.c") unsigned sleep(unsigned seconds);
+unsigned sleep(unsigned seconds) __link("unistd/sleep.c");

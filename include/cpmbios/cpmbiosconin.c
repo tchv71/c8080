@@ -17,7 +17,7 @@
 
 #include <cpmbios.h>
 
-uint8_t __fastcall cpmBiosConIn(void) {
+uint8_t __global cpmBiosConIn(void) {
     asm {
         ld hl, (1)
         ld l, 7

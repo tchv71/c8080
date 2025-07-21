@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 #ifdef ARCH_ISKRA_1080_TARTU
-int __fastcall getchar() {
+int __global getchar() {
     asm {
         call 0C7F3h
         ld l, a

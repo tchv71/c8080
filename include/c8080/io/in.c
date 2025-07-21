@@ -20,6 +20,6 @@
 uint8_t in(uint8_t port) {
     asm {
 __a_1_in = $ + 1
-        out a, (0)
+        out  a, (0)
     }
 }

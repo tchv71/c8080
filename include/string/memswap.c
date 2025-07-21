@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-void __fastcall memswap(void *buffer1, void *buffer2, size_t size) {
+void __global memswap(void *buffer1, void *buffer2, size_t size) {
     (void)buffer1;
     (void)buffer2;
     (void)size;

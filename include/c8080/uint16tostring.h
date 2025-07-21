@@ -23,4 +23,4 @@
 
 static const size_t UINT16_TO_STRING_SIZE = 6;
 
-__link("c8080/uint16tostring.c") char *Uint16ToString(char *outputBuffer, uint16_t value, uint8_t radix);
+char *Uint16ToString(char *outputBuffer, uint16_t value, uint8_t radix) __link("c8080/uint16tostring.c");

@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-void *__fastcall memset(void *destination, uint8_t byte, size_t size) {
+void *__global memset(void *destination, uint8_t byte, size_t size) {
     (void)destination;
     (void)byte;
     (void)size;

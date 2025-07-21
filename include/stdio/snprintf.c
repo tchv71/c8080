@@ -29,7 +29,7 @@ static void __snprintf(char *buffer, size_t buffer_size, const char *format, va_
         *__printf_out_pointer = '\0';
 }
 
-int __stdcall snprintf(char *buffer, size_t buffer_size, const char *format, ...) {
+int snprintf(char *buffer, size_t buffer_size, const char *format, ...) {
     va_list va;
     va_start(va, format);
     __snprintf(buffer, buffer_size, format, va);

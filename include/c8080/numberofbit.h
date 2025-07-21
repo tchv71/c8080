@@ -20,4 +20,4 @@
 #include <stdint.h>
 #include <c8080/c8080.h>
 
-__link("c8080/numberofbit.c") uint8_t NumberOfBit(uint8_t b);
+uint8_t NumberOfBit(uint8_t b) __link("c8080/numberofbit.c");

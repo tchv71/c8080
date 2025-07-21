@@ -25,7 +25,8 @@ char *Uint16ToString(char *outputBuffer, uint16_t value, uint8_t radix) {
         value /= radix;
         --outputBuffer;
         char c = __div_16_mod + '0';
-        if (c > '9') c += 'A' - '0' - 10;
+        if (c > '9')
+            c += 'A' - '0' - 10;
         *outputBuffer = c;
     } while (value != 0);
     return outputBuffer;

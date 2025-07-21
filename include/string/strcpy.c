@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-char *__fastcall strcpy(char *destination, const char *source) {
+char *__global strcpy(char *destination, const char *source) {
     (void)destination;
     (void)source;
     asm {

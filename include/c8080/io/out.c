@@ -21,6 +21,6 @@ void out(uint8_t port, uint8_t value) {
     asm {
 __a_2_out = __a_2_out
 __a_1_out = $ + 1
-        out (0), a
+        out  (0), a
     }
 }

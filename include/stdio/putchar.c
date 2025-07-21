@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 #ifdef ARCH_ISKRA_1080_TARTU
-int __fastcall putchar(int c) {
+int __global putchar(int c) {
     asm {
         ld a, l
         cp 0Ah
@@ -33,7 +33,7 @@ int __fastcall putchar(int c) {
 #endif
 
 #ifdef ARCH_CPM
-static void __fastcall cpmBiosConOut(uint8_t c) {
+static void __global cpmBiosConOut(uint8_t c) {
     asm {
         ld c, a
         ld hl, (1)

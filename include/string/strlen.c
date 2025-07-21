@@ -17,9 +17,10 @@
 
 #include <string.h>
 
-size_t __fastcall strlen(const char *string) {
+size_t __global strlen(const char *string) {
     (void)string;
     asm {
+__a_1_strlen=__a_1_strlen
         ld de, -1
         xor a
 strlen_1:

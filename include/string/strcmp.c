@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-int8_t __fastcall strcmp(const char *string1, const char *string2) {
+int8_t __global strcmp(const char *string1, const char *string2) {
     asm {
         ex hl, de             ; de = string2
         ld hl, (__a_1_strcmp) ; hl = string1

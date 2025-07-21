@@ -20,8 +20,8 @@
 #include <stddef.h>
 #include <c8080/c8080.h>
 
-__link("stdio/snprintf.c") int __stdcall snprintf(char *buffer, size_t bufer_size, const char *format, ...);
-__link("stdio/printf.c") int __stdcall printf(const char *format, ...);
-__link("stdio/getchar.c") int getchar();
-__link("stdio/putchar.c") int putchar(int c);
-__link("stdio/puts.c") int puts(const char* text);
+int snprintf(char *buffer, size_t bufer_size, const char *format, ...) __link("stdio/snprintf.c");
+int printf(const char *format, ...) __link("stdio/printf.c");
+int getchar() __link("stdio/getchar.c");
+int putchar(int c) __link("stdio/putchar.c");
+int puts(const char *text) __link("stdio/puts.c");

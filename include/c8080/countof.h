@@ -1,6 +1,6 @@
 /*
  * c8080 stdlib
- * Copyright (c) 2024 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,4 +18,3 @@
 #pragma once
 
 #define COUNTOF(X) (sizeof(X) / sizeof((X)[0]))
-

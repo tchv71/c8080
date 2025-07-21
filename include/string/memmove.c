@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-void *__fastcall memmove(void *destination, const void *source, size_t size) {
+void *__global memmove(void *destination, const void *source, size_t size) {
     (void)memcpy;  // Link
     (void)destination;
     (void)source;

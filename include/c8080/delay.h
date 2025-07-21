@@ -20,4 +20,4 @@
 #include <stdint.h>
 #include <c8080/c8080.h>
 
-__link("c8080/delay.c") void Delay(uint16_t n);
+void Delay(uint16_t n) __link("c8080/delay.c");

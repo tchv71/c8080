@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-const char *__fastcall strchr(const char *string, char what) {
+const char *__global strchr(const char *string, char what) {
     (void)string;
     (void)what;
     asm {

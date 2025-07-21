@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-void *__fastcall memcpy(void *destination, const void *source, size_t size) {
+void *__global memcpy(void *destination, const void *source, size_t size) {
     (void)destination;
     (void)source;
     (void)size;

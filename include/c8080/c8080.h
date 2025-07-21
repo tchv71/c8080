@@ -18,7 +18,8 @@
 #pragma once
 
 #ifndef __C8080_COMPILER
-#define __fastcall
-#define __stdcall
+#define __global
+#define __stack
 #define __link(FILE_NAME)
+#define __address(NUMBER)
 #endif

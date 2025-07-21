@@ -19,5 +19,5 @@
 
 #include <stdint.h>
 
-__link("cpmbios/cpmbiosconst.c") uint8_t __fastcall cpmBiosConSt(void);
-__link("cpmbios/cpmbiosconin.c") uint8_t __fastcall cpmBiosConIn(void);
+uint8_t __global cpmBiosConSt(void) __link("cpmbios/cpmbiosconst.c");
+uint8_t __global cpmBiosConIn(void) __link("cpmbios/cpmbiosconin.c");

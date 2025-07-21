@@ -21,12 +21,12 @@
 #include <stdint.h>
 #include <c8080/c8080.h>
 
-__link("string/memcmp.c") int8_t __fastcall memcmp(const void *buffer1, const void *buffer2, size_t size);
-__link("string/memcpy.c") void *__fastcall memcpy(void *destination, const void *source, size_t size);
-__link("string/memmove.c") void *__fastcall memmove(void *destination, const void *source, size_t size);
-__link("string/memset.c") void *__fastcall memset(void *destination, uint8_t byte, size_t size);
-__link("string/memswap.c") void __fastcall memswap(void *buffer1, void *buffer2, size_t size);
-__link("string/strchr.c") const char *__fastcall strchr(const char *string, char byte);
-__link("string/strcmp.c") int8_t __fastcall strcmp(const char *string1, const char *string2);
-__link("string/strcpy.c") char *__fastcall strcpy(char *destination, const char *source);
-__link("string/strlen.c") size_t __fastcall strlen(const char *string);
+int8_t __global memcmp(const void *buffer1, const void *buffer2, size_t size) __link("string/memcmp.c");
+void *__global memcpy(void *destination, const void *source, size_t size) __link("string/memcpy.c");
+void *__global memmove(void *destination, const void *source, size_t size) __link("string/memmove.c");
+void *__global memset(void *destination, uint8_t byte, size_t size) __link("string/memset.c");
+void __global memswap(void *buffer1, void *buffer2, size_t size) __link("string/memswap.c");
+const char *__global strchr(const char *string, char byte) __link("string/strchr.c");
+int8_t __global strcmp(const char *string1, const char *string2) __link("string/strcmp.c");
+char *__global strcpy(char *destination, const char *source) __link("string/strcpy.c");
+size_t __global strlen(const char *string) __link("string/strlen.c");

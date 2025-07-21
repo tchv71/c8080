@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-int8_t __fastcall memcmp(const void *buffer1, const void *buffer2, size_t size) {
+int8_t __global memcmp(const void *buffer1, const void *buffer2, size_t size) {
     (void)buffer1;
     (void)buffer2;
     (void)size;
