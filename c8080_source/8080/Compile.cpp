@@ -16,6 +16,7 @@
  */
 
 #include "compiler/Compiler.h"
+#include <assert.h>
 
 namespace I8080 {
 
@@ -29,6 +30,46 @@ bool ParseOutputFormat(enum OutputFormat &result, CString str) {
         return true;
     }
     return false;
+}
+
+void RegisterProhibitedOutputNames(CProgramm &programm) {
+    static const char *prohibited_output_names[] = {
+        // These names conflicts with static headers
+
+        "__begin",
+        "__entry",
+        "__bss",
+        "__end",
+
+        // These names conflicts with the assembler
+        // Example:
+        //      ld a, (a)
+        //   a: db 10
+
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "h",
+        "l",
+        "h",
+        "i",
+        "r",
+        "bc",
+        "de",
+        "hl",
+        "sp",
+        "ix",
+        "iy",
+        "ixl",
+        "iyl",
+    };
+
+    for (auto name : prohibited_output_names) {
+        const bool result = programm.AddOutputName(name);
+        assert(result);
+    }
 }
 
 void Compile(CParser &parser, CProgramm &programm, OutputFormat output_format, CString output_file_bin,
