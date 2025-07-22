@@ -20,6 +20,11 @@
 #include <iostream>
 #include "../tools/listext.h"
 
+bool CProgramm::AddOutputName(CString name) {
+    output_names[name] = 1;
+    return true;
+}
+
 CVariablePtr CProgramm::FindVariable(CString name) {
     auto i = variables.find(name);
     return (i == variables.end()) ? nullptr : i->second;

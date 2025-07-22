@@ -21,6 +21,7 @@
 namespace I8080 {
 
 void InternalFunctions::Init(CProgramm &p) {
+    init = FindFunction(p, "__init");
     sub_16 = FindFunction(p, "__o_sub_16");
     mul_u8 = FindFunction(p, "__o_mul_u8");
     mul_i8 = FindFunction(p, "__o_mul_i8");
@@ -70,8 +71,8 @@ void InternalFunctions::Init(CProgramm &p) {
 }
 
 CVariablePtr InternalFunctions::FindFunction(CProgramm &p, CString name) {
-    CVariablePtr fn = p.FindVariable(name);
-    if (!fn || !fn->type.IsFunction())
+    const CVariablePtr fn = p.FindVariable(name);
+    if (fn == nullptr || !fn->type.IsFunction() || fn->only_extern)
         throw std::runtime_error("mandatory function " + name + " is not found");
     return fn;
 }

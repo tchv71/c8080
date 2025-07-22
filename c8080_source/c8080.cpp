@@ -81,7 +81,7 @@ static void ParseOptions(int argc, char **argv, Options &o, CParser &c) {
             const char *value = s + 2;
             if (value[0] == 0) {
                 if (i + 1 >= argc)
-                    throw std::runtime_error(std::string("missing value after '") + s + "'"); // gcc
+                    throw std::runtime_error(std::string("missing value after '") + s + "'");  // gcc
                 i++;
                 value = argv[i];
             }
@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
             I8080::RegisterInternalCmmNames(programm);
             c.default_defines.push_back("__CMM");
         } else {
-            I8080::RegisterInternalNames(programm);
+            I8080::RegisterProhibitedOutputNames(programm);
 
             std::string internal_c_file_name;
             if (!c.FindGlobalIncludeFile("c8080/internal.c", internal_c_file_name))
@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
         if (r != 0)
             throw std::runtime_error("Assembler error (" + asm_cmd_line + ")");
 
-//        system("./go");  // TODO: Remove
+        //        system("./go");  // TODO: Remove
 
         std::cout << "Done" << std::endl;
         return 0;

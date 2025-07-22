@@ -1,5 +1,5 @@
-CPP_FILES=$(wildcard *.cpp */*.cpp */*/*.cpp */*/*/*.cpp)
-H_FILES=$(wildcard *.h */*.h  */*/*.h */*/*/*.h)
+CPP_FILES=$(shell find . -name "*.cpp" -not \( -path "./test*" -or -path "./build*" \))
+H_FILES=  $(shell find . -name "*.h"   -not \( -path "./test*" -or -path "./build*" \))
 OBJ_FILES=$(addprefix build/,$(CPP_FILES:%.cpp=%.o))
 W64_FILES=$(addprefix build.w64/,$(CPP_FILES:%.cpp=%.o))
 
@@ -7,11 +7,11 @@ all: c8080 files
 
 .PHONY: clean
 clean:
-	rm -r -f build
+	rm -r -f build build.w64 c8080.creator.user c8080.files
 
 .PHONY: files
 files:
-	find -type f >c8080.files
+	find . -type f >c8080.files
 
 c8080: ${OBJ_FILES}
 	g++ -Wall -Wno-switch -g -static --std=c++17 -o $@ $^

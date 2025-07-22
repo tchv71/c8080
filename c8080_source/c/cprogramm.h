@@ -42,6 +42,7 @@ public:
 
     CProgramm8080 c;
 
+    bool AddOutputName(CString name);
     CVariablePtr FindVariable(CString name);
     void AddVariable(CVariablePtr a);
     CConstStringPtr RegisterConstString(CString text);

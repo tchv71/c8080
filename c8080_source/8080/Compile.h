@@ -29,7 +29,7 @@ enum OutputFormat {
 };
 
 bool ParseOutputFormat(enum OutputFormat &result, CString str);
-void RegisterInternalNames(CProgramm &programm);
+void RegisterProhibitedOutputNames(CProgramm &programm);
 void Compile(CParser &parser, CProgramm &programm, OutputFormat output_format, CString output_file_bin,
              CString asm_file_name);
 

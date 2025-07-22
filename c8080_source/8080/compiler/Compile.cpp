@@ -26,32 +26,29 @@ namespace I8080 {
 void Compiler::Compile(CParser &c, OutputFormat output_format, CString output_file_bin, CString asm_file_name) {
     o.Init(p);  // Find internal functions
 
-    static const char *main_function_name = "__init";
-    CVariablePtr init = p.FindVariable(main_function_name);
-    if (init == nullptr || !init->type.IsFunction() || init->only_extern)
-        throw std::runtime_error(std::string("function ") + main_function_name + " not found");
-    out.AddToCompileQueue(init);
+    out.AddToCompileQueue(o.init);
 
     for (size_t i = 0; i < out.compile_queue.size(); i++) {
-        CVariablePtr fn = out.compile_queue[i];
+        CVariablePtr fn = out.compile_queue[i];  // Don't use reference, array is changing
 
         if (!fn->body)
             C_ERROR_INTERNAL(fn->e, "body is null");
 
         PrepareFunction(p, fn->body, out);
 
-        out.label(fn->output_name.c_str());
+        out.label(fn->output_name);
 
         out.source(fn->body->e, true);
 
         return_label = nullptr;
 
         // Alloc stack
-        if (fn->type.GetVariableMode() == CVM_STACK && fn->function_stack_frame_size != 0) {
-            OutSubSpN(fn->function_stack_frame_size);
+        if (fn->type.GetVariableMode() == CVM_STACK) {
+            if (fn->function_stack_frame_size != 0)
+                OutSubSpN(fn->function_stack_frame_size);
+            out.stack_correction_reset(2 + fn->function_stack_frame_size);
             return_label = out.AllocLabel();
         }
-        out.stack_correction_reset(2 + fn->function_stack_frame_size);
 
         // Body
         current_function = fn;
