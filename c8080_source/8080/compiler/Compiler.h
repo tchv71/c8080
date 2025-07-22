@@ -22,7 +22,7 @@
 #include "../../c/cprogramm.h"
 #include "../../c/tools/cthrow.h"
 #include "../asm/asm.h"
-#include "../CInternalFunctions.h"
+#include "../InternalFunctions.h"
 
 class CParser;  // todo: remove
 
@@ -38,7 +38,7 @@ protected:
     CVariablePtr current_function;
     CVariablePtr static_stack;
     std::vector<CVariablePtr> call_in_call;
-    CInternalFunctions o;
+    InternalFunctions o;
     CBuildProc measure_proc{};
 
     void CompileCommand(CNodePtr &node);

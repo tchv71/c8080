@@ -21,10 +21,11 @@
 
 namespace I8080 {
 
-class CInternalFunctions {
+class InternalFunctions {
 public:
     CVariablePtr call_hl;
 
+    // 8 bit
     CVariablePtr shl_8;
     CVariablePtr shr_u8;
     CVariablePtr shr_i8;
@@ -35,6 +36,7 @@ public:
     CVariablePtr mod_u8;
     CVariablePtr mod_i8;
 
+    // 16 bit
     CVariablePtr i8_to_i16;
     CVariablePtr minus_16;
     CVariablePtr neg_16;
@@ -52,6 +54,7 @@ public:
     CVariablePtr mod_u16;
     CVariablePtr mod_i16;
 
+    // 32 bit
     CVariablePtr i16_to_i32;
     CVariablePtr load_32;
     CVariablePtr set_32;
@@ -73,6 +76,9 @@ public:
     CVariablePtr mod_i32;
 
     void Init(CProgramm &p);
+
+protected:
+    CVariablePtr FindFunction(CProgramm &p, CString name);
 };
 
 }  // namespace I8080
