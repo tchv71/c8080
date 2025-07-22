@@ -122,6 +122,12 @@ bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node) {
                 } else {
                     arg_text = node->variable->c.static_stack->output_name + " + " + std::to_string(offset);
                     arg_type = arg->ctype;
+                    if (arg_type.IsArray())
+                        arg_type.pointers.back().count = 0;
+                    if (arg_type.pointers.empty())
+                        arg_type.flag_const = false;
+                    else
+                        arg_type.pointers.back().flag_const = false;
                     offset += arg_type.SizeOf(arg->e);
                 }
 

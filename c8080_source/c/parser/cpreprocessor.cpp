@@ -84,6 +84,13 @@ void CParserFile::PreprocessorInclude() {
 }
 
 void CParserFile::PreprocessorPragmaCodepage() {
+    if (l.IfToken("reset")) {
+        if (!l.WantToken(CT_EOF))
+            return;
+        cparser.codepage.clear();
+        return;
+    }
+
     if (!l.WantToken("("))
         return;
     CErrorPosition p1(l);
@@ -107,7 +114,7 @@ void CParserFile::PreprocessorPragmaCodepage() {
         return;
     if (!l.WantToken(CT_EOF))
         return;
-    codepage[from] = to;
+    cparser.codepage[from] = to;
 }
 
 void CParserFile::PreprocessorPragmaOnce() {

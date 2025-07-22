@@ -89,7 +89,7 @@ CStructPtr CParserBase::BindStructUnion(CString name, bool is_union, bool is_glo
 }
 
 void CParserBase::Utf8To8Bit(const CErrorPosition &e, CString in, std::string &out) {
-    size_t pos = ::Utf8To8Bit(codepage, in, out);
+    size_t pos = ::Utf8To8Bit(cparser.codepage, in, out);
     if (pos != SIZE_MAX)
         programm.Error(e, "unsupported symbol at position " + std::to_string(pos) + " in string \"" + in + "\"");
 }

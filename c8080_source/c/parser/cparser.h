@@ -25,6 +25,7 @@ public:
     CProgramm &programm;
     std::vector<std::string> include_dirs;
     std::vector<std::string> default_defines;
+    std::map<uint32_t, uint8_t> codepage;
 
     CParser(CProgramm &p) : programm(p) {
     }

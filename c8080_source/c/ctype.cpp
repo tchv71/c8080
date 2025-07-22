@@ -60,9 +60,9 @@ std::string CType::ToString() const {
         result += "volatile ";
 
     if (variables_mode == CVM_GLOBAL)
-        result += "__fastcall ";
+        result += "__global ";
     else if (variables_mode == CVM_STACK)
-        result += "__stdcall ";
+        result += "__stack ";
 
     switch (base_type) {
         case CBT_STRUCT:

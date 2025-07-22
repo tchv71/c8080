@@ -1,5 +1,4 @@
-/*
- * c8080 stdlib
+/* c8080 stdlib
  * Copyright (c) 2022 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,33 +14,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <terminal.h>
 
-#ifdef ARCH_86RK
-int __global getchar() {
+void SetColor(uint8_t color) {
     asm {
-        call 0F803h
-        ld l, a
-        ld h, 0
+__a_1_setcolor=__a_1_setcolor
+        ld   (0F759h), a  ; color
     }
 }
-#endif
-
-#ifdef ARCH_ISKRA_1080_TARTU
-int __global getchar() {
-    asm {
-        call 0C7F3h
-        ld l, a
-        ld h, 0
-    }
-}
-#endif
-
-#ifdef ARCH_CPM
-#include <cpmbios.h>
-
-int getchar() {
-    return cpmBiosConIn();
-}
-#endif

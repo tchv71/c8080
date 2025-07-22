@@ -1,0 +1,2 @@
+#/bin/bash
+../../c8080 -DARCH_86RK game2048.c -o game2048.com

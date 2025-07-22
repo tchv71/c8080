@@ -1,5 +1,4 @@
-/*
- * c8080 stdlib
+/* c8080 stdlib
  * Copyright (c) 2022 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,52 +14,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <terminal.h>
 
-#ifdef ARCH_86RK
-int __global putchar(int c) {
+void MoveCursorHome(void) {
     asm {
-        ld a, l
-        cp 0Ah
-        ld c, 0Dh
-        call z, 0F809h
-        ld c, l
+        ld   c, 0Ch
         call 0F809h
-        ld h, 0
     }
 }
-#endif
-
-
-#ifdef ARCH_ISKRA_1080_TARTU
-int __global putchar(int c) {
-    asm {
-        ld a, l
-        cp 0Ah
-        ld a, 0Dh
-        call z, 0C7F0h
-        ld a, l
-        call 0C7F0h
-        ld h, 0
-    }
-}
-#endif
-
-#ifdef ARCH_CPM
-static void __global cpmBiosConOut(uint8_t c) {
-    asm {
-        ld c, a
-        ld hl, (1)
-        ld l, 0Ch
-        jp hl
-    }
-}
-
-int putchar(int c) {
-    if (c == 0x0A)
-        cpmBiosConOut(0x0D);
-    cpmBiosConOut(c);
-    return 0;
-}
-#endif

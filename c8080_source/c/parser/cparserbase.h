@@ -26,7 +26,6 @@ public:
     CProgramm &programm;
     CParser &cparser;
 
-    std::map<uint32_t, uint8_t> codepage;
     size_t current_stack_size{};
     size_t max_stack_size{};
 

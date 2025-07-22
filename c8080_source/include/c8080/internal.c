@@ -36,6 +36,16 @@ __init_loop:
         add  hl, de
         jp   nc, __init_loop
     }
+
+#ifdef ARCH_86RK
+    asm {
+        call 0F830h  ; RAMTOP
+        ld   sp, hl
+        ld   hl, 0F86Ch  ; MONITOR
+        push hl
+    }
+#endif
+
     main(0, NULL);
 }
 
