@@ -27,10 +27,12 @@ void MoveCursorHome(void) __link("terminal/86rk/movecursorhome.c");
 void ShowCursor(void) __link("terminal/86rk/showcursor.c");
 void HideCursor(void) __link("terminal/86rk/hidecursor.c");
 
-static const uint8_t SCANCODE_UP = 0x19;
-static const uint8_t SCANCODE_LEFT = 0x08;
-static const uint8_t SCANCODE_RIGHT = 0x18;
-static const uint8_t SCANCODE_DOWN = 0x1A;
+static const uint8_t KEY_UP = 0x19;
+static const uint8_t KEY_LEFT = 0x08;
+static const uint8_t KEY_RIGHT = 0x18;
+static const uint8_t KEY_DOWN = 0x1A;
+static const uint8_t KEY_ENTER = 0x0D;
+static const uint8_t KEY_BACKSPACE = 0x7F;
 
 #endif
 

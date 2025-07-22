@@ -19,6 +19,23 @@
 
 #pragma codepage reset
 
+#pragma codepage('▘', 0x01)
+#pragma codepage('▝', 0x02)
+#pragma codepage('▀', 0x03)
+#pragma codepage('▗', 0x04)
+#pragma codepage('▚', 0x05)
+#pragma codepage('▐', 0x06)
+#pragma codepage('▜', 0x07)
+
+#pragma codepage('▖', 0x10)
+#pragma codepage('▌', 0x11)
+#pragma codepage('▞', 0x12)
+#pragma codepage('▛', 0x13)
+#pragma codepage('▄', 0x14)
+#pragma codepage('▙', 0x15)
+#pragma codepage('▟', 0x16)
+#pragma codepage('█', 0x17)
+
 #pragma codepage('Ю', 0x60)
 #pragma codepage('А', 0x61)
 #pragma codepage('Б', 0x62)
