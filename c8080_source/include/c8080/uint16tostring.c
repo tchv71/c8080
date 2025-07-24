@@ -19,7 +19,12 @@
 #include <c8080/div16mod.h>
 
 char *Uint16ToString(char *outputBuffer, uint16_t value, uint8_t radix) {
-    outputBuffer += UINT16_TO_STRING_SIZE - 1;
+    uint8_t i = 0;
+    do {
+        *outputBuffer = ' ';
+        outputBuffer++;
+        i++;
+    } while (i < UINT16_TO_STRING_SIZE - 1);
     *outputBuffer = 0;
     do {
         value /= radix;

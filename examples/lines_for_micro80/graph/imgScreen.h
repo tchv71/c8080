@@ -1,0 +1,9 @@
+#include <stdint.h>
+
+static const unsigned imgScreenWidth = 64;
+static const unsigned imgScreenHeight = 27;
+static const unsigned imgScreenSize = imgScreenWidth + (imgScreenHeight << 8);
+
+extern uint8_t imgScreenC[1728];
+
+extern uint8_t imgScreenA[1728];

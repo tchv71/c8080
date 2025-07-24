@@ -18,6 +18,21 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifdef ARCH_86RK
+int __global putchar(int c) {
+    asm {
+        ld a, l
+        cp 0Ah
+        ld c, 0Dh
+        call z, 0F809h
+        ld c, l
+        call 0F809h
+        ld h, 0
+    }
+}
+#endif
+
+
 #ifdef ARCH_ISKRA_1080_TARTU
 int __global putchar(int c) {
     asm {

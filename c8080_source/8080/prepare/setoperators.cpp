@@ -34,7 +34,7 @@ static bool SetOperators(CNodePtr &node, COperatorCode op) {
     // SET(DEADDR(y), ADD(DEADDR(y), x))
     node->b = CNODE(
         {CNT_OPERATOR, a : CopyNode(node->a), b : node->b, ctype : node->a->ctype, operator_code : op, e : node->e});
-    node->type = CNT_OPERATOR;
+    assert(node->type == CNT_OPERATOR);
     node->operator_code = COP_SET;
     return true;
 }

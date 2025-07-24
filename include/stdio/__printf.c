@@ -102,7 +102,7 @@ void __printf(const char *format, va_list va) {
                 }
 #endif
                 uint8_t radix = 10;
-                switch (c) {
+                switch ((char)c) {
                     case 0:
                         return;
                     // TODO: o  radix = 8

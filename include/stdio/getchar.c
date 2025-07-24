@@ -18,6 +18,16 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifdef ARCH_86RK
+int __global getchar() {
+    asm {
+        call 0F803h
+        ld l, a
+        ld h, 0
+    }
+}
+#endif
+
 #ifdef ARCH_ISKRA_1080_TARTU
 int __global getchar() {
     asm {

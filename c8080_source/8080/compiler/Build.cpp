@@ -32,9 +32,21 @@ void Compiler::Build(CNodePtr &node, AsmRegister reg) {
     }
 
     if (node->IsJumpNode()) {
-        BuildJumpIf(true, node, false, nullptr);
-        Measure(node, R8_A, &Compiler::Case_JumpNode);
-        Measure(node, REG_NONE, &Compiler::Case_JumpNode);
+        if (reg == REG_PREPARE)
+            return BuildJumpIf(true, node, false, nullptr);
+
+        const auto label_false = out.AllocLabel();
+        BuildJumpIf(false, node, false, label_false);
+        if (reg == REG_NONE) {
+            out.label(label_false);
+            return;
+        }
+        out.ld_a_n8(1);
+        const auto label_exit = out.AllocLabel();
+        out.jmp_label(label_exit);
+        out.label(label_false);
+        out.ld_a_n8(0);
+        out.label(label_exit);
         return;
     }
 
@@ -226,6 +238,7 @@ bool Compiler::Case_JumpNode(CNodePtr &node, AsmRegister reg) {
     BuildJumpIf(false, node, false, label_false);
     if (reg == REG_NONE) {
         out.label(label_false);
+        node->compiler.no_result.able = false;
         return true;
     }
     out.ld_a_n8(1);
@@ -234,6 +247,7 @@ bool Compiler::Case_JumpNode(CNodePtr &node, AsmRegister reg) {
     out.label(label_false);
     out.ld_a_n8(0);
     out.label(label_exit);
+    node->compiler.main.able = false;
     return true;
 }
 
