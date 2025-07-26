@@ -1,12 +1,12 @@
-C_FILES=lines.c path.c hal.c graph/imgBalls.c graph/imgBoard.c graph/imgScreen.c graph/imgPlayer.c graph/imgPlayerWin.c graph/imgKingLose.c
-H_FILES=lines.h path.h hal.h graph/imgBalls.h graph/imgBoard.h graph/imgScreen.h graph/imgPlayer.h graph/imgPlayerWin.h graph/imgKingLose.h
+C_FILES=lines.c path.c hal.c graph/imgBalls.c graph/imgBoard.c graph/imgScreen.c graph/imgPlayer.c graph/imgPlayerWin.c graph/imgKingLose.c graph/imgTitle.c
+H_FILES=lines.h path.h hal.h graph/imgBalls.h graph/imgBoard.h graph/imgScreen.h graph/imgPlayer.h graph/imgPlayerWin.h graph/imgKingLose.h graph/imgTitle.h
 
 all: lines.com
 
 lines.com: $(C_FILES) $(H_FILES)
 	../../c8080 -DARCH_86RK -DARCH_MICRO80_COLOR $(C_FILES) -o lines.com
 
-convert/convert:
+convert/convert: convert/*.cpp convert/*.h
 	g++ -oconvert/convert --std=c++17 convert/convert.cpp convert/png.cpp -lpng convert/fs_tools.cpp 
 
 format:

@@ -1,6 +1,6 @@
 /*
  * Game "Color Lines" for Micro 80
- * Copyright (c) 2025 Aleksey Morozov
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

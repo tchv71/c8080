@@ -1,6 +1,6 @@
 /*
  * Game "Color Lines" for Micro 80
- * Copyright (c) 2025 Aleksey Morozov
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ extern uint8_t path_x;
 extern uint8_t path_y;
 extern uint8_t path_n;
 
-uint8_t PathFind();
-void PathRewind();
-uint8_t PathGetNextStep();
-void PathFree();
+uint8_t PathFind(void);
+void PathRewind(void);
+uint8_t PathGetNextStep(void);
+void PathFree(void);

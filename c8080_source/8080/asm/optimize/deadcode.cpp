@@ -24,7 +24,7 @@ static bool DeadCode(AsmBase &a) {
     bool label_removed = false, dead_code = true;
     for (auto &l : a.lines) {
         if (dead_code && l.opcode != AC_LABEL) {
-            if (l.opcode == AC_JMP || l.opcode == AC_JMP_CONDITION)
+            if ((l.opcode == AC_JMP || l.opcode == AC_JMP_CONDITION) && l.argument[0].label)
                 if (UnrefLabel(a, l.argument[0].label))
                     label_removed = true;
             l.opcode = AC_REMOVED;

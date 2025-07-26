@@ -1,6 +1,6 @@
 /*
  * Game "Color Lines" for Micro 80
- * Copyright (c) 2025 Aleksey Morozov
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -323,6 +323,8 @@ static void AddToHiScores(void) {
         DrawHiScoresScreen(i - 1);
         Delay(HISCORE_ANIMATION_DELAY);
     }
+
+    DrawHiScoresSpace();
 }
 
 // Начать новую игру
@@ -439,17 +441,17 @@ static void BouncingBallAnimation(void) {
 
 // Главная функция
 
-int main(int argc, char **argv) {
+int main(int, char **) {
     Intro();
     NewGame();
 
-    //    score = 250;
-    //    AddToHiScores();
+    //score = 250;
+    //AddToHiScores();
 
     char previousPressedKey = 0;
     uint8_t keybTimeout = 0;
     for (;;) {
-        // Детаем генератор случайных чисел более случайным
+        // Делаем генератор случайных чисел более случайным
         (void)rand();
 
         // Анимация выбранного шарика
@@ -480,15 +482,15 @@ int main(int argc, char **argv) {
                 break;
             case '1':
                 showPath ^= 1;
-                DrawButton(BUTTON_PATH, showPath);
+                DrawButtons();
                 break;
             case '2':
                 soundEnabled ^= 1;
-                DrawButton(BUTTON_SOUND, soundEnabled);
+                DrawButtons();
                 break;
             case '3':
                 showHelp ^= 1;
-                DrawButton(BUTTON_HELP, showHelp);
+                DrawButtons();
                 DrawHelp();
                 break;
             case '4':

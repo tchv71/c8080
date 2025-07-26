@@ -1,7 +1,7 @@
 /* 
  * Game "Color Lines" for Micro 80
- * Copyright (c) 2025 Aleksey Morozov
- * 
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
  * This program is free software: you can redistribute it and/or modify  
  * it under the terms of the GNU General Public License as published by  
  * the Free Software Foundation, version 3.
@@ -52,15 +52,17 @@ static std::string RemoveExtension(const char fullName[]) {
     return std::string(fullName, ext - fullName);
 }
 
-static std::string MakeCSourceArray(const std::vector<uint8_t>& comressed) {
+static std::string MakeCSourceArray(const uint8_t *data, size_t size, const char *tab = "   ") {
     std::string result;
     uint8_t l = 0;
-    for (uint8_t b : comressed) {
+    const uint8_t *dataEnd = data + size;
+    while (data != dataEnd) {
+        uint8_t b = *data++;
         if (l == 16) {
             l = 0;
             result += "\n";
         }
-        if (l == 0) result += "   ";
+        if (l == 0) result += tab;
         char buf[16];
         (void)snprintf(buf, sizeof(buf), " 0x%02X,", b);
         result += buf;
@@ -105,66 +107,13 @@ static uint32_t FindColor(uint32_t color) {
     }
     return bestIndex;
 }
-#if 0
-bool convert(const char* inputFileName, const uint32_t palette[4]) {
-    Png png;
-    if (!png.load(inputFileName)) return false;
-
-    std::vector<uint8_t> dataA, dataB;
-
-    for (uint32_t x = png.getWidth(); x >= 8; x -= 8) {
-        for (uint32_t y = png.getHeight(); y != 0; y--) {
-            uint8_t a = 0, b = 0;
-            for (uint32_t p = 0; p < 8; p++) {
-                uint32_t color = png.getPixel(x - 8 + p, y - 1);
-                int colorIndex = FindColor(palette, color);
-                if ((colorIndex & 1) != 0) {
-                    a |= (0x80 >> p);
-                }
-                if ((colorIndex & 2) != 0) {
-                    b |= (0x80 >> p);
-                }
-            }
-            dataA.push_back(a);
-            dataB.push_back(b);
-        }
-    }
-
-    std::vector<uint8_t> comressedA;
-    PackMegalz(dataA.data(), dataA.size(), comressedA);
-    std::vector<uint8_t> comressedB;
-    PackMegalz(dataB.data(), dataB.size(), comressedB);
-    comressedA.insert(comressedA.begin(), comressedB.begin(), comressedB.end());
-
-    std::string id = IdFromFileName(inputFileName);
-
-    std::string hFile =
-        "#include <stdint.h>\n"
-        "\n"
-        "extern uint8_t " +
-        id + "[" + std::to_string(comressedA.size()) + "];\n";
-
-    std::string cFile = "#include \"" + RemoveExtension(basename(inputFileName)) +
-                        ".h\"\n"
-                        "\n"
-                        "uint8_t " +
-                        id + "[" + std::to_string(comressedA.size()) + "] = {\n" + MakeCSourceArray(comressedA) +
-                        "};\n";
-
-    const std::string nameWoExtension = RemoveExtension(inputFileName);
-
-    FsTools::SaveFile(nameWoExtension + ".c", cFile.data(), cFile.size());
-    FsTools::SaveFile(nameWoExtension + ".h", hFile.data(), hFile.size());
-    return true;
-}
-#endif
 
 void Encode4(Png &png, unsigned x, unsigned y, uint8_t& out_char, uint8_t& out_attrib)
 {
-    unsigned c1 = FindColor(png.getPixel(x + 0, y + 0));
-    unsigned c2 = FindColor(png.getPixel(x + 1, y + 0));
-    unsigned c3 = FindColor(png.getPixel(x + 1, y + 1));
-    unsigned c4 = FindColor(png.getPixel(x + 0, y + 1));
+    const uint32_t c1 = FindColor(png.getPixel(x + 0, y + 0));
+    const uint32_t c2 = FindColor(png.getPixel(x + 1, y + 0));
+    const uint32_t c3 = FindColor(png.getPixel(x + 1, y + 1));
+    const uint32_t c4 = FindColor(png.getPixel(x + 0, y + 1));
 
     unsigned ink = c1;
     unsigned paper = c1;
@@ -237,10 +186,10 @@ static bool convert(const char* inputFileName) {
                         ".h\"\n"
                         "\n"
                         "uint8_t " +
-                        id + "C[" + std::to_string(data1.size()) + "] = {\n" + MakeCSourceArray(data1) + "};\n"
+                        id + "C[" + std::to_string(data1.size()) + "] = {\n" + MakeCSourceArray(data1.data(), data1.size()) + "};\n"
                         "\n" +
                         "uint8_t " +
-                        id + "A[" + std::to_string(data2.size()) + "] = {\n" + MakeCSourceArray(data2) + "};\n";
+                        id + "A[" + std::to_string(data2.size()) + "] = {\n" + MakeCSourceArray(data2.data(), data2.size()) + "};\n";
 
     const std::string nameWoExtension = RemoveExtension(inputFileName);
     FsTools::SaveFile(nameWoExtension + ".c", cFile.data(), cFile.size());
@@ -253,6 +202,7 @@ bool convert1(const char* inputFileName) {
     if (!png.load(inputFileName)) return false;
 
     std::vector<uint8_t> data;
+    uint32_t images = 0;
     for (uint32_t y = 0; y + 6 <= png.getHeight(); y += 6) {
         for (uint32_t x = 0; x + 6 <= png.getWidth(); x += 6) {
             for (uint32_t iy = 0; iy < 6; iy += 2) {
@@ -263,26 +213,36 @@ bool convert1(const char* inputFileName) {
                     data.push_back(attrib);
                 }
             }
+            images++;
         }
     }
 
     std::string id = IdFromFileName(inputFileName);
+    const uint32_t imageSize = 3 * 3 * 2;
 
     std::string hFile =
         "#include <stdint.h>\n"
         "\n"
         "static const unsigned " + id + "Width = 3;\n" +
         "static const unsigned " + id + "Height = 3;\n" +
-        "static const unsigned " + id + "Size = " + id + "Width + (" + id + "Height << 8);\n" +
+        "static const unsigned " + id + "Size = " + id + "Width + (" + id + "Height << 8);\n"
         "\n"
         "extern uint8_t " +
-        id + "[" + std::to_string(data.size()) + "];\n";
+        id + "[" + std::to_string(images) +  "][" + std::to_string(imageSize) + "];\n"
+        "\n";
 
     std::string cFile = "#include \"" + RemoveExtension(basename(inputFileName)) +
                         ".h\"\n"
                         "\n"
                         "uint8_t " +
-                        id + "[" + std::to_string(data.size()) + "] = {\n" + MakeCSourceArray(data) + "};\n";
+                        id + "[" + std::to_string(images) +  "][" + std::to_string(imageSize) + "] = {\n";
+
+    for (uint32_t i = 0; i < images; i++) {
+        cFile += "    {\n";
+        cFile += MakeCSourceArray(data.data() + i * imageSize, imageSize, "        ");
+        cFile += "    },\n";
+    }
+    cFile += "};\n";
 
     const std::string nameWoExtension = RemoveExtension(inputFileName);
     FsTools::SaveFile(nameWoExtension + ".c", cFile.data(), cFile.size());
@@ -320,7 +280,7 @@ bool convert2(const char* inputFileName) {
                         ".h\"\n"
                         "\n"
                         "uint8_t " +
-                        id + "[" + std::to_string(data.size()) + "] = {\n" + MakeCSourceArray(data) + "};\n";
+                        id + "[" + std::to_string(data.size()) + "] = {\n" + MakeCSourceArray(data.data(), data.size()) + "};\n";
 
     const std::string nameWoExtension = RemoveExtension(inputFileName);
     FsTools::SaveFile(nameWoExtension + ".c", cFile.data(), cFile.size());
@@ -330,8 +290,9 @@ bool convert2(const char* inputFileName) {
 
 static uint32_t StrToUint32(const char text[], int base = 0) {
     char* end = nullptr;
+    errno = 0;
     const unsigned long value = strtoul(text, &end, base);
-    if (end[0] != '\0' || value >= UINT32_MAX)
+    if (end[0] != '\0' || errno != 0)
         throw std::runtime_error(std::string("Can't convert \"") + text + "\" to number");
     return value;
 }

@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <assert.h>
+#include <unistd.h>
 #include "tools/catpath.h"
 #include "tools/getpath.h"
 #include "tools/direxists.h"
@@ -113,6 +114,14 @@ static void ParseOptions(int argc, char **argv, Options &o, CParser &c) {
     }
 }
 
+static int BadExit(const char *text = nullptr) {
+    if (text)
+        std::cerr << text << std::endl;
+    std::cerr << "Compilation terminated due to error" << std::endl;
+    usleep(500 * 1000 * 1000);
+    return 1;
+}
+
 #ifdef WIN32
 int _tmain(int argc, _TCHAR *argv[]) {
     setlocale(LC_ALL, "RUSSIAN");
@@ -159,6 +168,9 @@ int main(int argc, char **argv) {
             }
         }
 
+        std::remove(o.asm_file_name.c_str());
+        std::remove(o.bin_file_name.c_str());
+
         if (programm.cmm) {
             I8080::RegisterInternalCmmNames(programm);
             c.default_defines.push_back("__CMM");
@@ -186,19 +198,16 @@ int main(int argc, char **argv) {
         }
 
         if (programm.error)
-            return 1;
+            return BadExit();
 
         std::string asm_cmd_line = o.assembler + " --lst " + o.asm_file_name;
         int r = system(asm_cmd_line.c_str());
         if (r != 0)
             throw std::runtime_error("Assembler error (" + asm_cmd_line + ")");
 
-        //        system("./go");  // TODO: Remove
-
         std::cout << "Done" << std::endl;
         return 0;
     } catch (std::exception &e) {
-        std::cerr << e.what() << std::endl;
-        return 1;
+        return BadExit(e.what());
     }
 }

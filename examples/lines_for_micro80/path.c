@@ -1,6 +1,6 @@
 /*
  * Game "Color Lines" for Micro 80
- * Copyright (c) 2025 Aleksey Morozov
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ static uint8_t PathFounded(uint8_t *p) {
 
 // Найти пусть от точки selX, selY до точки cursorX, cursorY
 
-uint8_t PathFind() {
+uint8_t PathFind(void) {
     path_c = game[selX][selY];
     game[selX][selY] = PATH_END_VAL;
     game[cursorX][cursorY] = PATH_START_VAL;
@@ -95,7 +95,7 @@ uint8_t PathFind() {
 
 // С начала
 
-void PathRewind() {
+void PathRewind(void) {
     path_p = path_p1;
     path_x = path_x1;
     path_y = path_y1;
@@ -104,7 +104,7 @@ void PathRewind() {
 
 // Получить следующий шаг
 
-uint8_t PathGetNextStep() {
+uint8_t PathGetNextStep(void) {
     uint8_t *p = path_p;
     if (path_y != 0) {
         p--;
@@ -150,7 +150,7 @@ uint8_t PathGetNextStep() {
 
 // Убираем мусор оставленный алгоритмом поиска пути
 
-void PathFree() {
+void PathFree(void) {
     register uint8_t *p;
     for (p = &game[0][0]; p != &game[GAME_WIDTH - 1][GAME_HEIGHT - 1] + 1; ++p)
         if (*p >= PATH_START_VAL)

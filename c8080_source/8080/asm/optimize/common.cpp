@@ -48,7 +48,7 @@ AsmLabel *GetLastLabel(AsmBase &a, AsmLabel *label) {
                 return label;
         }
 
-        if (destination_line->opcode == AC_JMP) {
+        if (destination_line->opcode == AC_JMP && destination_line->argument[0].label) {
             // Обнаружена рекурсия
             if (std::find(recursive.begin(), recursive.end(), label) != recursive.end())
                 break;
