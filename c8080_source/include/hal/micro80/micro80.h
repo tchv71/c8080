@@ -28,7 +28,7 @@ void MoveCursorHome(void) __link("movecursorhome.c");
 void ShowCursor(void) __link("showcursor.c");
 void HideCursor(void) __link("hidecursor.c");
 void SetConsoleColor(uint8_t color) __link("setconsolecolor.c");
-void DrawImageTile(void *tile, const void *image, uint16_t width_height) __link("drawimagetile.c");
+void __global DrawImageTile(void *tile, const void *image, uint16_t width_height) __link("drawimagetile.c");
 void DrawText(void *tile, uint8_t color, const char *text) __link("drawtext.c");
 uint8_t ScanKey(void) __address(0xF81B);
 

@@ -29,6 +29,10 @@ bool ParseOutputFormat(enum OutputFormat &result, CString str) {
         result = OF_CPM;
         return true;
     }
+    if (0 == str.CaseCmp("rks")) {
+        result = OF_RKS;
+        return true;
+    }
     return false;
 }
 

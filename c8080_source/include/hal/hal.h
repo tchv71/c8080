@@ -22,3 +22,7 @@
 #ifdef ARCH_MICRO80_COLOR
 #include "micro80/micro80.h"
 #endif
+
+#ifdef ARCH_SPECIALIST
+#include "specialist/specialist.h"
+#endif

@@ -75,11 +75,17 @@ void Compiler::Compile(CParser &c, OutputFormat output_format, CString output_fi
 
     if (output_format == OF_I1080) {
         out.buffer += "    org 100h - 16h\n";
-        out.buffer += "__begin:\n";  // TODO: Output name
+        out.buffer += "__begin:\n";
         out.buffer +=
             "    db \"ISKRA1080\", 0xD0, \"A.OUT \", __entry, __entry >> 8, __end, __end >> 8, __entry, __entry >> 8\n";
-        // TODO: Имя output_file_asm
+        // TODO: Use output_file_asm
         out.buffer += "__entry:\n";
+    } else if (output_format == OF_RKS) {
+        out.buffer += "    org 100h - 4h\n";
+        out.buffer += "__begin:\n";
+        out.buffer += "    db  __entry, __entry >> 8, __end, __end >> 8\n";
+        out.buffer += "__entry:\n";
+        // TODO: CRC
     } else if (output_format == OF_CPM) {
         out.buffer += "    org 100h\n";
         out.buffer += "__begin:\n";

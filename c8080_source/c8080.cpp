@@ -51,8 +51,9 @@ static void Usage(char **argv) {
               << "Options:" << std::endl
               << "  -m         Compile CMM language" << std::endl
               << "  -I<path>   Add include directory" << std::endl
-              << "  -OCPM      Make binary file for CP/M" << std::endl
+              << "  -Ocpm      Make binary file for CP/M" << std::endl
               << "  -Oi1080    Make binary file for Iskra 1080 Tartu" << std::endl
+              << "  -Orks      Make binary file for Specialist" << std::endl
               << "  -D<define> Set #define" << std::endl
               << "  -o<file>   Set name for output binary file" << std::endl
               << "  -a<file>   Set name for output assembler file" << std::endl
@@ -118,7 +119,7 @@ static int BadExit(const char *text = nullptr) {
     if (text)
         std::cerr << text << std::endl;
     std::cerr << "Compilation terminated due to error" << std::endl;
-    usleep(500 * 1000 * 1000);
+    usleep(500 * 1000);
     return 1;
 }
 
@@ -149,14 +150,16 @@ int main(int argc, char **argv) {
 
         if (o.bin_file_name.empty() || o.asm_file_name.empty()) {
             std::string base_name;
-            if (!c.GetFirstSourceFile(base_name))
+            if (!o.bin_file_name.empty())
+                base_name = o.bin_file_name;
+            else if (!c.GetFirstSourceFile(base_name))
                 base_name = "a";
             RemoveExtension(base_name);
 
-            if (o.bin_file_name.empty())
-                o.bin_file_name = base_name + ".bin";
             if (o.asm_file_name.empty())
                 o.asm_file_name = base_name + ".asm";
+            if (o.bin_file_name.empty())
+                o.bin_file_name = base_name + ".bin";
         }
 
         if (o.assembler_need_path) {

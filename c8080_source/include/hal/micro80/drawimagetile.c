@@ -17,7 +17,7 @@
 
 #include "micro80.h"
 
-void DrawImageTile(void *tile, const void *image, uint16_t width_height) {
+void __global DrawImageTile(void *tile, const void *image, uint16_t width_height) {
     asm {
 __a_3_drawimagetile=__a_3_drawimagetile
         ld   bc, hl ; width, height

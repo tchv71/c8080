@@ -23,15 +23,29 @@ namespace I8080 {
 void Compiler::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, AsmLabel *label) {
     switch (node->type) {
         case CNT_MONO_OPERATOR:
-            if (node->mono_operator_code == MOP_NOT)
-                return BuildJumpIf(prepare, node->a, !jmp_if_true, label);
+            if (node->mono_operator_code == MOP_NOT) {
+                BuildJumpIf(prepare, node->a, !jmp_if_true, label);
+                if (prepare) {
+                    node->compiler.main.able = true;
+                    node->compiler.main.regs = U_ALL; // TODO: Calculate used regs
+                }
+                return;
+            }
             break;
         case CNT_OPERATOR:
             if (node->operator_code == COP_CMP_E || node->operator_code == COP_CMP_NE) {
-                if (NumberIsZero(node->b))
-                    return BuildJumpIfZero(prepare, node->a, node->operator_code == COP_CMP_E, jmp_if_true, label);
-                if (NumberIsZero(node->a))
-                    return BuildJumpIfZero(prepare, node->b, node->operator_code == COP_CMP_E, jmp_if_true, label);
+                if (NumberIsZero(node->b)) {
+                    BuildJumpIfZero(prepare, node->a, node->operator_code == COP_CMP_E, jmp_if_true, label);
+                    node->compiler.main.able = true;
+                    node->compiler.main.regs = U_ALL; // TODO: Calculate used regs
+                    return;
+                }
+                if (NumberIsZero(node->a)) {
+                    BuildJumpIfZero(prepare, node->b, node->operator_code == COP_CMP_E, jmp_if_true, label);
+                    node->compiler.main.able = true;
+                    node->compiler.main.regs = U_ALL; // TODO: Calculate used regs
+                    return;
+                }
             }
 
             switch (node->operator_code) {

@@ -26,6 +26,7 @@ namespace I8080 {
 enum OutputFormat {
     OF_I1080,
     OF_CPM,
+    OF_RKS,
 };
 
 bool ParseOutputFormat(enum OutputFormat &result, CString str);
