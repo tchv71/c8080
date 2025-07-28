@@ -18,7 +18,7 @@
 #include <c8080/div16mod.h>
 #include <c8080/div32mod.h>
 
-uint16_t __div_16_mod;
+uint16_t __div_16_mod; // TODO: union 8, 16, 32
 uint32_t __div_32_mod;
 
 int main(int argc, char **argv);
@@ -35,20 +35,21 @@ __init_loop:
         jp   nc, __init_loop
     }
 
+    // TODO: __init_hal
 #ifdef ARCH_86RK
     asm {
-        call 0F830h  ; RAMTOP
-        ld   sp, hl
-        ld   hl, 0F86Ch  ; MONITOR
+        call 0F830h
+        ld sp, hl
+        ld hl, 0F86Ch
         push hl
     }
 #endif
 
 #ifdef ARCH_MICRO80_COLOR
     asm {
-        call 0F830h  ; RAMTOP
+        call 0F830h
         ld   sp, hl
-        ld   hl, 0F86Ch  ; MONITOR
+        ld   hl, 0F86Ch
         push hl
     }
 #endif

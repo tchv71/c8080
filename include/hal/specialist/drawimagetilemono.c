@@ -33,12 +33,12 @@ DrawImageTileMono_2:
         inc  hl
         ld   (de), a
         inc  de
-        dec  c
+        dec  b
         jp   nz, DrawImageTileMono_2
         pop  bc
         pop  de
         inc  d
-        dec  b
+        dec  c
         jp   nz, DrawImageTileMono_1
     }
 }

@@ -40,11 +40,11 @@ void DrawScoreAndCreatures(const char *scoreText) {
         playerLevel = n;
         uint8_t *s;
         for (s = TILE(40, 168); n; --n, s -= 4)
-            DrawImageTile(s, imgPlayerD, 5 * 256 + 4);
-        DrawImageTile(s - 46, imgPlayer, 5 * 256 + 50);
+            DrawImageTile(s, imgPlayerD, imgPlayerDSize);
+        DrawImageTile(s - 46, imgPlayer, imgPlayerSize);
         if (playerLevel == 14) {
-            DrawImageTile(s - 50 + 0x200, imgPlayerWin, 3 * 256 + 16);
-            DrawImageTile(TILE(3, 53), imgKingLose, 6 * 256 + 62);
+            DrawImageTile(s - 50 + 0x200, imgPlayerWin, imgPlayerWinSize);
+            DrawImageTile(TILE(3, 53), imgKingLose, imgKingLoseSize);
         }  // TODO: Торчит остаток меча
     }
 }
@@ -70,7 +70,7 @@ void DrawScreen(const char *scoreText) {
 static void DrawBall(uint8_t *tile, const uint8_t *image, uint8_t c) {
     static const uint8_t colors[1] = {COLOR_INK_BLUE, COLOR_INK_WHITE, COLOR_INK_YELLOW, COLOR_INK_VIOLET,
                                       COLOR_INK_RED,  COLOR_INK_CYAN,  COLOR_INK_GREEN};
-    DrawImageTileMono(tile, image, 0x20E, colors[c - 1]);
+    DrawImageTileMono(tile, image, imgBallsSize, colors[c - 1]);
 }
 
 static uint8_t *CellAddress(uint8_t x, uint8_t y) {

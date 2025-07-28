@@ -34,12 +34,12 @@ DrawImageTile_2:
         inc  hl
         ld   (de), a
         inc  de
-        dec  c
+        dec  b
         jp   nz, DrawImageTile_2
         pop  bc
         pop  de
         inc  d
-        dec  b
+        dec  c
         jp   nz, DrawImageTile_1
     }
 }

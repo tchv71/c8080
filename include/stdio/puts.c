@@ -17,7 +17,6 @@
 #include <stdint.h>
 
 int puts(const char *text) {
-    while (*text != 0) {
+    while (*text)
         putchar((uint8_t)*text++);
-    }
 }

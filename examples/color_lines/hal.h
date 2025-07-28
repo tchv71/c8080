@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <hal/hal.h>
 
-static const uint16_t REMOVE_ANIMATION_DELAY = 2000;  /* задерка в main */
+static const uint16_t REMOVE_ANIMATION_DELAY = 2000;  /* задерка в main */ // TODO использовать _MS
 static const uint8_t REMOVE_ANIMATION_COUNT = 3;      /* phase для DrawSpriteRemove */
 static const uint16_t NEW_ANIMATION_DELAY = 2000;     /* задерка в main */
 static const uint8_t NEW_ANIMATION_COUNT = 5;         /* phase для DrawSpriteNew */
