@@ -39,3 +39,4 @@ extern uint8_t selX, selY;
 extern uint8_t showPath, showHelp, soundEnabled;
 extern uint16_t score;
 extern struct HiScore hiScores[HISCORE_COUNT];
+extern uint8_t playerLevel;

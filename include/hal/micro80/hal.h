@@ -21,7 +21,7 @@
 #define TILE(X, Y) (uint8_t *)(0xE800 + (X) + (Y)*64)
 
 void ClearScreen(void) __link("clearscreen.c");
-void ClearScreenBlack(void) __link("clearscreenblack.c");
+void ResetScreen(void) __link("resetscreen.c");
 void MoveCursorHome(void) __link("movecursorhome.c");
 void ShowCursor(void) __link("showcursor.c");
 void HideCursor(void) __link("hidecursor.c");

@@ -44,4 +44,3 @@ ShowScreenSlowly_2:
         jp   nz,  ShowScreenSlowly_1
     }
 }
-

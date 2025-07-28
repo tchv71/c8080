@@ -41,11 +41,9 @@ static const uint8_t HISCORE_X = 22;
 static const uint8_t HISCORE_Y = 5;
 static const uint8_t RIGHT_CREATURE_Y_MAX = 3;
 
-static uint8_t rightCreatureY;
-
 void Intro(void) {
-    ClearScreenBlack();
-    memcpy((void *)0xE800, imgTitleC, sizeof(imgTitleC)); // TODO: Replace drawImage
+    ResetScreen();
+    memcpy((void *)0xE800, imgTitleC, sizeof(imgTitleC));  // TODO: Replace drawImage
     memcpy((void *)0xE000, imgTitleA, sizeof(imgTitleA));
     sleep(1);
     getchar();
@@ -61,19 +59,13 @@ void DrawButtons(void) {
     DrawText(TILE(2, 24), GetButtonColor(showHelp), "3 Подсказка");
 }
 
-void DrawScreen(void) {
-    ClearScreenBlack();
-    memcpy((void *)0xE800, imgScreenC, sizeof(imgScreenC)); // TODO: Replace drawImage
+void DrawScreen(const char *scoreText) {
+    ResetScreen();
+    memcpy((void *)0xE800, imgScreenC, sizeof(imgScreenC));  // TODO: Replace drawImage
     memcpy((void *)0xE000, imgScreenA, sizeof(imgScreenA));
 
     DrawText(TILE(2, 25), COLOR_INK_LIGHT_CYAN | COLOR_PAPER_WHITE, "4 Зал славы");
     DrawText(TILE(2, 26), COLOR_INK_LIGHT_CYAN | COLOR_PAPER_WHITE, "5 Новая игра");
-
-    rightCreatureY = -1; // Redraw
-    DrawScoreAndCreatures();
-
-    char scoreText[UINT16_TO_STRING_SIZE + 1];
-    Uint16ToString(scoreText, hiScores[0].score, 10);
     DrawText(TILE(7, 1), COLOR_INK_LIGHT_GREEN, scoreText);
 }
 
@@ -85,31 +77,29 @@ static uint8_t *CellAddress(uint8_t x, uint8_t y) {
     return TILE(PLAYFIELD_X + x * 3, PLAYFIELD_Y + y * 3);
 }
 
-static void DrawBall1(uint8_t *graphAddr, const uint8_t *image, uint8_t color) {
-    DrawImageTile(graphAddr, image + (sizeof(imgBoard[0]) * 10) * (color - 1), imgBoardSize);
+static void DrawBall1(uint8_t *tile, const uint8_t *image, uint8_t color) {
+    DrawImageTile(tile, image + (sizeof(imgBoard[0]) * 10) * (color - 1), imgBoardSize);
 }
 
-static void DrawCell1(uint8_t *addr, uint8_t color) {
-    DrawImageTile(addr, color ? imgBalls[10 * (color - 1)] : imgBoard[4], imgBoardSize);
+static void DrawCell1(uint8_t *tile, uint8_t color) {
+    DrawImageTile(tile, color ? imgBalls[10 * (color - 1)] : imgBoard[4], imgBoardSize);
 }
 
 void DrawCell(uint8_t x, uint8_t y, uint8_t color) {
     DrawCell1(CellAddress(x, y), color);
 }
 
-static const uint8_t *removeAnimationImages[3] = {
-    imgBalls[5],
-    imgBalls[6],
-    imgBalls[7],
-};
-
 void DrawSpriteRemove(uint8_t x, uint8_t y, uint8_t c, uint8_t phase) {
-    DrawImageTile(CellAddress(x, y), removeAnimationImages[phase] + (sizeof(imgBoard[0]) * 10) * (c - 1), imgBoardSize);
+    static const uint8_t *const images[3] = {
+        imgBalls[5],
+        imgBalls[6],
+        imgBalls[7],
+    };
+    DrawImageTile(CellAddress(x, y), images[phase] + (sizeof(imgBoard[0]) * 10) * (c - 1), imgBoardSize);
 }
 
 static void DrawSpriteNew1(uint8_t *graphAddress, uint8_t color, uint8_t phase) {
-    DrawImageTile(graphAddress, imgBalls[10 * (color - 1) + (4 - phase)],
-              imgBoardSize);
+    DrawImageTile(graphAddress, imgBalls[10 * (color - 1) + (4 - phase)], imgBoardSize);
 }
 
 void DrawSpriteNew(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
@@ -120,13 +110,13 @@ void DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color) {
     DrawImageTile(CellAddress(x, y), imgBoard[color], imgBoardSize);
 }
 
-static const uint8_t *const  bouncingAnimation[6] = {imgBalls[0], imgBalls[9], imgBalls[9],
-                                        imgBalls[0], imgBalls[8], imgBalls[8]};
-
 void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase, bool cursor) {
-    uint8_t *graphAddress = CellAddress(x, y);
-    DrawBall1(graphAddress, bouncingAnimation[phase], color);
-    if (cursor) DrawCursor();
+    static const uint8_t *const images[] = {
+        imgBalls[0], imgBalls[9], imgBalls[9], imgBalls[0], imgBalls[8], imgBalls[8],
+    };
+    DrawBall1(CellAddress(x, y), images[phase], color);
+    if (cursor)
+        DrawCursor();
 }
 
 void DrawHelp(const uint8_t *newBalls) {
@@ -137,7 +127,7 @@ void DrawHelp(const uint8_t *newBalls) {
 
 void DrawCursor(void) {
     uint8_t *a = CellAddress(cursorX, cursorY);
-    a[65] = '*';
+    a[65] = '*';  // TODO
     a[65 - 0x800] = COLOR_INK_LIGHT_YELLOW;
 }
 
@@ -145,28 +135,7 @@ void ClearCursor(void) {
     DrawCell(cursorX, cursorY, game[cursorX][cursorY]);
 }
 
-static void DrawHiScoresScreen1(uint8_t i, uint8_t pos) {
-    struct HiScore *h = hiScores + i;
-    for (; i < HISCORE_COUNT; ++i) {
-        char text[10 + 1 + 5 + 1];
-        h->name[9] = '\0';
-        snprintf(text, sizeof(text), "%10s %5u", h->name, h->score);
-        DrawTextXY(HISCORE_X + 2, (HISCORE_Y + 3) + i, (pos == i) ? (COLOR_INK_LIGHT_RED | COLOR_PAPER_BLUE) : (COLOR_INK_LIGHT_CYAN | COLOR_PAPER_BLUE), text);
-        h++;
-    }
-}
-
-static void DrawHiScoresLast(const char *text) {
-    DrawText(TILE(HISCORE_X + 1, HISCORE_Y + HISCORE_COUNT + 4),
-             COLOR_INK_LIGHT_YELLOW | COLOR_PAPER_BLUE,
-             text);
-}
-
-void DrawHiScoresSpace(void) {
-    DrawHiScoresLast("  Нажмите Пробел  ");
-}
-
-void DrawWindow(uint8_t x, uint8_t y, uint8_t h, uint8_t color) {
+static void DrawWindow(uint8_t x, uint8_t y, uint8_t h, uint8_t color) {
     DrawTextXY(x, y, color, "┌──────────────────┐");
     y++;
     do {
@@ -177,27 +146,21 @@ void DrawWindow(uint8_t x, uint8_t y, uint8_t h, uint8_t color) {
     DrawTextXY(x, y, color, "└──────────────────┘");
 }
 
-void DrawHiScores(bool enterNameMode) {
+void DrawHiScoresWindow(void) {
     DrawWindow((TEXT_WIDTH - 20) / 2, HISCORE_Y, HISCORE_COUNT + 6, COLOR_INK_LIGHT_WHITE | COLOR_PAPER_BLUE);
-    DrawTextXY((TEXT_WIDTH - 8) / 2, HISCORE_Y + 1, COLOR_INK_LIGHT_YELLOW | COLOR_PAPER_BLUE, "Зал славы");
-    if (enterNameMode)
-        DrawHiScoresLast(" Введите свое имя "); // TODO: ё
-    else
-        DrawHiScoresSpace();
-    DrawHiScoresScreen1(0, enterNameMode ? HISCORE_COUNT - 1 : HISCORE_COUNT);
 }
 
-void DrawHiScoresScreen(uint8_t pos) {
-    DrawHiScoresScreen1(0, pos);
+void DrawHiScoresItem(uint8_t y, uint8_t colorNumber, const char *text) {
+    static const uint8_t colors[] = {
+        COLOR_INK_LIGHT_CYAN | COLOR_PAPER_BLUE,
+        COLOR_INK_LIGHT_RED | COLOR_PAPER_BLUE,
+        COLOR_INK_LIGHT_YELLOW | COLOR_PAPER_BLUE,
+        COLOR_INK_LIGHT_WHITE | COLOR_PAPER_BLUE,
+    };
+    DrawTextXY(HISCORE_X + 2, (HISCORE_Y + 1) + y, colors[colorNumber], text);
 }
 
-void DrawHiScoresLastLine(void) {
-    DrawHiScoresScreen1(HISCORE_COUNT - 1, HISCORE_COUNT - 1);
-}
-
-void DrawScoreAndCreatures(void) {
-    char scoreText[UINT16_TO_STRING_SIZE + 1];
-    Uint16ToString(scoreText, score, 10);
+void DrawScoreAndCreatures(const char *scoreText) {
     DrawText(TILE(52, 1), COLOR_INK_LIGHT_GREEN, scoreText);
 
     uint8_t n;
@@ -209,10 +172,10 @@ void DrawScoreAndCreatures(void) {
         n = RIGHT_CREATURE_Y_MAX;
     }
 
-    while (rightCreatureY != n) {
-        rightCreatureY++;
-        DrawImageTile(TILE(48, 7 - rightCreatureY), imgPlayer, imgPlayerSize);
-        if (rightCreatureY == RIGHT_CREATURE_Y_MAX) {
+    while (playerLevel != n) {
+        playerLevel++;
+        DrawImageTile(TILE(48, 7 - playerLevel), imgPlayer, imgPlayerSize);
+        if (playerLevel == RIGHT_CREATURE_Y_MAX) {
             DrawImageTile(TILE(53, 4), imgPlayerWin, imgPlayerWinSize);
             DrawImageTile(TILE(4, 4), imgKingLose, imgKingLoseSize);
         }

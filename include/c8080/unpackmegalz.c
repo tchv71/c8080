@@ -14,7 +14,7 @@
 
 #include "unpackmegalz.h"
 
-void* __global UnpackMegalz(void* destination, const void* source) {
+void *__global UnpackMegalz(void *destination, const void *source) {
     asm {
 __a_2_unpackmegalz=__a_2_unpackmegalz
         ex   hl, de  ; source

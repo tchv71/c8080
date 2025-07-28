@@ -21,6 +21,7 @@
 #include <stdbool.h>
 #include <c8080/delay.h>
 #include <c8080/div16mod.h>
+#include <c8080/uint16tostring.h>
 #include "lines.h"
 #include "hal.h"
 #include "path.h"
@@ -37,6 +38,7 @@ bool soundEnabled = true;
 bool showHelp = true;
 uint8_t selAnimationDelay;
 uint8_t selAnimationFrame;
+uint8_t playerLevel;
 
 struct HiScore hiScores[] = {
     {"Alemorf", 50}, {"B2M", 45},  {"Eltaron", 40}, {"Error404", 35},
@@ -70,6 +72,12 @@ static void ClearLine(uint8_t x0, uint8_t y0, uint8_t dx, uint8_t dy, uint8_t le
         x += dx;
         y += dy;
     }
+}
+
+static void DrawScoreAndCreatures2(void) {
+    char scoreText[UINT16_TO_STRING_SIZE + 1];
+    Uint16ToString(scoreText, score, 10);
+    DrawScoreAndCreatures(scoreText);
 }
 
 // Ищем линни из 5 шариков и больше
@@ -178,7 +186,7 @@ static uint8_t FindLines(void) {
     // Результат был изменен, перерисуем его
     score += total * 2;
     // TODO Overflow
-    DrawScoreAndCreatures();
+    DrawScoreAndCreatures2();
     return 1;
 }
 
@@ -289,6 +297,28 @@ static uint8_t GameStep(uint8_t newGame) {
     return freeCellCount == 0;
 }
 
+static void DrawHiScoresScreen(uint8_t i, uint8_t hilightPos) {
+    struct HiScore *h = hiScores + i;
+    for (; i < HISCORE_COUNT; ++i) {
+        char text[10 + 1 + 5 + 1];
+        h->name[9] = '\0';
+        snprintf(text, sizeof(text), "%10s %5u", h->name, h->score);
+        DrawHiScoresItem(i + 2, hilightPos == i, text);
+        h++;
+    }
+}
+
+static void DrawHiScoresWindow2(uint8_t hilight, const char *lastLine) {
+    DrawHiScoresWindow();
+    DrawHiScoresItem(0, 3, "    Рекорды");
+    DrawHiScoresScreen(0, hilight);
+    DrawHiScoresItem(HISCORE_COUNT + 3, 2, lastLine);
+}
+
+static void DrawHiScores(void) {
+    DrawHiScoresWindow2(HISCORE_COUNT, " Нажмите Пробел ");
+}
+
 // Добавить результат в таблицу рекордов
 
 static void AddToHiScores(void) {
@@ -297,7 +327,7 @@ static void AddToHiScores(void) {
     hiScores[HISCORE_COUNT - 1].name[0] = 0;
 
     // Вывод таблицы на экран
-    DrawHiScores(true);
+    DrawHiScoresWindow2(HISCORE_COUNT - 1, "Введите свое имя");  // TODO: ё
 
     // Ввод имени
     uint8_t i = 0;
@@ -310,7 +340,7 @@ static void AddToHiScores(void) {
                 continue;
             --i;
             hiScores[HISCORE_COUNT - 1].name[i] = 0;
-            DrawHiScoresLastLine();
+            DrawHiScoresScreen(HISCORE_COUNT - 1, HISCORE_COUNT - 1);
             continue;
         }
         if (c < ' ')
@@ -320,8 +350,10 @@ static void AddToHiScores(void) {
         hiScores[HISCORE_COUNT - 1].name[i] = c;
         ++i;
         hiScores[HISCORE_COUNT - 1].name[i] = 0;
-        DrawHiScoresLastLine();
+        DrawHiScoresScreen(HISCORE_COUNT - 1, HISCORE_COUNT - 1);
     }
+
+    DrawHiScoresItem(HISCORE_COUNT + 3, 2, " Нажмите Пробел ");
 
     // Анимация перемещения новой позиции вверх
     struct HiScore *p = hiScores + HISCORE_COUNT - 1;
@@ -333,15 +365,19 @@ static void AddToHiScores(void) {
         memcpy(&tmp, p + 1, sizeof(tmp));
         memcpy(p + 1, p, sizeof(tmp));
         memcpy(p, &tmp, sizeof(tmp));
-        DrawHiScoresScreen(i - 1);
+        DrawHiScoresScreen(0, i - 1);
         Delay(HISCORE_ANIMATION_DELAY);
     }
-
-    DrawHiScoresSpace();
 }
 
 static void DrawScreen2(void) {
-    DrawScreen();
+    char scoreText[UINT16_TO_STRING_SIZE + 1];
+    Uint16ToString(scoreText, hiScores[0].score, 10);
+    DrawScreen(scoreText);
+
+    playerLevel = -1;  // Redraw
+    DrawScoreAndCreatures2();
+
     DrawButtons();
 
     uint8_t *a = &game[0][0];
@@ -445,11 +481,10 @@ static void MoveBall(void) {
     // Если не получилось добавить, то конец игры.
 
     // Если игрок набал мало очков, то просто показываем таблицу
-    if (score < hiScores[HISCORE_COUNT - 1].score) {
-        DrawHiScores(0);
-    } else {
+    if (score < hiScores[HISCORE_COUNT - 1].score)
+        DrawHiScores();
+    else
         AddToHiScores();
-    }
 
     ReadKeyboard(false);
     NewGame();
@@ -463,12 +498,11 @@ static void BouncingBallAnimation(void) {
     selAnimationDelay++;
     if (selAnimationDelay >= BOUNCE_ANIMATION_DELAY) {
         selAnimationDelay = 0;
-        DrawBouncingBall(selX, selY, game[selX][selY], selAnimationFrame,
-                         selX == cursorX && selY == cursorY);
+        DrawBouncingBall(selX, selY, game[selX][selY], selAnimationFrame, selX == cursorX && selY == cursorY);
         selAnimationFrame++;
         if (selAnimationFrame >= BOUNCE_ANIMATION_COUNT) {
             selAnimationFrame = 0;
-        } else if (soundEnabled && selAnimationFrame == 4) {
+        } else if (soundEnabled && selAnimationFrame == 3) {
             PlaySoundJump();
         }
     }
@@ -477,8 +511,8 @@ static void BouncingBallAnimation(void) {
 // Главная функция
 
 int main(int, char **) {
-    Intro();
-    PlayMusic();
+    //  Intro();
+    //    PlayMusic();
     NewGame();
 
     char previousPressedKey = 0;
@@ -510,8 +544,8 @@ int main(int, char **) {
 
         switch (pressedKey) {
             case '6':
-                score += 50;
-                DrawScoreAndCreatures();
+                score += 10;
+                DrawScoreAndCreatures2();
                 break;
             case '1':
                 showPath ^= 1;
@@ -527,7 +561,7 @@ int main(int, char **) {
                 DrawHelp2();
                 break;
             case '4':
-                DrawHiScores(0);
+                DrawHiScores();
                 while (ReadKeyboard(false) != ' ') {
                 }
                 DrawScreen2();

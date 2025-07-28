@@ -1,5 +1,7 @@
 #include "graph_functions.h"
 #include <string.h>
+#include <stdbool.h>
+#include <hal/hal.h>
 
 void graphXor(void) {
     (void)graph1;
@@ -47,7 +49,7 @@ graph1_l2:
 }
 
 #ifdef XXX
-void clrscr10(void* t, uint8_t w, uint8_t h) {
+void clrscr10(void *t, uint8_t w, uint8_t h) {
     asm {
         ld   hl, 0
         dad  sp
@@ -80,7 +82,7 @@ clrscr10_saveHl=$+1
 }
 #endif
 
-void fillRect1int(uint8_t len, uint8_t x, uint8_t* a) {
+void fillRect1int(uint8_t len, uint8_t x, uint8_t *a) {
     asm {
 __a_3_fillrect1int=__a_3_fillrect1int
 __a_2_fillrect1int=$+1
@@ -101,28 +103,28 @@ fillRect1_int_cmd:
     }
 }
 
-void FillRectFast(uint8_t* a, uint16_t c, uint8_t l, uint8_t r, uint8_t h) {
-  if(c==0) {
-    fillRect1int(h, l & r, a);
-    return;
-  }
-  --c;  
-  fillRect1int(h, l, a);
-  a += 0x100;
-  for(; c; --c) {  
-    fillRect1int(h, 0xFF, a);
+void FillRectFast(uint8_t *a, uint16_t c, uint8_t l, uint8_t r, uint8_t h) {
+    if (c == 0) {
+        fillRect1int(h, l & r, a);
+        return;
+    }
+    --c;
+    fillRect1int(h, l, a);
     a += 0x100;
-  }  
-  fillRect1int(h, r, a);
+    for (; c; --c) {
+        fillRect1int(h, 0xFF, a);
+        a += 0x100;
+    }
+    fillRect1int(h, r, a);
 }
 
 void FillRect(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1) {
-  FillRectFast(FILLRECTARGS(x0, y0, x1, y1));
+    FillRectFast(FILLRECTARGS(x0, y0, x1, y1));
 }
 
 extern uint8_t chargen[2048];
 
-void print_p1(void*,void*) {
+void print_p1(void *, void *) {
     asm {
 __a_2_print_p1=__a_2_print_p1
         ex   hl, de
@@ -148,7 +150,7 @@ print_mode1:
     }
 }
 
-void print_p2(void*,void*) {
+void print_p2(void *, void *) {
     asm {
 __a_2_print_p2=__a_2_print_p2
         ex   hl, de
@@ -193,8 +195,8 @@ print_mode3:
     }
 }
 
-void print_p3(void*,void*) {
-  asm {
+void print_p3(void *, void *) {
+    asm {
 __a_2_print_p3=__a_2_print_p3
         ex   hl, de
 __a_1_print_p3=$+1
@@ -239,7 +241,7 @@ print_mode5:
     }
 }
 
-void print_p4(void*, void*) {
+void print_p4(void *, void *) {
     asm {
 __a_2_print_p4=__a_2_print_p4
         ex   hl, de
@@ -264,26 +266,38 @@ print_mode6:
     }
 }
 
-void DrawText6(uint8_t* tile, uint8_t bit_shift, uint8_t n, const char* text) {
-    uint8_t* s;
-    uint8_t c, e;
-    e = n & 0x80;
-    n &= 0x7F;
-    while(n != 0) {
-        c = *text;
-        if (c) ++text;
-        else if(!e) return;
-        s = chargen + c*8;
-        switch(bit_shift) {
-            case 0: print_p1(tile, s); ++bit_shift; break;
-            case 1: print_p2(tile, s); ++bit_shift; tile += 0x100; break;
-            case 2: print_p3(tile, s); ++bit_shift; tile += 0x100; break;
-            case 3: print_p4(tile, s); bit_shift=0; tile += 0x100; break;
+void DrawText(uint8_t *tile, uint8_t pixelOffset, uint8_t color, const char *text) {
+    SET_COLOR(color);
+    for (;;) {
+        uint8_t c = *text;
+        if (c == 0)
+            return;
+        uint8_t *s = chargen + c * 8;
+        switch (pixelOffset) {
+            case 0:
+                print_p1(tile, s);
+                ++pixelOffset;
+                break;
+            case 1:
+                print_p2(tile, s);
+                ++pixelOffset;
+                tile += 0x100;
+                break;
+            case 2:
+                print_p3(tile, s);
+                ++pixelOffset;
+                tile += 0x100;
+                break;
+            case 3:
+                print_p4(tile, s);
+                pixelOffset = 0;
+                tile += 0x100;
+                break;
         }
-        --n;
+        text++;
     }
 }
 
-void DrawTextXY(uint8_t x, uint8_t y, const char* text) {
-    DrawText6(PRINTARGS(x, y), 0x7F, text);
+void DrawTextXY(uint8_t x, uint8_t y, uint8_t color, const char *text) {
+    DrawText(PRINTARGS(x, y), color, text);
 }

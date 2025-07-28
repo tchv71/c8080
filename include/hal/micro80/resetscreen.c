@@ -15,7 +15,7 @@
 
 #include "hal.h"
 
-void ClearScreenBlack(void) {
+void ResetScreen(void) {
     SetConsoleColor(0);
     ClearScreen();
     SetConsoleColor(COLOR_INK_LIGHT_WHITE);

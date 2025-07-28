@@ -44,7 +44,8 @@ void SetRamTop(uint16_t) __address(0xC833);
 
 void ShowScreenSlowly(uint8_t high_byte_of_addr) __link("showscreenslowly.c");
 void __global DrawImageTile(void *tile, const void *image, uint16_t width_height) __link("drawimagetile.c");
-void __global DrawImageTileMono(void *tile, const void *image, uint16_t width_height) __link("drawimagetilemono.c");
+void __global DrawImageTileMono(void *tile, const void *image, uint16_t width_height, uint8_t color)
+    __link("drawimagetilemono.c");
 void __global Sound(uint8_t period, uint16_t count) __link("sound.c");
 
 // Color codes

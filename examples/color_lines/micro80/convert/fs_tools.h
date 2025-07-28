@@ -12,10 +12,10 @@
 
 namespace FsTools {
 
-void LoadFile(const std::string& file_name, std::function<void*(size_t)> allocate);
-void LoadFile(const std::string& file_name, size_t max_file_size, std::vector<uint8_t>* out);
+void LoadFile(const std::string &file_name, std::function<void *(size_t)> allocate);
+void LoadFile(const std::string &file_name, size_t max_file_size, std::vector<uint8_t> *out);
 
-inline void LoadFile(const std::string& file_name, size_t max_file_size, std::string* out) {
+inline void LoadFile(const std::string &file_name, size_t max_file_size, std::string *out) {
     if (out == nullptr) {
         throw std::runtime_error(std::string(__func__) + std::string(": Incorrect parameter out = nullptr"));
     }
@@ -30,28 +30,28 @@ inline void LoadFile(const std::string& file_name, size_t max_file_size, std::st
     });
 }
 
-void SaveFile(const std::string& file_name, const void* data, size_t size);
-void SaveFile(const std::string& file_name, const std::string& out);
+void SaveFile(const std::string &file_name, const void *data, size_t size);
+void SaveFile(const std::string &file_name, const std::string &out);
 
-inline void SaveFile(const std::string& file_name, const std::vector<uint8_t>& out) {
+inline void SaveFile(const std::string &file_name, const std::vector<uint8_t> &out) {
     SaveFile(file_name, out.data(), out.size());
 }
 
-inline void SaveFile(const std::string& file_name, const std::string& out) {
+inline void SaveFile(const std::string &file_name, const std::string &out) {
     SaveFile(file_name, out.data(), out.size());
 }
 
 class FindFiles {
 private:
-    DIR* dir_ = nullptr;
-    dirent64* item_ = nullptr;
+    DIR *dir_ = nullptr;
+    dirent64 *item_ = nullptr;
 
 public:
     explicit FindFiles(const char path[]);
-    FindFiles(FindFiles&) = delete;
-    FindFiles& operator=(FindFiles*) = delete;
+    FindFiles(FindFiles &) = delete;
+    FindFiles &operator=(FindFiles *) = delete;
     bool Next();
-    dirent64* Item();
+    dirent64 *Item();
     ~FindFiles();
 };
 

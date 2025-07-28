@@ -15,10 +15,12 @@
 
 #include "hal.h"
 
-void __global DrawImageTileMono(void* tile, const void* image, uint16_t width_height) {
+void __global DrawImageTileMono(void *tile, const void *image, uint16_t width_height, uint8_t color) {
     asm {
-__a_3_drawimagetilemono=__a_3_drawimagetilemono
-        ld   bc, hl
+__a_4_drawimagetilemono=__a_4_drawimagetilemono
+        ld   (0FFFEh), a
+__a_3_drawimagetilemono=$+1
+        ld   bc, 0
 __a_1_drawimagetilemono=$+1
         ld   de, 0
 __a_2_drawimagetilemono=$+1

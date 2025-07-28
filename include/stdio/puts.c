@@ -16,10 +16,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-int puts(const char *text)
-{
-    while(*text != 0) {
+int puts(const char *text) {
+    while (*text != 0) {
         putchar((uint8_t)*text++);
     }
 }
-
