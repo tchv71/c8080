@@ -30,15 +30,12 @@ static const uint16_t BOUNCE_ANIMATION_DELAY = 50; /* задерка в main */
 static const uint8_t BOUNCE_ANIMATION_COUNT = 6;   /* phase для DrawBouncingBall */
 static const uint16_t HISCORE_ANIMATION_DELAY = 2000; /* задерка в main */
 
-void PlaySoundJump(void);
-void PlaySoundCantMove(void);
-void DrawEmptyCell(uint8_t x, uint8_t y);
 void DrawCell(uint8_t x, uint8_t y, uint8_t color);
 void DrawSpriteRemove(uint8_t x, uint8_t y, uint8_t color, uint8_t phase);
 void DrawSpriteNew(uint8_t x, uint8_t y, uint8_t color, uint8_t phase);
 void DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color);
-void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase);
-void DrawHelp(void);
+void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase, bool cursor);
+void DrawHelp(const uint8_t *newBalls);
 void DrawCursor(void);
 void ClearCursor(void);
 void DrawButtons(void);

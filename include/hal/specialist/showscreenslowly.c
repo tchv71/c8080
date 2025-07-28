@@ -15,7 +15,7 @@
 
 #include "specialist.h"
 
-void ShowScreenSlowly(void) {
+void ShowScreenSlowly(uint8_t high_byte_of_addr) {
     asm {
         ld   b, 0
         ld   e, 0
@@ -26,6 +26,7 @@ ShowScreenSlowly_1:
         add  e
         inc  a
         ld   e, a
+__a_showscreenslowly=$+1
         ld   d, 48h
         ld   h, 90h
         ld   l, e

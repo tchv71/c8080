@@ -17,6 +17,8 @@
 
 #include <stdint.h>
 
+#define __C8080_CPU_FREQ 2000000
+
 // Bios
 
 void __global Reboot(void) __address(0xC000);
@@ -33,7 +35,7 @@ void SetRamTop(uint16_t) __address(0xC833);
 
 // HAL
 
-void ShowScreenSlowly(void) __link("showscreenslowly.c");
+void ShowScreenSlowly(uint8_t high_byte_of_addr) __link("showscreenslowly.c");
 void __global DrawImageTile(void *tile, const void *image, uint16_t width_height) __link("drawimagetile.c");
 void __global DrawImageTileMono(void *tile, const void *image, uint16_t width_height) __link("drawimagetilemono.c");
 void __global Sound(uint8_t period, uint16_t count) __link("sound.c");

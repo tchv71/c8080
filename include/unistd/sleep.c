@@ -15,10 +15,7 @@
 
 #include <unistd.h>
 #include <c8080/delay.h>
-
-#ifndef __C8080_ONE_SECOND_DELAY
-#define __C8080_CPU_FREQ 2500000
-#endif
+#include <hal/hal.h>
 
 #ifndef __C8080_ONE_SECOND_DELAY
 #define __C8080_ONE_SECOND_DELAY (__C8080_CPU_FREQ / __C8080_DELAY_TICKS)

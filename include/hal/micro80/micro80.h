@@ -18,6 +18,8 @@
 #include <stdint.h>
 #include <codepage/micro80.h>
 
+#define __C8080_CPU_FREQ 2500000
+
 #define TILE(X, Y) (uint8_t *)(0xE800 + (X) + (Y)*64)
 
 void ClearScreen(void) __link("clearscreen.c");

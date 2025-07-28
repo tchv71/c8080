@@ -1,0 +1,22 @@
+#/bin/bash
+
+../../c8080 -ORKS -DARCH_SPECIALIST -olines_specialist.rks \
+ specialist/hal.c \
+ lines.c \
+ music.c \
+ path.c \
+ specialist/graph_functions.c \
+ specialist/chargen.c \
+ specialist/keyb.c \
+ specialist/title.c \
+ specialist/screen.c \
+ specialist/balls.c \
+ specialist/playerD.c \
+ specialist/player.c \
+ specialist/playerWin.c \
+ specialist/kingLose.c  
+ 
+echo "loadFile([" >/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
+xxd -i lines_specialist.rks | grep , >>/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
+echo "]);" >>/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
+echo "OK!"

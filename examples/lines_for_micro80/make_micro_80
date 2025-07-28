@@ -1,0 +1,18 @@
+#/bin/bash
+
+../../c8080 -OCPM -DARCH_MICRO80_COLOR -olines_micro80.com \
+ micro80/hal.c \
+ lines.c \
+ music.c \
+ path.c \
+ micro80/imgBalls.c \
+ micro80/imgBoard.c \
+ micro80/imgKingLose.c \
+ micro80/imgPlayer.c \
+ micro80/imgPlayerWin.c \
+ micro80/imgScreen.c \
+ micro80/imgTitle.c
+ 
+cp lines_micro80.com /home/alemorf/projects/micro80_emulator/test.com
+cd /home/alemorf/projects/micro80_emulator && make
+

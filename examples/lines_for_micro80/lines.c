@@ -24,6 +24,7 @@
 #include "lines.h"
 #include "hal.h"
 #include "path.h"
+#include "music.h"
 #include <unistd.h>
 
 uint8_t game[GAME_WIDTH][GAME_HEIGHT];
@@ -65,7 +66,7 @@ static void ClearLine(uint8_t x0, uint8_t y0, uint8_t dx, uint8_t dy, uint8_t le
     y = y0;
     for (i = length; i != 0; --i) {
         game[x][y] = 0;
-        DrawEmptyCell(x, y);
+        DrawCell(x, y, 0);
         x += dx;
         y += dy;
     }
@@ -203,6 +204,17 @@ static void GenerateNewBalls(void) {
         newBalls[i] = rand() % COLORS_COUNT + 1;
 }
 
+// Показываем цвета новых шариков
+
+void DrawHelp2(void) {
+    if (showHelp) {
+        DrawHelp(newBalls);
+        return;
+    }
+    static const uint8_t hideNewBalls[3];
+    DrawHelp(hideNewBalls);
+}
+
 // Помещаем шарик в случайную свободную ячейку
 
 struct XY {
@@ -266,7 +278,8 @@ static uint8_t GameStep(uint8_t newGame) {
     // Рисуем цвета новых шариков
     if (newGame)
         return 0;
-    DrawHelp();
+    if (showHelp)
+        DrawHelp2();
 
     // Ищем готовые линии
     if (FindLines())
@@ -327,6 +340,20 @@ static void AddToHiScores(void) {
     DrawHiScoresSpace();
 }
 
+static void DrawScreen2(void) {
+    DrawScreen();
+    DrawButtons();
+
+    uint8_t *a = &game[0][0];
+    uint8_t x, y;
+    for (x = 0; x < GAME_WIDTH; x++)
+        for (y = 0; y < GAME_HEIGHT; y++)
+            DrawCell(x, y, *a++);
+
+    DrawHelp2();
+    DrawCursor();
+}
+
 // Начать новую игру
 
 static void NewGame(void) {
@@ -334,15 +361,22 @@ static void NewGame(void) {
     cursorY = GAME_HEIGHT / 2;
     selX = NO_SEL;
     score = 0;
-
-    uint8_t x, y;
-    for (y = 0; y != GAME_HEIGHT; ++y)
-        for (x = 0; x != GAME_WIDTH; ++x)
-            game[x][y] = 0;
+    memset(game, 0, sizeof(game));
 
     GenerateNewBalls();
     GameStep(true);
-    DrawScreen();
+    DrawScreen2();
+}
+
+static void PlaySoundCantMove(void) {
+    Sound(255, 10);
+    DELAY_MS(250);
+    Sound(255, 10);
+    DELAY_MS(250);
+}
+
+static void PlaySoundJump(void) {
+    Sound(3, 10);
 }
 
 // Переместить шарик
@@ -386,11 +420,11 @@ static void MoveBall(void) {
         // Удаляем нарисованные шаги с экрана
         PathRewind();
         do {
-            DrawEmptyCell(path_x, path_y);
+            DrawCell(path_x, path_y, 0);
             PathGetNextStep();
         } while (path_n != LAST_STEP);
     } else {
-        DrawEmptyCell(selX, selY);
+        DrawCell(selX, selY, 0);
         DrawCell(cursorX, cursorY, c);
     }
 
@@ -429,7 +463,8 @@ static void BouncingBallAnimation(void) {
     selAnimationDelay++;
     if (selAnimationDelay >= BOUNCE_ANIMATION_DELAY) {
         selAnimationDelay = 0;
-        DrawBouncingBall(selX, selY, game[selX][selY], selAnimationFrame);
+        DrawBouncingBall(selX, selY, game[selX][selY], selAnimationFrame,
+                         selX == cursorX && selY == cursorY);
         selAnimationFrame++;
         if (selAnimationFrame >= BOUNCE_ANIMATION_COUNT) {
             selAnimationFrame = 0;
@@ -491,13 +526,13 @@ int main(int, char **) {
             case '3':
                 showHelp ^= 1;
                 DrawButtons();
-                DrawHelp();
+                DrawHelp2();
                 break;
             case '4':
                 DrawHiScores(0);
                 while (ReadKeyboard(false) != ' ') {
                 }
-                DrawScreen();
+                DrawScreen2();
                 break;
             case '5':
                 NewGame();

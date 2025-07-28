@@ -15,7 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "hal.h"
+#include "../hal.h"
+#include "../lines.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -24,14 +25,13 @@
 #include <c8080/delay.h>
 #include <c8080/div16mod.h>
 #include <c8080/uint16tostring.h>
-#include "graph/imgBalls.h"
-#include "graph/imgBoard.h"
-#include "graph/imgScreen.h"
-#include "graph/imgPlayer.h"
-#include "graph/imgPlayerWin.h"
-#include "graph/imgKingLose.h"
-#include "graph/imgTitle.h"
-#include "lines.h"
+#include "imgBalls.h"
+#include "imgBoard.h"
+#include "imgScreen.h"
+#include "imgPlayer.h"
+#include "imgPlayerWin.h"
+#include "imgKingLose.h"
+#include "imgTitle.h"
 
 static const uint8_t CELL_WIDTH = 3;
 static const uint8_t CELL_HEIGHT = 3;
@@ -66,7 +66,6 @@ void DrawScreen(void) {
     memcpy((void *)0xE800, imgScreenC, sizeof(imgScreenC)); // TODO: Replace drawImage
     memcpy((void *)0xE000, imgScreenA, sizeof(imgScreenA));
 
-    DrawButtons();
     DrawText(TILE(2, 25), COLOR_INK_LIGHT_CYAN | COLOR_PAPER_WHITE, "4 Зал славы");
     DrawText(TILE(2, 26), COLOR_INK_LIGHT_CYAN | COLOR_PAPER_WHITE, "5 Новая игра");
 
@@ -76,26 +75,10 @@ void DrawScreen(void) {
     char scoreText[UINT16_TO_STRING_SIZE + 1];
     Uint16ToString(scoreText, hiScores[0].score, 10);
     DrawText(TILE(7, 1), COLOR_INK_LIGHT_GREEN, scoreText);
-
-    DrawHelp();
-
-    uint8_t x, y;
-    uint8_t *a = &game[0][0];
-    for (x = 0; x < GAME_WIDTH; x++)
-        for (y = 0; y < GAME_HEIGHT; y++)
-            DrawCell(x, y, *a++);
-
-    DrawCursor();
 }
 
 static void DrawTextXY(uint8_t x, uint8_t y, uint8_t color, const char *text) {
     DrawText(TILE(x, y), color, text);
-}
-
-void PlaySoundJump(void) {
-}
-
-void PlaySoundCantMove(void) {
 }
 
 static uint8_t *CellAddress(uint8_t x, uint8_t y) {
@@ -104,14 +87,6 @@ static uint8_t *CellAddress(uint8_t x, uint8_t y) {
 
 static void DrawBall1(uint8_t *graphAddr, uint8_t *image, uint8_t color) {
     DrawImageTile(graphAddr, image + (sizeof(imgBoard[0]) * 10) * (color - 1), imgBoardSize);
-}
-
-static void DrawEmptyCell1(uint8_t *graphAddr) {
-    DrawImageTile(graphAddr, imgBoard[4], imgBoardSize);
-}
-
-void DrawEmptyCell(uint8_t x, uint8_t y) {
-    DrawEmptyCell1(CellAddress(x, y));
 }
 
 static void DrawCell1(uint8_t *addr, uint8_t color) {
@@ -143,33 +118,21 @@ void DrawSpriteNew(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
 
 void DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color) {
     DrawImageTile(CellAddress(x, y), imgBoard[color], imgBoardSize);
-    //    if (soundEnabled) {
-    //        PLAY_SOUND_TICK
-    //    }
 }
 
-static uint8_t *bouncingAnimation[6] = {imgBalls[0], imgBalls[9], imgBalls[9],
+static const uint8_t *const  bouncingAnimation[6] = {imgBalls[0], imgBalls[9], imgBalls[9],
                                         imgBalls[0], imgBalls[8], imgBalls[8]};
 
-void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
+void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase, bool cursor) {
     uint8_t *graphAddress = CellAddress(x, y);
     DrawBall1(graphAddress, bouncingAnimation[phase], color);
+    if (cursor) DrawCursor();
 }
 
-static uint8_t *const helpCoords[NEW_BALL_COUNT] = {
-    TILE(49, 23),
-    TILE(53, 23),
-    TILE(57, 23),
-};
-
-void DrawHelp(void) {
-    uint8_t i;
-    for (i = 0; i < NEW_BALL_COUNT; i++) {
-        if (showHelp)
-            DrawSpriteNew1(helpCoords[i], newBalls[i], 4);
-        else
-            DrawImageTile(helpCoords[i], imgBoard[5], imgBoardSize);
-    }
+void DrawHelp(const uint8_t *newBalls) {
+    DrawSpriteNew1(TILE(49, 23), newBalls[0], 4);
+    DrawSpriteNew1(TILE(53, 23), newBalls[1], 4);
+    DrawSpriteNew1(TILE(57, 23), newBalls[2], 4);
 }
 
 void DrawCursor(void) {
