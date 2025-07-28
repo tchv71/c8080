@@ -160,7 +160,7 @@ void DrawHiScoresItem(uint8_t y, uint8_t colorNumber, const char *text) {
     DrawTextXY(HISCORE_X + 2, (HISCORE_Y + 1) + y, colors[colorNumber], text);
 }
 
-void DrawScoreAndCreatures(const char *scoreText) {
+void DrawScore(const char *scoreText) {
     DrawText(TILE(52, 1), COLOR_INK_LIGHT_GREEN, scoreText);
 
     uint8_t n;

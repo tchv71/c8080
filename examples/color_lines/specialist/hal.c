@@ -24,7 +24,7 @@ static void ShowScreenSlowly2(const void *packedScreen, const void *packedScreen
     ShowScreenSlowly((unsigned)TEMP_SCREEN >> 8);
 }
 
-void DrawScoreAndCreatures(const char *scoreText) {
+void DrawScore(const char *scoreText) {
     DrawText(TILE(40, 7), 2, COLOR_INK_GREEN, scoreText);
 
     uint8_t n;

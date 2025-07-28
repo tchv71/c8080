@@ -21,14 +21,9 @@
 #include <stdbool.h>
 #include <hal/hal.h>
 
-static const uint16_t REMOVE_ANIMATION_DELAY = 2000;  /* задерка в main */ // TODO использовать _MS
 static const uint8_t REMOVE_ANIMATION_COUNT = 3;      /* phase для DrawSpriteRemove */
-static const uint16_t NEW_ANIMATION_DELAY = 2000;     /* задерка в main */
 static const uint8_t NEW_ANIMATION_COUNT = 5;         /* phase для DrawSpriteNew */
-static const uint16_t STEP_ANIMATION_DELAY = 4000;    /* задерка в main */
-static const uint16_t BOUNCE_ANIMATION_DELAY = 50;    /* задерка в main */
 static const uint8_t BOUNCE_ANIMATION_COUNT = 6;      /* phase для DrawBouncingBall */
-static const uint16_t HISCORE_ANIMATION_DELAY = 2000; /* задерка в main */
 
 void DrawCell(uint8_t x, uint8_t y, uint8_t color);
 void DrawSpriteRemove(uint8_t x, uint8_t y, uint8_t color, uint8_t phase);
@@ -42,6 +37,6 @@ void DrawButtons(void);
 void Intro(void);
 void DrawHiScoresWindow(void);
 void DrawHiScoresItem(uint8_t y, uint8_t colorNumber, const char *text);
-void DrawScoreAndCreatures(const char *scoreText);
+void DrawScore(const char *scoreText);
 void DrawScreen(const char *scoreText);
 uint8_t ReadKeyboard(bool noWait);

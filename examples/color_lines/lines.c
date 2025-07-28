@@ -28,6 +28,8 @@
 #include "music.h"
 #include <unistd.h>
 
+static const uint16_t BOUNCE_ANIMATION_DELAY = 50;
+
 uint8_t game[GAME_WIDTH][GAME_HEIGHT];
 uint8_t cursorX, cursorY;
 uint8_t selX, selY;
@@ -60,7 +62,7 @@ static void ClearLine(uint8_t x0, uint8_t y0, uint8_t dx, uint8_t dy, uint8_t le
             x += dx;
             y += dy;
         }
-        Delay(REMOVE_ANIMATION_DELAY);
+        DELAY_MS(100);
     }
 
     // Очищаем экран и массив
@@ -77,7 +79,7 @@ static void ClearLine(uint8_t x0, uint8_t y0, uint8_t dx, uint8_t dy, uint8_t le
 static void DrawScoreAndCreatures2(void) {
     char scoreText[UINT16_TO_STRING_SIZE + 1];
     Uint16ToString(scoreText, score, 10);
-    DrawScoreAndCreatures(scoreText);
+    DrawScore(scoreText);
 }
 
 // Ищем линни из 5 шариков и больше
@@ -276,7 +278,7 @@ static uint8_t GameStep(uint8_t newGame) {
             uint8_t j;
             for (j = 0; j < newBallCount; j++)
                 DrawSpriteNew(coords[j].x, coords[j].y, newBalls[j], i);
-            Delay(NEW_ANIMATION_DELAY);
+            DELAY_MS(100);
         }
     }
 
@@ -366,7 +368,7 @@ static void AddToHiScores(void) {
         memcpy(p + 1, p, sizeof(tmp));
         memcpy(p, &tmp, sizeof(tmp));
         DrawHiScoresScreen(0, i - 1);
-        Delay(HISCORE_ANIMATION_DELAY);
+        DELAY_MS(100);
     }
 }
 
@@ -450,7 +452,7 @@ static void MoveBall(void) {
                 break;
             if (soundEnabled)
                 PlaySoundJump();
-            Delay(STEP_ANIMATION_DELAY);
+            DELAY_MS(100);
         };
 
         // Удаляем нарисованные шаги с экрана
@@ -511,8 +513,8 @@ static void BouncingBallAnimation(void) {
 // Главная функция
 
 int main(int, char **) {
-    //  Intro();
-    //    PlayMusic();
+    Intro();
+    PlayMusic();
     NewGame();
 
     char previousPressedKey = 0;
@@ -548,15 +550,15 @@ int main(int, char **) {
                 DrawScoreAndCreatures2();
                 break;
             case '1':
-                showPath ^= 1;
+                showPath = !showPath;
                 DrawButtons();
                 break;
             case '2':
-                soundEnabled ^= 1;
+                soundEnabled = !soundEnabled;
                 DrawButtons();
                 break;
             case '3':
-                showHelp ^= 1;
+                showHelp = !showHelp;
                 DrawButtons();
                 DrawHelp2();
                 break;
