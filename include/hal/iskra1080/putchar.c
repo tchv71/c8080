@@ -13,11 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "hal.h"
+#include <stdio.h>
+#include <stdint.h>
 
-void ClearScreen(void) {
+int __global putchar(int c) {
     asm {
-        ld   c, 1Fh
-        call 0F809h
+__a_1_putchar=__a_1_putchar
+        ld a, l
+        cp 0Ah
+        ld a, 0Dh
+        call z, 0C7F0h
+        ld a, l
+        call 0C7F0h
+        ld h, 0
     }
 }

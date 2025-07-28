@@ -13,11 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "hal.h"
+#pragma once
 
-void ClearScreen(void) {
-    asm {
-        ld   c, 1Fh
-        call 0F809h
-    }
-}
+#include <stdint.h>
+
+#ifndef __C8080_CPU_MHZ
+
+#ifdef ARCH_MICRO80_COLOR
+#include "micro80/cpumhz.h"
+#endif
+
+#ifdef ARCH_SPECIALIST
+#include "specialist/cpumhz.h"
+#endif
+
+#ifndef __C8080_CPU_MHZ
+#define __C8080_CPU_MHZ 2500000
+#endif
+
+#endif

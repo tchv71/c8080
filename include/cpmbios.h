@@ -19,3 +19,4 @@
 
 uint8_t __global cpmBiosConSt(void) __link("cpmbios/cpmbiosconst.c");
 uint8_t __global cpmBiosConIn(void) __link("cpmbios/cpmbiosconin.c");
+void __global cpmBiosConOut(uint8_t c) __link("cpmbios/cpmbiosconout.c");

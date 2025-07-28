@@ -13,11 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <spec/bios.h>
+#include <stdio.h>
 
-void __global PutChar(uint8_t c) {
+int __global putchar(int c) {
     asm {
-        mov  c, a
+__a_1_putchar=__a_1_putchar
+        ld a, l
+        cp 0Ah
+        ld c, 0Dh
+        call z, 0C809h
+        ld c, l
         call 0C809h
+        ld h, 0
     }
 }

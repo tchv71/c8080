@@ -2,23 +2,11 @@
 
 #include <stdint.h>
 
-extern uint16_t graphOffset;
-
 static const uint8_t TEXT_WIDTH = 64;
 static const uint8_t TEXT_HEIGHT = 25;
 
 void FillRectFast(uint8_t* a, uint16_t c, uint8_t l, uint8_t r, uint8_t h);
 void DrawText6(uint8_t* addr, uint8_t step, uint8_t n, const char* text);
-void rect1(uint8_t* a, uint16_t c, uint8_t ll, uint8_t rr, uint8_t l, uint8_t r, uint8_t h);
-
-#define RECTARGS(X0,Y,X1,Y1) \
-  (uint8_t*)((((X0)/8)*256) + (Y) + 0x9000), \
-  ((X1)+1)/8-(X0/8), \
-  (0x80 >> ((uint8_t)(X0) & 7)), \
-  (0x80 >> ((uint8_t)((X1)+1) & 7)), \
-  (0xFF >> ((uint8_t)(X0) & 7)), \
-  (0xFF >> ((uint8_t)((X1)+1) & 7)) ^ 0xFF, \
-  (Y1)-(Y)+1
 
 #define FILLRECTARGS(X0,Y,X1,Y1) (uint8_t*)((((X0)/8)*256) + (Y) + 0x9000), ((X1)+1)/8-(X0/8), (0xFF >> ((uint8_t)(X0) & 7)), (0xFF >> ((uint8_t)((X1)+1) & 7)) ^ 0xFF, (Y1)-(Y)+1
 

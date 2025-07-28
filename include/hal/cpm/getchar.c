@@ -13,11 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "hal.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <cpmbios.h>
 
-void ClearScreen(void) {
-    asm {
-        ld   c, 1Fh
-        call 0F809h
-    }
+int getchar(void) {
+    return cpmBiosConIn();
 }

@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "micro80.h"
+#include "hal.h"
 
 void SetConsoleColor(uint8_t color) {
     asm {
-__a_1_setcolor=__a_1_setcolor
+__a_1_setconsolecolor=__a_1_setconsolecolor
         ld   (0F759h), a
     }
 }

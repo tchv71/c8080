@@ -85,7 +85,7 @@ static uint8_t *CellAddress(uint8_t x, uint8_t y) {
     return TILE(PLAYFIELD_X + x * 3, PLAYFIELD_Y + y * 3);
 }
 
-static void DrawBall1(uint8_t *graphAddr, uint8_t *image, uint8_t color) {
+static void DrawBall1(uint8_t *graphAddr, const uint8_t *image, uint8_t color) {
     DrawImageTile(graphAddr, image + (sizeof(imgBoard[0]) * 10) * (color - 1), imgBoardSize);
 }
 

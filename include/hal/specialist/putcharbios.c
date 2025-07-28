@@ -15,9 +15,9 @@
 
 #include "hal.h"
 
-void ClearScreen(void) {
+void __global PutCharBios(uint8_t c) {
     asm {
-        ld   c, 1Fh
-        call 0F809h
+        mov  c, a
+        call 0C809h
     }
 }

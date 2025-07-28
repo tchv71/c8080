@@ -13,14 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
+#include <stdio.h>
 #include <stdint.h>
+#include <cpmbios.h>
 
-#ifdef ARCH_86RK
-#include <terminal/86rk.h>
-#endif
-
-#ifdef ARCH_MICRO80_COLOR
-#include <terminal/micro80.h>
-#endif
+int putchar(int c) {
+    if (c == 0x0A)
+        cpmBiosConOut(0x0D);
+    cpmBiosConOut(c);
+    return 0;
+}

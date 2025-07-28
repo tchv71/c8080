@@ -24,16 +24,17 @@ __a_1_sound=$+1
         ld   b, 0
         dec  b           ; Compensating for extra ticks
         dec  b           ; 10+5 + 5+5+10 + 5+5+5+10 = 60/30 = 2
-Sound1: ld   (hl), 0     ; extra 10
+        ld   a, 1
+Sound1: out  (1), a      ; extra 10, a = 1
         ld   a, b        ; extra 5
 Sound2: dec  a           ; 5
         jp   nz, Sound2  ; 10
         dec  de          ; extra 5
         ld   a, b        ; extra 5
-        ld   (hl), 20h   ; extra 10
+        out  (1), a      ; extra 10, a = 0
 Sound3: dec  a           ; 5
         jp   nz, Sound3  ; 10
-        ld   c, d        ; extra 5
+        inc  a           ; extra 5, a = 1
         ld   c, d        ; extra 5
         inc  c           ; extra 5
         jp   nz, Sound1  ; extra 10

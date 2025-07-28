@@ -17,14 +17,10 @@
 #include <c8080/delay.h>
 #include <hal/hal.h>
 
-#ifndef __C8080_ONE_SECOND_DELAY
-#define __C8080_ONE_SECOND_DELAY (__C8080_CPU_FREQ / __C8080_DELAY_TICKS)
-#endif
-
 unsigned sleep(unsigned seconds) {
     while (seconds != 0) {
         seconds--;
-        Delay(__C8080_ONE_SECOND_DELAY);
+        DELAY_MS(1000);
     }
     return 0;
 }

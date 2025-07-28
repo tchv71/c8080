@@ -15,8 +15,3 @@
  specialist/player.c \
  specialist/playerWin.c \
  specialist/kingLose.c  
- 
-echo "loadFile([" >/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
-xxd -i lines_specialist.rks | grep , >>/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
-echo "]);" >>/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
-echo "OK!"

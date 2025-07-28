@@ -44,6 +44,15 @@ __init_loop:
     }
 #endif
 
+#ifdef ARCH_MICRO80_COLOR
+    asm {
+        call 0F830h  ; RAMTOP
+        ld   sp, hl
+        ld   hl, 0F86Ch  ; MONITOR
+        push hl
+    }
+#endif
+
     main(0, NULL);
 }
 

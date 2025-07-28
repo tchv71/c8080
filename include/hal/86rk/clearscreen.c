@@ -13,52 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stdio.h>
-#include <stdint.h>
+#include "hal.h"
 
-#ifdef ARCH_86RK
-int __global putchar(int c) {
+void ClearScreen(void) {
     asm {
-        ld a, l
-        cp 0Ah
-        ld c, 0Dh
-        call z, 0F809h
-        ld c, l
+        ld   c, 1Fh
         call 0F809h
-        ld h, 0
     }
 }
-#endif
-
-
-#ifdef ARCH_ISKRA_1080_TARTU
-int __global putchar(int c) {
-    asm {
-        ld a, l
-        cp 0Ah
-        ld a, 0Dh
-        call z, 0C7F0h
-        ld a, l
-        call 0C7F0h
-        ld h, 0
-    }
-}
-#endif
-
-#ifdef ARCH_CPM
-static void __global cpmBiosConOut(uint8_t c) {
-    asm {
-        ld c, a
-        ld hl, (1)
-        ld l, 0Ch
-        jp hl
-    }
-}
-
-int putchar(int c) {
-    if (c == 0x0A)
-        cpmBiosConOut(0x0D);
-    cpmBiosConOut(c);
-    return 0;
-}
-#endif

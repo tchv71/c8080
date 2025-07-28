@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "micro80.h"
+#include "hal.h"
 
 void __global DrawImageTile(void *tile, const void *image, uint16_t width_height) {
     asm {

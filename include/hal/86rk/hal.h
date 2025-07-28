@@ -15,10 +15,27 @@
 
 #pragma once
 
-#include <stddef.h>
-#include <c8080/c8080.h>
-#include <hal/stdio.h>
+#include <stdint.h>
+#include <codepage/koi7.h>
 
-int snprintf(char *buffer, size_t bufer_size, const char *format, ...) __link("stdio/snprintf.c");
-int printf(const char *format, ...) __link("stdio/printf.c");
-int puts(const char *text) __link("stdio/puts.c");
+#define TILE(X, Y) (uint8_t *)(0xE800 + (X) + (Y)*64)
+
+void ClearScreen(void) __link("clearscreen.c");
+void MoveCursorHome(void) __link("movecursorhome.c");
+void ShowCursor(void) __link("showcursor.c");
+void HideCursor(void) __link("hidecursor.c");
+uint8_t ScanKey(void) __address(0xF81B);
+
+// Key codes
+
+static const uint8_t KEY_UP = 0x19;
+static const uint8_t KEY_LEFT = 0x08;
+static const uint8_t KEY_RIGHT = 0x18;
+static const uint8_t KEY_DOWN = 0x1A;
+static const uint8_t KEY_ENTER = 0x0D;
+static const uint8_t KEY_BACKSPACE = 0x7F;
+
+// Other codes
+
+static const uint8_t TEXT_WIDTH = 64;
+static const uint8_t TEXT_HEIGHT = 25;

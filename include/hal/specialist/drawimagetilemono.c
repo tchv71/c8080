@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "specialist.h"
+#include "hal.h"
 
 void __global DrawImageTileMono(void* tile, const void* image, uint16_t width_height) {
     asm {

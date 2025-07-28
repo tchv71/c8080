@@ -13,11 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "hal.h"
+#pragma once
 
-void ClearScreen(void) {
-    asm {
-        ld   c, 1Fh
-        call 0F809h
-    }
-}
+#define __C8080_CPU_MHZ 1700000  // TODO: Поставить примерную скорость с учетом работы DMA

@@ -13,45 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stdio.h>
-#include <stdint.h>
-
-#ifdef ARCH_CPM
 #include <cpmbios.h>
 
-int getchar(void) {
-    return cpmBiosConIn();
-}
-#else
-
-#ifdef ARCH_86RK
-int __global getchar(void) {
+void __global cpmBiosConOut(uint8_t c) {
     asm {
-        call 0F803h
-        ld l, a
-        ld h, 0
+__1_a_cpmbiosconout=__1_a_cpmbiosconout
+        ld c, a
+        ld hl, (1)
+        ld l, 0Ch
+        jp hl
     }
 }
-#endif
-
-#ifdef ARCH_SPECIALIST
-int __global getchar(void) {
-    asm {
-        call 0C803h
-        ld l, a
-        ld h, 0
-    }
-}
-#endif
-
-#ifdef ARCH_ISKRA_1080_TARTU
-int __global getchar(void) {
-    asm {
-        call 0C7F3h
-        ld l, a
-        ld h, 0
-    }
-}
-#endif
-
-#endif

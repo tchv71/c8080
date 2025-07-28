@@ -478,10 +478,8 @@ static void BouncingBallAnimation(void) {
 
 int main(int, char **) {
     Intro();
+    PlayMusic();
     NewGame();
-
-    //score = 250;
-    //AddToHiScores();
 
     char previousPressedKey = 0;
     uint8_t keybTimeout = 0;

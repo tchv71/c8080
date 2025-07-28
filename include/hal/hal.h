@@ -17,12 +17,16 @@
 
 #include <stdint.h>
 
+#ifdef ARCH_86RK
+#include "86rk/hal.h"
+#endif
+
 #ifdef ARCH_MICRO80_COLOR
-#include "micro80/micro80.h"
+#include "micro80/hal.h"
 #endif
 
 #ifdef ARCH_SPECIALIST
-#include "specialist/specialist.h"
+#include "specialist/hal.h"
 #endif
 
 #ifndef __C8080_ONE_SECOND_DELAY

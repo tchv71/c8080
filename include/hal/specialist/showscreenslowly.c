@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "specialist.h"
+#include "hal.h"
 
 void ShowScreenSlowly(uint8_t high_byte_of_addr) {
     asm {

@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
-#include <terminal.h>
+#include <hal/hal.h>
 
 #define SIZE 4
 uint32_t score = 0;
@@ -27,13 +27,13 @@ void drawBoard() {
     MoveCursorHome();
 
 #ifdef ARCH_MICRO80_COLOR
-    SetColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_YELLOW);
+    SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_YELLOW);
 #endif
 
     printf("Игра 2048 %17d очков", score);
 
 #ifdef ARCH_MICRO80_COLOR
-    SetColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
+    SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
 #endif
 
     for (y = 0; y < SIZE; y++) {
@@ -56,7 +56,7 @@ void drawBoard() {
 void prepareScreen() {
     uint8_t x, y, i;
 #ifdef ARCH_MICRO80_COLOR
-    SetColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
+    SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
 #endif
     HideCursor();
     ClearScreen();
@@ -72,13 +72,13 @@ void prepareScreen() {
     printf("└───────┴───────┴───────┴───────┘\n");
 
 #ifdef ARCH_MICRO80_COLOR
-    SetColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_YELLOW);
+    SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_YELLOW);
 #endif
 
-    printf("\n          W,A,S,D or R,Q\n");
+    printf("\n          W,A,S,D или R,Q\n");
 
 #ifdef ARCH_MICRO80_COLOR
-    SetColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
+    SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
 #endif
 
     drawBoard();
@@ -384,12 +384,11 @@ int main(int argc, char *argv[]) {
         }
         if (success) {
             drawBoard();
-            sleep(2);
             addRandom();
             drawBoard();
             if (gameEnded()) {
 #ifdef ARCH_MICRO80_COLOR
-    SetColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_RED);
+    SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_RED);
 #endif
                 printf("            GAME OVER          \n");
                 break;
@@ -397,7 +396,7 @@ int main(int argc, char *argv[]) {
         }
         if (c == 'q' || c == 'Q') {
 #ifdef ARCH_MICRO80_COLOR
-    SetColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_RED);
+    SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_RED);
 #endif
             printf("            QUIT? (y/n)         \n");
             c = getchar();
@@ -408,7 +407,7 @@ int main(int argc, char *argv[]) {
         }
         if (c == 'r' || c == 'R') {
 #ifdef ARCH_MICRO80_COLOR
-    SetColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_RED);
+    SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_RED);
 #endif
             printf("          RESTART? (y/n)       \n");
             c = getchar();
@@ -419,7 +418,7 @@ int main(int argc, char *argv[]) {
     }
 
 #ifdef ARCH_MICRO80_COLOR
-    SetColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
+    SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
 #endif
     ShowCursor();
     ClearScreen();

@@ -17,7 +17,8 @@
 
 #include <stdint.h>
 #include <c8080/c8080.h>
-
-static const uint16_t __C8080_DELAY_TICKS = 40;
+#include <hal/cpumhz.h>
 
 void Delay(uint16_t n) __link("c8080/delay.c");
+
+#define DELAY_MS(MS) Delay((unsigned long)(MS) * (__C8080_CPU_MHZ / 40 / 1000))

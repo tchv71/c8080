@@ -18,8 +18,6 @@
 #include <stdint.h>
 #include <codepage/micro80.h>
 
-#define __C8080_CPU_FREQ 2500000
-
 #define TILE(X, Y) (uint8_t *)(0xE800 + (X) + (Y)*64)
 
 void ClearScreen(void) __link("clearscreen.c");
@@ -31,6 +29,7 @@ void SetConsoleColor(uint8_t color) __link("setconsolecolor.c");
 void __global DrawImageTile(void *tile, const void *image, uint16_t width_height) __link("drawimagetile.c");
 void DrawText(void *tile, uint8_t color, const char *text) __link("drawtext.c");
 uint8_t ScanKey(void) __address(0xF81B);
+void __global Sound(uint8_t period, uint16_t count) __link("sound.c");
 
 // Color codes
 

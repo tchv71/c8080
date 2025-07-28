@@ -15,7 +15,7 @@ static uint8_t* const TEMP_SCREEN = (uint8_t*)0x4800;
 static const uint8_t PLAYFIELD_Y = 29;
 static const uint8_t PLAYFIELD_X = 11;
 
-uint8_t playerSpriteTop;
+static uint8_t playerSpriteTop;
 
 static void ShowScreenSlowly2(const void *packed_screen, const void *packed_screen_colors) {
     SET_COLOR(COLOR_INK_BLACK);

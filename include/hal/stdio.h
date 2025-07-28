@@ -13,11 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "hal.h"
+#pragma once
 
-void ClearScreen(void) {
-    asm {
-        ld   c, 1Fh
-        call 0F809h
-    }
-}
+#ifdef ARCH_CPM
+int getchar(void) __link("cpm/getchar.c");
+int putchar(int c) __link("cpm/putchar.c");
+#else
+
+#ifdef ARCH_86RK
+int getchar(void) __link("86rk/getchar.c");
+int putchar(int c) __link("86rk/putchar.c");
+#endif
+
+#ifdef ARCH_MICRO80_COLOR
+int getchar(void) __link("micro80/getchar.c");
+int putchar(int c) __link("micro80/putchar.c");
+#endif
+
+#ifdef ARCH_SPECIALIST
+int getchar(void) __link("specialist/getchar.c");
+int putchar(int c) __link("specialist/putchar.c");
+#endif
+
+#ifdef ARCH_ISKRA_1080_TARTU
+int getchar(void) __link("iskra1080/getchar.c");
+int putchar(int c) __link("iskra1080/putchar.c");
+#endif
+
+#endif
