@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
-#include "graph.h"
+#include "resources.h"
 #include "graph_functions.h"
 
 static uint8_t *const TEMP_SCREEN = (uint8_t *)0x4800;
@@ -55,12 +55,12 @@ static void HideScreenSlowly(void) {
 }
 
 void Intro(void) {
-    ShowScreenSlowly2(imgTitle, imgTitle_colors);
+    ShowScreenSlowly2(imgTitle, imgTitleColors);
 }
 
 void DrawScreen(const char *scoreText) {
     HideScreenSlowly();
-    ShowScreenSlowly2(imgScreen, imgScreen_colors);
+    ShowScreenSlowly2(imgScreen, imgScreenColors);
     DrawTextXY(56, 19, COLOR_INK_GREEN, "Вы");
     DrawText(TILE(3, 7), 1, COLOR_INK_GREEN, scoreText);
     uint16_t x = (9 - strlen(hiScores[0].name)) / 2 + 3;
@@ -87,32 +87,38 @@ static void DrawBallFast(uint8_t x, uint8_t y, const uint8_t *o, uint8_t c) {
 
 void DrawCell(uint8_t x, uint8_t y, uint8_t color) {
     if (color == 0)
-        DrawBallFast(x, y, imgBalls + 28 * 16, 1);
+        DrawBallFast(x, y, imgBalls[16], 1);
     else
-        DrawBallFast(x, y, imgBalls, color);
+        DrawBallFast(x, y, imgBalls[0], color);
 }
 
 void DrawSpriteRemove(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
     static const uint8_t *const images[4] = {
-        imgBalls + 5 * 28,
-        imgBalls + 6 * 28,
-        imgBalls + 7 * 28,
-        imgBalls + 8 * 28,
+        imgBalls[5],
+        imgBalls[6],
+        imgBalls[7],
+        imgBalls[8],
     };
     DrawBallFast(x, y, images[phase], color);
 }
 
 void DrawSpriteNew(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
-    DrawBallFast(x, y, imgBalls + (4 - phase) * 28, color);
+    DrawBallFast(x, y, imgBalls[4 - phase], color);
 }
 
 void DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color) {
-    DrawBallFast(x, y, imgBalls + (12 + color) * 28, 1);
+    DrawBallFast(x, y, imgBalls[12 + color], 1);
 }
 
 void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase, bool cursor) {
-    static const uint8_t *const selAnimation[6] = {imgBalls,           imgBalls,           imgBalls,
-                                                   imgBalls + 28 * 10, imgBalls + 28 * 11, imgBalls + 28 * 10};
+    static const uint8_t *const selAnimation[6] = {
+        imgBalls[0],
+        imgBalls[0],
+        imgBalls[0],
+        imgBalls[10],
+        imgBalls[11],
+        imgBalls[10],
+    };
 
     uint8_t *d;
     if (phase == 1) {
@@ -130,9 +136,9 @@ void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase, bool c
 }
 
 void DrawHelp(const uint8_t *newBalls) {
-    DrawBall(TILE(20, 3), imgBalls, newBalls[0]);
-    DrawBall(TILE(23, 3), imgBalls, newBalls[1]);
-    DrawBall(TILE(26, 3), imgBalls, newBalls[2]);
+    DrawBall(TILE(20, 4), imgBalls[0], newBalls[0]);
+    DrawBall(TILE(23, 4), imgBalls[0], newBalls[1]);
+    DrawBall(TILE(26, 4), imgBalls[0], newBalls[2]);
 }
 
 void DrawCursor(void) {
