@@ -27,7 +27,7 @@ void Compiler::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, AsmLa
                 BuildJumpIf(prepare, node->a, !jmp_if_true, label);
                 if (prepare) {
                     node->compiler.main.able = true;
-                    node->compiler.main.regs = U_ALL; // TODO: Calculate used regs
+                    node->compiler.main.regs = U_ALL;  // TODO: Calculate used regs
                 }
                 return;
             }
@@ -37,13 +37,13 @@ void Compiler::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, AsmLa
                 if (NumberIsZero(node->b)) {
                     BuildJumpIfZero(prepare, node->a, node->operator_code == COP_CMP_E, jmp_if_true, label);
                     node->compiler.main.able = true;
-                    node->compiler.main.regs = U_ALL; // TODO: Calculate used regs
+                    node->compiler.main.regs = U_ALL;  // TODO: Calculate used regs
                     return;
                 }
                 if (NumberIsZero(node->a)) {
                     BuildJumpIfZero(prepare, node->b, node->operator_code == COP_CMP_E, jmp_if_true, label);
                     node->compiler.main.able = true;
-                    node->compiler.main.regs = U_ALL; // TODO: Calculate used regs
+                    node->compiler.main.regs = U_ALL;  // TODO: Calculate used regs
                     return;
                 }
             }

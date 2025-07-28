@@ -1,19 +1,17 @@
-/*
- * c8080 stdlib / KOI-7 сodepage
- * Copyright (c) 2024 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+// c8080 stdlib
+// Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #pragma once
 
@@ -67,6 +65,18 @@
 #pragma codepage('Э', 0x7C)
 #pragma codepage('Щ', 0x7D)
 #pragma codepage('Ч', 0x7E)
+
+#pragma codepage('─', 0x80)
+#pragma codepage('│', 0x81)
+#pragma codepage('┌', 0x82)
+#pragma codepage('┐', 0x83)
+#pragma codepage('└', 0x84)
+#pragma codepage('┘', 0x85)
+#pragma codepage('├', 0x86)
+#pragma codepage('┤', 0x87)
+#pragma codepage('┬', 0x88)
+#pragma codepage('┴', 0x89)
+#pragma codepage('┼', 0x8A)
 
 #pragma codepage('Ъ', 0x9F)
 
@@ -134,15 +144,3 @@
 #pragma codepage('э', 0xFC)
 #pragma codepage('щ', 0xFD)
 #pragma codepage('ч', 0xFE)
-
-#pragma codepage('─', 0x80)
-#pragma codepage('│', 0x81)
-#pragma codepage('┌', 0x82)
-#pragma codepage('┐', 0x83)
-#pragma codepage('└', 0x84)
-#pragma codepage('┘', 0x85)
-#pragma codepage('├', 0x86)
-#pragma codepage('┤', 0x87)
-#pragma codepage('┬', 0x88)
-#pragma codepage('┴', 0x89)
-#pragma codepage('┼', 0x8A)
