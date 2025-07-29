@@ -16,7 +16,7 @@
 
 void *__global UnpackMegalz(void *destination, const void *source) {
     asm {
-__a_2_unpackmegalz=__a_2_unpackmegalz
+__a_2_unpackmegalz=0
         ex   hl, de  ; source
 __a_1_unpackmegalz=$+1
         ld   bc, 0  ; destination

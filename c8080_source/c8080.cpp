@@ -123,12 +123,7 @@ static int BadExit(const char *text = nullptr) {
     return 1;
 }
 
-#ifdef WIN32
-int _tmain(int argc, _TCHAR *argv[]) {
-    setlocale(LC_ALL, "RUSSIAN");
-#else
 int main(int argc, char **argv) {
-#endif
     try {
         std::cout << "C Compiler for i8080 (" __DATE__ << ")" << std::endl
                   << "(c) Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru" << std::endl;
@@ -154,7 +149,7 @@ int main(int argc, char **argv) {
                 base_name = o.bin_file_name;
             else if (!c.GetFirstSourceFile(base_name))
                 base_name = "a";
-            RemoveExtension(base_name);
+            base_name = RemoveExtension(base_name);
 
             if (o.asm_file_name.empty())
                 o.asm_file_name = base_name + ".asm";
@@ -203,12 +198,12 @@ int main(int argc, char **argv) {
         if (programm.error)
             return BadExit();
 
-        std::string asm_cmd_line = o.assembler + " --lst " + o.asm_file_name;
+        std::string lst_file_name = RemoveExtension(o.asm_file_name) +".lst";
+
+        std::string asm_cmd_line = o.assembler + " " + o.asm_file_name + " --lst=" + lst_file_name;
         int r = system(asm_cmd_line.c_str());
         if (r != 0)
-            throw std::runtime_error("Assembler error (" + asm_cmd_line + ")");
-
-        system("./go");  // TODO: Remove
+            throw std::runtime_error("Assembler error " + std::to_string(r) + " (" + asm_cmd_line + ")");
 
         std::cout << "Done" << std::endl;
         return 0;

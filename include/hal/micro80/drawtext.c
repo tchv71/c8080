@@ -17,7 +17,7 @@
 
 void DrawText(void *tile, uint8_t color, const char *text) {
     asm {
-__a_3_drawtext=__a_3_drawtext
+__a_3_drawtext=0
         ex   hl, de
 __a_1_drawtext=$+1
         ld   bc, 0 ; tile

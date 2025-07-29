@@ -58,7 +58,7 @@ drawTextNormal_1:
 
 static void __global print_p1(void *, void *) {
     asm {
-__a_2_print_p1=__a_2_print_p1
+__a_2_print_p1=0
         ex   hl, de
 __a_1_print_p1=$+1
         ld   hl, 0
@@ -84,7 +84,7 @@ print_mode1:
 
 static void __global print_p2(void *, void *) {
     asm {
-__a_2_print_p2=__a_2_print_p2
+__a_2_print_p2=0
         ex   hl, de
 __a_1_print_p2=$+1
         ld   hl, 0
@@ -129,7 +129,7 @@ print_mode3:
 
 static void __global print_p3(void *, void *) {
     asm {
-__a_2_print_p3=__a_2_print_p3
+__a_2_print_p3=0
         ex   hl, de
 __a_1_print_p3=$+1
         ld   hl, 0
@@ -175,7 +175,7 @@ print_mode5:
 
 static void __global print_p4(void *, void *) {
     asm {
-__a_2_print_p4=__a_2_print_p4
+__a_2_print_p4=0
         ex   hl, de
 __a_1_print_p4=$+1
         ld   hl, 0

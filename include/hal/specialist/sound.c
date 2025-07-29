@@ -17,7 +17,7 @@
 
 void __global Sound(uint8_t period, uint16_t count) {
     asm {
-__a_2_sound=__a_2_sound
+__a_2_sound=0
         ex   hl, de
         ld   hl, 0F803h
 __a_1_sound=$+1

@@ -17,7 +17,7 @@
 
 void SetConsoleColor(uint8_t color) {
     asm {
-__a_1_setconsolecolor=__a_1_setconsolecolor
+__a_1_setconsolecolor=0
         ld   (0F759h), a
     }
 }

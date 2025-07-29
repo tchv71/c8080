@@ -17,7 +17,7 @@
 
 int __global putchar(int c) {
     asm {
-__a_1_putchar=__a_1_putchar
+__a_1_putchar=0
         ld a, l
         cp 0Ah
         ld c, 0Dh

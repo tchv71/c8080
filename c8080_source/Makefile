@@ -37,5 +37,6 @@ check:
 
 .PHONY: format
 format:
-	clang-format -i ${CPP_FILES} ${H_FILES}
+	clang-format -i ${CPP_FILES} ${H_FILES} $(shell find test -name "*.c" -or -name "*.h") $(shell find include -name "*.c" -or -name "*.h")
+
 

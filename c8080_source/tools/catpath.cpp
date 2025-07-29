@@ -21,7 +21,7 @@ std::string CatPath(CString a, CString b) {
     if (a.empty())
         return b;
     const char c = a[a.size() - 1];
-#if WIN32
+#ifdef __MINGW32__
     if (c == '\\' || c == '/')
         return a + b;
     else

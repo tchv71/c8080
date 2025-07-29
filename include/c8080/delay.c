@@ -19,7 +19,7 @@
 
 void Delay(uint16_t n) {
     asm {
-__a_1_delay=__a_1_delay
+__a_1_delay=0
 Delay_1:
         ld   de, -1     ; 10
         ld   de, -1     ; 10

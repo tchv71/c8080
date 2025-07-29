@@ -21,7 +21,7 @@
 
 static inline std::string GetPath(CString file_name) {
     size_t pos = file_name.rfind('/');
-#if WIN32
+#ifdef __MINGW32__
     const size_t pos1 = file_name.rfind('\\');
     if (pos1 != file_name.npos && (pos == file_name.npos || pos < pos1))
         pos = pos1;

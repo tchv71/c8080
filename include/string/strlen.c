@@ -18,7 +18,7 @@
 size_t __global strlen(const char *string) {
     (void)string;
     asm {
-__a_1_strlen=__a_1_strlen
+__a_1_strlen=0
         ld de, -1
         xor a
 strlen_1:

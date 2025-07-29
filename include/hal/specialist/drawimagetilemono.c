@@ -17,7 +17,7 @@
 
 void __global DrawImageTileMono(void *tile, const void *image, uint16_t width_height) {
     asm {
-__a_3_drawimagetilemono=__a_3_drawimagetilemono
+__a_3_drawimagetilemono=0
         ld   bc, hl
 __a_1_drawimagetilemono=$+1
         ld   de, 0

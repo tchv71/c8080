@@ -17,7 +17,7 @@
 
 void __global ChangeTileColor(void *tile, uint8_t width, uint8_t height) {
     asm {
-__a_3_changetilecolor=__a_3_changetilecolor
+__a_3_changetilecolor=0
         ld   c, a
 __a_1_changetilecolor=$+1
         ld   de, 0

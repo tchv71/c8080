@@ -48,7 +48,7 @@ fillrecttrue_2:
 
 void __global FillRectInt(uint8_t len, uint8_t x, uint8_t *a) {
     asm {
-__a_3_fillrectint=__a_3_fillrectint
+__a_3_fillrectint=0
 __a_2_fillrectint=$+1
         ld   a, 0
 fillrect_int_cmd2:
