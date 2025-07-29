@@ -12,7 +12,3 @@
  micro80/imgPlayerWin.c \
  micro80/imgScreen.c \
  micro80/imgTitle.c
- 
-cp lines_micro80.com /home/alemorf/projects/micro80_emulator/test.com
-cd /home/alemorf/projects/micro80_emulator && make
-

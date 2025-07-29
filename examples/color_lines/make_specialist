@@ -14,8 +14,3 @@ set -e
  specialist/fillrect.c \
  specialist/keyboard.c \
  specialist/resources.c
-
-echo "loadFile([" >/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
-xxd -i lines_specialist.rks | grep , >>/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
-echo "]);" >>/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
-echo "OK!"
