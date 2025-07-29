@@ -1,5 +1,5 @@
 /*
- * Game "Color Lines" for Micro 80
+ * Game "Color Lines" for 8 bit computers
  * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify
@@ -278,7 +278,7 @@ static uint8_t GameStep(uint8_t newGame) {
             uint8_t j;
             for (j = 0; j < newBallCount; j++)
                 DrawSpriteNew(coords[j].x, coords[j].y, newBalls[j], i);
-            DELAY_MS(100);
+            DELAY_MS(50);
         }
     }
 
@@ -500,7 +500,7 @@ static void BouncingBallAnimation(void) {
     selAnimationDelay++;
     if (selAnimationDelay >= BOUNCE_ANIMATION_DELAY) {
         selAnimationDelay = 0;
-        DrawBouncingBall(selX, selY, game[selX][selY], selAnimationFrame, selX == cursorX && selY == cursorY);
+        DrawBouncingBall(selX, selY, game[selX][selY], selAnimationFrame);
         selAnimationFrame++;
         if (selAnimationFrame >= BOUNCE_ANIMATION_COUNT) {
             selAnimationFrame = 0;

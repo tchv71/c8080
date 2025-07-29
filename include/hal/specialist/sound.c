@@ -19,18 +19,18 @@ void __global Sound(uint8_t period, uint16_t count) {
     asm {
 __a_2_sound=__a_2_sound
         ex   hl, de
-        ld   hl, 0F802h
+        ld   hl, 0F803h
 __a_1_sound=$+1
         ld   b, 0
         dec  b           ; Compensating for extra ticks
         dec  b           ; 10+5 + 5+5+10 + 5+5+5+10 = 60/30 = 2
-Sound1: ld   (hl), 0     ; extra 10
+Sound1: ld   (hl), 11    ; extra 10
         ld   a, b        ; extra 5
 Sound2: dec  a           ; 5
         jp   nz, Sound2  ; 10
         dec  de          ; extra 5
         ld   a, b        ; extra 5
-        ld   (hl), 20h   ; extra 10
+        ld   (hl), 10    ; extra 10
 Sound3: dec  a           ; 5
         jp   nz, Sound3  ; 10
         ld   c, d        ; extra 5

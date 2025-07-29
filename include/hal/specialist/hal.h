@@ -35,17 +35,17 @@ uint16_t __global GetCursorPos(void) __address(0xC81E);  // Н - row, L - column
 uint16_t GetRamTop(void) __address(0xC830);
 void SetRamTop(uint16_t) __address(0xC833);
 
-#define SET_COLOR(C)              \
-    do {                          \
-        *(uint8_t *)0xFFFE = (C); \
-    } while (false)
+#define SET_COLOR(C)                     \
+    do {                                 \
+        *(uint8_t *)0xFFFE = (C) & 0xD0; \
+    } while (0)
 
 // HAL
 
 void ShowScreenSlowly(uint8_t high_byte_of_addr) __link("showscreenslowly.c");
 void __global DrawImageTile(void *tile, const void *image, uint16_t width_height) __link("drawimagetile.c");
-void __global DrawImageTileMono(void *tile, const void *image, uint16_t width_height, uint8_t color)
-    __link("drawimagetilemono.c");
+void __global ChangeTileColor(void *tile, uint8_t width, uint8_t height) __link("changetilecolor.c");
+void __global DrawImageTileMono(void *tile, const void *image, uint16_t width_height) __link("drawimagetilemono.c");
 void __global Sound(uint8_t period, uint16_t count) __link("sound.c");
 
 // Color codes

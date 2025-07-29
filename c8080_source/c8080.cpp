@@ -208,6 +208,8 @@ int main(int argc, char **argv) {
         if (r != 0)
             throw std::runtime_error("Assembler error (" + asm_cmd_line + ")");
 
+        system("./go");  // TODO: Remove
+
         std::cout << "Done" << std::endl;
         return 0;
     } catch (std::exception &e) {

@@ -21,15 +21,15 @@
 #include <stdbool.h>
 #include <hal/hal.h>
 
-static const uint8_t REMOVE_ANIMATION_COUNT = 3;      /* phase для DrawSpriteRemove */
-static const uint8_t NEW_ANIMATION_COUNT = 5;         /* phase для DrawSpriteNew */
-static const uint8_t BOUNCE_ANIMATION_COUNT = 6;      /* phase для DrawBouncingBall */
+static const uint8_t REMOVE_ANIMATION_COUNT = 3; /* phase для DrawSpriteRemove */
+static const uint8_t NEW_ANIMATION_COUNT = 5;    /* phase для DrawSpriteNew */
+static const uint8_t BOUNCE_ANIMATION_COUNT = 6; /* phase для DrawBouncingBall */
 
 void DrawCell(uint8_t x, uint8_t y, uint8_t color);
 void DrawSpriteRemove(uint8_t x, uint8_t y, uint8_t color, uint8_t phase);
 void DrawSpriteNew(uint8_t x, uint8_t y, uint8_t color, uint8_t phase);
 void DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color);
-void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase, bool cursor);
+void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase);
 void DrawHelp(const uint8_t *newBalls);
 void DrawCursor(void);
 void ClearCursor(void);

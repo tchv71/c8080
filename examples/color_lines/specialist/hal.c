@@ -1,3 +1,20 @@
+/*
+ * Game "Color Lines" for 8-bit computer Specialist
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "../hal.h"
 #include "../lines.h"
 #include <codepage/866.h>
@@ -9,13 +26,14 @@
 #include <string.h>
 #include <stdio.h>
 #include "resources.h"
-#include "graph_functions.h"
+#include "fillrect.h"
+#include "drawtext.h"
 
 static uint8_t *const TEMP_SCREEN = (uint8_t *)0x4800;
 static const uint8_t PLAYFIELD_Y = 29;
 static const uint8_t PLAYFIELD_X = 11;
-static const uint8_t HISCORE_X = 24;
-static const uint8_t HISCORE_Y = 4;
+static const uint8_t HISCORE_X = 72;
+static const uint8_t HISCORE_Y = 57;
 
 static void ShowScreenSlowly2(const void *packedScreen, const void *packedScreenColors) {
     SET_COLOR(COLOR_INK_BLACK);
@@ -25,7 +43,8 @@ static void ShowScreenSlowly2(const void *packedScreen, const void *packedScreen
 }
 
 void DrawScore(const char *scoreText) {
-    DrawText(TILE(40, 7), 2, COLOR_INK_GREEN, scoreText);
+    SET_COLOR(COLOR_INK_GREEN);
+    DrawText(DRAWTEXTARGS(162, 8), scoreText);
 
     uint8_t n;
     if (score < hiScores[0].score) {
@@ -45,7 +64,7 @@ void DrawScore(const char *scoreText) {
         if (playerLevel == 14) {
             DrawImageTile(s - 50 + 0x200, imgPlayerWin, imgPlayerWinSize);
             DrawImageTile(TILE(3, 53), imgKingLose, imgKingLoseSize);
-        }  // TODO: Торчит остаток меча
+        }
     }
 }
 
@@ -61,77 +80,70 @@ void Intro(void) {
 void DrawScreen(const char *scoreText) {
     HideScreenSlowly();
     ShowScreenSlowly2(imgScreen, imgScreenColors);
-    DrawTextXY(56, 19, COLOR_INK_GREEN, "Вы");
-    DrawText(TILE(3, 7), 1, COLOR_INK_GREEN, scoreText);
-    uint16_t x = (9 - strlen(hiScores[0].name)) / 2 + 3;
-    DrawTextXY(x, 19, COLOR_INK_GREEN, hiScores[0].name);
+    SET_COLOR(COLOR_INK_GREEN);
+    DrawText(DRAWTEXTARGS(168, 190), "Вы");
+    DrawText(DRAWTEXTARGS(13, 8), scoreText);
+    uint16_t x = (9 - strlen(hiScores[0].name)) * 3 / 2 + 9;
+    DrawTextXY(x, 190, hiScores[0].name);
 }
 
 static void DrawBall(uint8_t *tile, const uint8_t *image, uint8_t c) {
-    static const uint8_t colors[1] = {COLOR_INK_BLUE, COLOR_INK_WHITE, COLOR_INK_YELLOW, COLOR_INK_VIOLET,
-                                      COLOR_INK_RED,  COLOR_INK_CYAN,  COLOR_INK_GREEN};
-    DrawImageTileMono(tile, image, imgBallsSize, colors[c - 1]);
+    static const uint8_t colors[] = {COLOR_INK_BLACK,  COLOR_INK_BLUE, COLOR_INK_WHITE, COLOR_INK_YELLOW,
+                                     COLOR_INK_VIOLET, COLOR_INK_RED,  COLOR_INK_CYAN,  COLOR_INK_GREEN};
+    SET_COLOR(colors[c]);
+    DrawImageTileMono(tile, image, imgBallsSize);
 }
 
 static uint8_t *CellAddress(uint8_t x, uint8_t y) {
     return TILE(PLAYFIELD_X + x * 3, PLAYFIELD_Y + y * 20);
 }
 
-static void DrawBallFast(uint8_t x, uint8_t y, const uint8_t *o, uint8_t c) {
-    register uint8_t *d = CellAddress(x, y);
+static void DrawBallXY(uint8_t x, uint8_t y, const uint8_t *image, uint8_t color) {
+    uint8_t *d = CellAddress(x, y);
     SET_COLOR(COLOR_INK_BLUE);
     d[-1] = 0x55;
     d[0x100 - 1] = 0x55;
-    DrawBall(d, o, c);
+    DrawBall(d, image, color);
+}
+
+static void DrawBallJumpXY(uint8_t x, uint8_t y, const uint8_t *image, uint8_t color) {
+    uint8_t *d = CellAddress(x, y) - 1;
+    SET_COLOR(COLOR_INK_BLUE);
+    d[imgBallsHeight] = 0x55;
+    d[0x100 + imgBallsHeight] = 0x55;
+    DrawBall(d, image, color);
 }
 
 void DrawCell(uint8_t x, uint8_t y, uint8_t color) {
     if (color == 0)
-        DrawBallFast(x, y, imgBalls[16], 1);
+        DrawBallXY(x, y, imgBalls[16], 1);
     else
-        DrawBallFast(x, y, imgBalls[0], color);
+        DrawBallXY(x, y, imgBalls[0], color);
 }
 
 void DrawSpriteRemove(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
-    static const uint8_t *const images[4] = {
-        imgBalls[5],
-        imgBalls[6],
-        imgBalls[7],
-        imgBalls[8],
-    };
-    DrawBallFast(x, y, images[phase], color);
+    static const uint8_t *const images[4] = {imgBalls[5], imgBalls[6], imgBalls[7], imgBalls[8]};
+    DrawBallXY(x, y, images[phase], color);
 }
 
 void DrawSpriteNew(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
-    DrawBallFast(x, y, imgBalls[4 - phase], color);
+    DrawBallXY(x, y, imgBalls[4 - phase], color);
 }
 
 void DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color) {
-    DrawBallFast(x, y, imgBalls[12 + color], 1);
+    DrawBallXY(x, y, imgBalls[12 + color], 1);
 }
 
-void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase, bool cursor) {
-    static const uint8_t *const selAnimation[6] = {
-        imgBalls[0],
-        imgBalls[0],
-        imgBalls[0],
-        imgBalls[10],
-        imgBalls[11],
-        imgBalls[10],
-    };
+void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
+    static const uint8_t *const selAnimation[6] = {imgBalls[0],  imgBalls[0],  imgBalls[0],
+                                                   imgBalls[10], imgBalls[11], imgBalls[10]};
 
-    uint8_t *d;
-    if (phase == 1) {
-        d = CellAddress(x, y) - 1;
-        SET_COLOR(COLOR_INK_BLUE);
-        d[14] = 0x55;
-        d[0x100 + 14] = 0x55;
-        DrawBall(d, selAnimation[phase], color);
-    } else {
-        DrawBallFast(x, y, selAnimation[phase], color);
-    }
+    if (phase == 1)
+        DrawBallJumpXY(x, y, imgBalls[0], color);
+    else
+        DrawBallXY(x, y, selAnimation[phase], color);
 
-    if (cursor)
+    if (selX == cursorX && selY == cursorY)
         DrawCursor();
 }
 
@@ -144,7 +156,7 @@ void DrawHelp(const uint8_t *newBalls) {
 void DrawCursor(void) {
     SET_COLOR(COLOR_INK_YELLOW);
     uint8_t *a = CellAddress(cursorX, cursorY);
-    memset(a, 255, 2);
+    memset(a, 255, 2);  // TODO: Cursor image
     memset(a + 0x100, 255, 2);
     memset(a + 12, 255, 2);
     memset(a + 0x100 + 12, 255, 2);
@@ -156,16 +168,19 @@ void ClearCursor(void) {
 
 static void DrawButton(uint8_t *tile, bool state) {
     SET_COLOR(state ? COLOR_INK_GREEN : COLOR_INK_BLUE);
-
-    uint8_t i;
-    for (i = 4; i; --i, tile += 0x100)
-        memcpy(tile, tile, 8);  // TODO: ChangeColor
+    ChangeTileColor(tile, 4, 8);
 }
 
 void DrawButtons(void) {
     DrawButton(TILE(10, 240), showPath);
     DrawButton(TILE(18, 240), soundEnabled);
     DrawButton(TILE(26, 240), showHelp);
+}
+
+void DrawHiScoresWindow(void) {
+    SET_COLOR(COLOR_INK_BLUE);
+    FillRectInverse();
+    FillRect(FILLRECTARGS(108, PLAYFIELD_Y + 17, 274, PLAYFIELD_Y + 156));
 }
 
 void DrawHiScoresItem(uint8_t y, uint8_t colorNumber, const char *text) {
@@ -175,11 +190,6 @@ void DrawHiScoresItem(uint8_t y, uint8_t colorNumber, const char *text) {
         COLOR_INK_YELLOW,
         COLOR_INK_WHITE,
     };
-    DrawTextXY(HISCORE_X, (HISCORE_Y + 1) + y, colors[colorNumber], text);
-}
-
-void DrawHiScoresWindow(void) {
-    SET_COLOR(COLOR_INK_BLUE);
-    graph0();
-    FillRectFast(FILLRECTARGS(108, PLAYFIELD_Y + 17, 274, PLAYFIELD_Y + 156));
+    SET_COLOR(colors[colorNumber]);
+    DrawTextXY(HISCORE_X, HISCORE_Y + y * 10, text);
 }

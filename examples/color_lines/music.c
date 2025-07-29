@@ -1,3 +1,20 @@
+/*
+ * Game "Color Lines" for 8 bit computers
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "music.h"
 #include <hal/hal.h>
 #include <stdio.h>
@@ -20,11 +37,12 @@
 
 #define ITEM(N, X) (N), (uint32_t)(X)*BASE_LENGTH / (N)
 
-static const uint16_t music[] = {ITEM(F, 8), ITEM(A, 4), ITEM(C2, 4), ITEM(A, 4),  ITEM(F, 8), ITEM(C, 4),  ITEM(D, 4),
-                                 ITEM(E, 4), ITEM(F, 8), ITEM(A, 4),  ITEM(C2, 4), ITEM(A, 4), ITEM(G, 8),  ITEM(C, 4),
-                                 ITEM(D, 4), ITEM(E, 4), ITEM(E, 8),  ITEM(C, 4),  ITEM(D, 4), ITEM(E, 4),  ITEM(F, 16),
-                                 ITEM(F, 8), ITEM(A, 4), ITEM(C2, 4), ITEM(A, 4),  ITEM(G, 8), ITEM(C, 4),  ITEM(D, 4),
-                                 ITEM(E, 4), ITEM(E, 8), ITEM(C, 4),  ITEM(D, 4),  ITEM(E, 4), ITEM(F, 16), 0};
+static const uint16_t music[] = {
+    ITEM(F, 8), ITEM(A, 4),  ITEM(C2, 4), ITEM(A, 4), ITEM(F, 8), ITEM(C, 4),  ITEM(D, 4),  ITEM(E, 4), ITEM(F, 8),
+    ITEM(A, 4), ITEM(C2, 4), ITEM(A, 4),  ITEM(G, 8), ITEM(C, 4), ITEM(D, 4),  ITEM(E, 4),  ITEM(E, 8), ITEM(C, 4),
+    ITEM(D, 4), ITEM(E, 4),  ITEM(F, 16), ITEM(F, 8), ITEM(A, 4), ITEM(C2, 4), ITEM(A, 4),  ITEM(G, 8), ITEM(C, 4),
+    ITEM(D, 4), ITEM(E, 4),  ITEM(E, 8),  ITEM(C, 4), ITEM(D, 4), ITEM(E, 4),  ITEM(F, 16), 0,
+};
 
 void PlayMusic(void) {
     const uint16_t *i = music;

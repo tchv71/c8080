@@ -137,9 +137,21 @@ static bool LastCall(AsmBase &a, AsmBase::Line &l, AsmBase::Line *l1) {
         // with
         //     jp   function
 
-        if (l1 && l1->opcode == AC_RET) {
-            l.opcode = (l.opcode == AC_CALL) ? AC_JMP : AC_JMP_CONDITION;
+        if (l1 && l1->opcode == AC_RET&& l.opcode == AC_CALL) {
+            l.opcode = AC_JMP;
             l1->opcode = AC_REMOVED;
+            return true;
+        }
+
+        // Replace
+        //     call cc, function
+        //     ret
+        // with
+        //     jp   cc, function
+        //     ret
+
+        if (l1 && l1->opcode == AC_RET && l.opcode == AC_CALL_CONDITION) {
+            l.opcode = AC_JMP_CONDITION;
             return true;
         }
 

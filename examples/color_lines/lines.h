@@ -1,5 +1,5 @@
 /*
- * Game "Color Lines" for Micro 80
+ * Game "Color Lines" for 8 bit computers
  * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
  *
  * This program is free software: you can redistribute it and/or modify

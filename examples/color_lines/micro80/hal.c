@@ -110,12 +110,12 @@ void DrawSpriteStep(uint8_t x, uint8_t y, uint8_t color) {
     DrawImageTile(CellAddress(x, y), imgBoard[color], imgBoardSize);
 }
 
-void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase, bool cursor) {
+void DrawBouncingBall(uint8_t x, uint8_t y, uint8_t color, uint8_t phase) {
     static const uint8_t *const images[] = {
         imgBalls[0], imgBalls[9], imgBalls[9], imgBalls[0], imgBalls[8], imgBalls[8],
     };
     DrawBall1(CellAddress(x, y), images[phase], color);
-    if (cursor)
+    if (selX == cursorX && selY == cursorY)
         DrawCursor();
 }
 
