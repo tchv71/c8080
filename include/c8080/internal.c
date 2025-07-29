@@ -18,7 +18,7 @@
 #include <c8080/div16mod.h>
 #include <c8080/div32mod.h>
 
-uint16_t __div_16_mod; // TODO: union 8, 16, 32
+uint16_t __div_16_mod;  // TODO: union 8, 16, 32
 uint32_t __div_32_mod;
 
 int main(int argc, char **argv);

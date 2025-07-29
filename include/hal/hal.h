@@ -28,7 +28,3 @@
 #ifdef ARCH_SPECIALIST
 #include "specialist/hal.h"
 #endif
-
-#ifndef __C8080_ONE_SECOND_DELAY
-#define __C8080_CPU_FREQ 2500000
-#endif
