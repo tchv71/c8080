@@ -41,9 +41,9 @@ void Compiler::BuildSet(CNodePtr &node) {
             break;
         case CBT_LONG:
         case CBT_UNSIGNED_LONG:
+            Measure(node, R32_DEHL, &Compiler::Case_Set32_NM);  // SHLD const / XCHF / SHLD const + 2
             Measure(node, R32_DEHL, &Compiler::Case_Set32_MM);  // PUSH HL / CALL set_32
             Measure(node, R32_DEHL, &Compiler::Case_Set32_AM);  // PUSH DE / CALL set_32
-            Measure(node, R32_DEHL, &Compiler::Case_Set32_NM);  // SHLD const / XCHF / SHLD const + 2
             break;
         default:
             C_ERROR_UNSUPPORTED_ASM_TYPE(node->b);

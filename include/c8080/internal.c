@@ -1,25 +1,25 @@
-// c8080 stdlib
-// Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * c8080 stdlib
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include <stdint.h>
 #include <stddef.h>
-#include <c8080/div16mod.h>
-#include <c8080/div32mod.h>
+#include <c8080/remainder.h>
 
-uint16_t __div_16_mod;  // TODO: union 8, 16, 32
-uint32_t __div_32_mod;
+uint32_t __remainder;
 
 int main(int argc, char **argv);
 
@@ -35,7 +35,6 @@ __init_loop:
         jp   nc, __init_loop
     }
 
-    // TODO: __init_hal
 #ifdef ARCH_86RK
     asm {
         call 0F830h
@@ -50,6 +49,14 @@ __init_loop:
         call 0F830h
         ld   sp, hl
         ld   hl, 0F86Ch
+        push hl
+    }
+#endif
+
+#ifdef ARCH_SPECIALIST
+    asm {
+        ld sp, 8E00h
+        ld hl, 0C800h
         push hl
     }
 #endif
@@ -148,11 +155,13 @@ void __o_div_i8() {
 // Output: a
 
 void __o_div_u8() {  // TODO: Optimize ADD HL, HL
-    (void)__div_16_mod;
+    (void)__remainder;
     asm {
         ld   e, a
-        ld   hl, 8 << 8  ; l = remain, h = loop
-        ld   c, l        ; c = result
+        ld   hl, 0
+        ld   (__remainder + 2), hl
+        ld   h, 8       ; l = remain, h = loop
+        ld   c, l       ; c = result
 __o_div_u8_1:
         ld   a, e
         rla
@@ -170,7 +179,7 @@ __o_div_u8_2:
         ld   c, a
         dec  h
         jp   nz, __o_div_u8_1
-        ld   (__div_16_mod), hl
+        ld   (__remainder), hl  ; l = remain, h = 0
         ld   a, c
     }
 }
@@ -368,11 +377,13 @@ __o_mul_i16_2:
 // Output: hl
 
 void __o_div_u16() {
-    (void)__div_16_mod;
+    (void)__remainder;
     asm {
         call __o_div_u16__l0
         ex   hl, de
-        ld   (__div_16_mod), hl
+        ld   (__remainder), hl
+        ld   hl, 0
+        ld   (__remainder + 2), hl
         ex   hl, de
         ret
 
@@ -867,15 +878,15 @@ void __o_mul_i32() {
 // Output: de:hl
 
 void __o_div_u32() {
-    (void)__div_32_mod;
+    (void)__remainder;
     asm {
-        ld   bc, hl                    ; __div_32_mod = a
+        ld   bc, hl                    ; __remainder = a
         pop  hl
         ex   (sp), hl
-        ld   (__div_32_mod+0), hl
+        ld   (__remainder+0), hl
         pop  hl
         ex   (sp), hl
-        ld   (__div_32_mod+2), hl
+        ld   (__remainder+2), hl
         ld   hl, __o_div_u32__ret
 __o_div_u32__com:
         ld   (__o_div_u32__ra), hl
@@ -887,13 +898,13 @@ __o_div_u32__com:
         ret  z
         ld   c, 1                      ; c = 1;
 __o_div_u32__l1:                       ; do
-        ld   a, (__div_32_mod+0)       ; if (a < b) break;
+        ld   a, (__remainder+0)       ; if (a < b) break;
         sub  l
-        ld   a, (__div_32_mod+1)
+        ld   a, (__remainder+1)
         sbc  h
-        ld   a, (__div_32_mod+2)
+        ld   a, (__remainder+2)
         sbc  e
-        ld   a, (__div_32_mod+3)
+        ld   a, (__remainder+3)
         sbc  d
         jp   c, __o_div_u32__l2
         inc  c
@@ -923,26 +934,26 @@ __o_div_u32__result = $+1
         pop  bc                        ; pop(x)
         pop  hl
 
-        ld   a, (__div_32_mod+0)       ; if (x < __div_32_mod) continue;
+        ld   a, (__remainder+0)       ; if (x < __remainder) continue;
         sub  l
-        ld   a, (__div_32_mod+1)
+        ld   a, (__remainder+1)
         sbc  h
-        ld   a, (__div_32_mod+2)
+        ld   a, (__remainder+2)
         sbc  c
-        ld   a, (__div_32_mod+3)
+        ld   a, (__remainder+3)
         sbc  b
         jp   c, __o_div_u32__l4
 
-        ld   (__div_32_mod+3), a       ; __div_32_mod -= x
-        ld   a, (__div_32_mod+0)
+        ld   (__remainder+3), a       ; __remainder -= x
+        ld   a, (__remainder+0)
         sub  l
-        ld   (__div_32_mod+0), a
-        ld   a, (__div_32_mod+1)
+        ld   (__remainder+0), a
+        ld   a, (__remainder+1)
         sbc  h
-        ld   (__div_32_mod+1), a
-        ld   a, (__div_32_mod+2)
+        ld   (__remainder+1), a
+        ld   a, (__remainder+2)
         sbc  c
-        ld   (__div_32_mod+2), a
+        ld   (__remainder+2), a
 
         ld   hl, (__o_div_u32__result) ; result++;
         inc  hl
@@ -986,17 +997,17 @@ void __o_mod_u32() {
         ld   bc, hl                ; bc = v1l
         pop  hl                    ; hl = ret, stack = v2l
         ex   (sp), hl              ; hl = v2l, stack = ret
-        ld   (__div_32_mod+0), hl
+        ld   (__remainder+0), hl
         pop  hl                    ; hl = ret, stack = v2h
         ex   (sp), hl              ; hl = v2l, stack = ret
-        ld   (__div_32_mod+2), hl
+        ld   (__remainder+2), hl
         ld   hl, __o_mod_u32__ret
         jp   __o_div_u32__com
 
 __o_mod_u32__ret:
-        ld   hl, (__div_32_mod+2)
+        ld   hl, (__remainder+2)
         ex   hl, de
-        ld   hl, (__div_32_mod+0)
+        ld   hl, (__remainder+0)
     }
 }
 

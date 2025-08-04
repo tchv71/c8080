@@ -19,16 +19,28 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <c8080/hal.h>
+#include <c8080/keys.h>
 #include <c8080/delay.h>
-#include <c8080/div16mod.h>
+#include <c8080/remainder.h>
 #include <c8080/uint16tostring.h>
 #include "lines.h"
-#include "hal.h"
 #include "path.h"
 #include "music.h"
+#include "resources.h"
+#include "consts.h"
 #include <unistd.h>
 
+static const uint8_t REMOVE_ANIMATION_COUNT = 3; /* phase для DrawSpriteRemove */
+static const uint8_t NEW_ANIMATION_COUNT = 5;    /* phase для DrawSpriteNew */
+static const uint8_t BOUNCE_ANIMATION_COUNT = 6; /* phase для DrawBouncingBall */
 static const uint16_t BOUNCE_ANIMATION_DELAY = 50;
+
+static const uint8_t LAST_STEP = 9;
+static const uint8_t HISCORE_COUNT = 8;
+static const uint8_t COLORS_COUNT = 7;
+static const uint8_t NEW_BALL_COUNT = 3;
+static const uint8_t NO_SEL = 0xFF;  // Значение для selX
 
 uint8_t game[GAME_WIDTH][GAME_HEIGHT];
 uint8_t cursorX, cursorY;
@@ -40,12 +52,35 @@ bool soundEnabled = true;
 bool showHelp = true;
 uint8_t selAnimationDelay;
 uint8_t selAnimationFrame;
-uint8_t playerLevel;
+uint8_t playerHeight;
+
+struct HiScore {
+    char name[10];
+    uint16_t score;
+};
 
 struct HiScore hiScores[] = {
-    {"Alemorf", 50}, {"B2M", 45},  {"Eltaron", 40}, {"Error404", 35},
-    {"SYSCAT", 30},  {"Mick", 25}, {"SVOFSK", 20},  {"Titus", 15},
+    {"Alemorf", 300}, {"B2M", 250},  {"Eltaron", 200}, {"Error404", 150},
+    {"SYSCAT", 100},  {"Mick", 80}, {"SVOFSK", 60},  {"Titus", 40},
 };
+
+void *CellAddress(uint8_t x, uint8_t y) {
+    x = PLAYFIELD_X + x * CELL_TILE_WIDTH;
+    y = PLAYFIELD_Y + y * CELL_TILE_HEIGHT;
+    return TILE(x, y);
+}
+
+void DrawBall(uint8_t *tile, uint8_t sprite, uint8_t color) {
+    DrawImageTile(tile, imgBalls[sprite + COLOR_STEP * color], imgBallsSize);
+}
+
+static void DrawBallXY(uint8_t x, uint8_t y, uint8_t sprite, uint8_t color) {
+    DrawBall(CellAddress(x, y), sprite, color);
+}
+
+void DrawCursor(void) {
+    DrawBallXY(cursorX, cursorY, 12, game[cursorX][cursorY]);
+}
 
 // Удаляем линни из 5 шариков и больше
 
@@ -53,12 +88,12 @@ static void ClearLine(uint8_t x0, uint8_t y0, uint8_t dx, uint8_t dy, uint8_t le
     register uint8_t x, y, o, i;
 
     // Анимация исчезновения шариков
-    uint8_t color = game[x0][y0];  // TODO: const вызывает сбой
+    const int8_t color = game[x0][y0];
     for (o = 0; o < REMOVE_ANIMATION_COUNT; o++) {
         x = x0;
         y = y0;
         for (i = length; i != 0; --i) {
-            DrawSpriteRemove(x, y, color, o);
+            DrawBallXY(x, y, 5 + o, color);
             x += dx;
             y += dy;
         }
@@ -70,7 +105,7 @@ static void ClearLine(uint8_t x0, uint8_t y0, uint8_t dx, uint8_t dy, uint8_t le
     y = y0;
     for (i = length; i != 0; --i) {
         game[x][y] = 0;
-        DrawCell(x, y, 0);
+        DrawBallXY(x, y, 0, 0);
         x += dx;
         y += dy;
     }
@@ -79,7 +114,28 @@ static void ClearLine(uint8_t x0, uint8_t y0, uint8_t dx, uint8_t dy, uint8_t le
 static void DrawScoreAndCreatures2(void) {
     char scoreText[UINT16_TO_STRING_SIZE + 1];
     Uint16ToString(scoreText, score, 10);
-    DrawScore(scoreText);
+
+    DrawText(DRAWTEXTARGS(SCORE_X, SCORE_Y), SCORE_COLOR, scoreText);
+
+    uint16_t n;
+    n = (score / (hiScores[0].score / PLAYAR_MAX_HEIGHT));
+    if (n > PLAYAR_MAX_HEIGHT)
+        n = PLAYAR_MAX_HEIGHT;
+
+    if (playerHeight != n) {
+        playerHeight = n;
+        uint8_t y = PLAYER_Y - imgPlayerDHeight;
+        for (; n > 0; n--) {
+            DrawImageTileXY(PLAYER_X, y, imgPlayerD, imgPlayerDSize);
+            y -= imgPlayerDHeight;
+        }
+        y -= (imgPlayerHeight - imgPlayerDHeight);
+        DrawImageTileXY(PLAYER_X, y, imgPlayer, imgPlayerSize);
+        if (playerHeight == PLAYAR_MAX_HEIGHT) {
+            DrawImageTileXY(PLAYER_X + PLAYER_CROWN_DX, y - PLAYER_CROWN_DY, imgPlayerWin, imgPlayerWinSize);
+            DrawImageTile(TILE(KING_X, KING_Y), imgKingLose, imgKingLoseSize);
+        }
+    }
 }
 
 // Ищем линни из 5 шариков и больше
@@ -211,7 +267,13 @@ static uint8_t CalcFreeCellCount(void) {
 static void GenerateNewBalls(void) {
     uint8_t i;
     for (i = 0; i < NEW_BALL_COUNT; i++)
-        newBalls[i] = rand() % COLORS_COUNT + 1;
+        newBalls[i] = (uint8_t)rand() % COLORS_COUNT + 1;
+}
+
+static void DrawHelp(const uint8_t *newBalls) {
+    DrawBall(TILE(HELP_1_X, HELP_1_Y), 11, newBalls[0]);
+    DrawBall(TILE(HELP_2_X, HELP_2_Y), 11, newBalls[1]);
+    DrawBall(TILE(HELP_3_X, HELP_3_Y), 11, newBalls[2]);
 }
 
 // Показываем цвета новых шариков
@@ -269,7 +331,7 @@ static uint8_t GameStep(uint8_t newGame) {
 
         // Запоминаем координаты для анимации
         coords[i].x = (p - &game[0][0]) / GAME_WIDTH;
-        coords[i].y = __div_16_mod;
+        coords[i].y = __remainder;
     }
 
     // Рисуем анимацию
@@ -277,7 +339,7 @@ static uint8_t GameStep(uint8_t newGame) {
         for (i = 0; i < NEW_ANIMATION_COUNT; i++) {
             uint8_t j;
             for (j = 0; j < newBallCount; j++)
-                DrawSpriteNew(coords[j].x, coords[j].y, newBalls[j], i);
+                DrawBallXY(coords[j].x, coords[j].y, 4 - i, newBalls[j]);
             DELAY_MS(50);
         }
     }
@@ -299,22 +361,39 @@ static uint8_t GameStep(uint8_t newGame) {
     return freeCellCount == 0;
 }
 
+static void DrawHiScoresItem(uint8_t y, uint8_t color, const char *text) {
+    DrawTextXY(HI_X, HI_Y + y * HI_LINE_HEIGHT, color, text);
+}
+
 static void DrawHiScoresScreen(uint8_t i, uint8_t hilightPos) {
     struct HiScore *h = hiScores + i;
     for (; i < HISCORE_COUNT; ++i) {
         char text[10 + 1 + 5 + 1];
         h->name[9] = '\0';
         snprintf(text, sizeof(text), "%10s %5u", h->name, h->score);
-        DrawHiScoresItem(i + 2, hilightPos == i, text);
+        DrawHiScoresItem(i + 2, hilightPos == i ? HI_COLOR_1 : HI_COLOR_0, text);
         h++;
     }
 }
 
 static void DrawHiScoresWindow2(uint8_t hilight, const char *lastLine) {
-    DrawHiScoresWindow();
-    DrawHiScoresItem(0, 3, "    Рекорды");
+    uint8_t y;
+    uint8_t gy = HIRECT_Y;
+    for (y = 0; y < HIRECT_HEIGHT; y++) {
+        uint8_t gx = HIRECT_X;
+        DrawImageTileXY(gx, gy, imgHi[0], imgHiSize);
+        gx += imgHiWidth;
+        uint8_t x;
+        for (x = 0; x < HIRECT_WIDTH; x++) {
+            DrawImageTileXY(gx, gy, imgHi[1], imgHiSize);
+            gx += imgHiWidth;
+        }
+        DrawImageTileXY(gx, gy, imgHi[2], imgHiSize);
+        gy += CELL_TILE_HEIGHT;
+    }
+    DrawHiScoresItem(0, HI_COLOR_3, "    Рекорды");
     DrawHiScoresScreen(0, hilight);
-    DrawHiScoresItem(HISCORE_COUNT + 3, 2, lastLine);
+    DrawHiScoresItem(HISCORE_COUNT + 3, HI_COLOR_2, lastLine);
 }
 
 static void DrawHiScores(void) {
@@ -334,7 +413,7 @@ static void AddToHiScores(void) {
     // Ввод имени
     uint8_t i = 0;
     for (;;) {
-        char c = ReadKeyboard(false);
+        char c = ReadKey();
         if (c == KEY_ENTER)
             break;
         if (c == KEY_BACKSPACE) {
@@ -355,7 +434,7 @@ static void AddToHiScores(void) {
         DrawHiScoresScreen(HISCORE_COUNT - 1, HISCORE_COUNT - 1);
     }
 
-    DrawHiScoresItem(HISCORE_COUNT + 3, 2, " Нажмите Пробел ");
+    DrawHiScoresItem(HISCORE_COUNT + 3, HI_COLOR_2, "                ");
 
     // Анимация перемещения новой позиции вверх
     struct HiScore *p = hiScores + HISCORE_COUNT - 1;
@@ -370,14 +449,29 @@ static void AddToHiScores(void) {
         DrawHiScoresScreen(0, i - 1);
         DELAY_MS(100);
     }
+
+    DrawHiScoresItem(HISCORE_COUNT + 3, HI_COLOR_2, " Нажмите Пробел ");
 }
 
-static void DrawScreen2(void) {
+static void DrawButtons(void) {
+    DrawImageTile(TILE(BUTTON_PATH_X, BUTTON_PATH_Y), showPath ? imgButtons[1] : imgButtons[0], imgButtonsSize);
+    DrawImageTile(TILE(BUTTON_SOUND_X, BUTTON_SOUND_Y), soundEnabled ? imgButtons[3] : imgButtons[2], imgButtonsSize);
+    DrawImageTile(TILE(BUTTON_HELP_X, BUTTON_HELP_Y), showHelp ? imgButtons[5] : imgButtons[4], imgButtonsSize);
+}
+
+static void DrawScreen3(void) {
+    DrawScreen(imgScreen);
+
     char scoreText[UINT16_TO_STRING_SIZE + 1];
     Uint16ToString(scoreText, hiScores[0].score, 10);
-    DrawScreen(scoreText);
+    DrawText(DRAWTEXTARGS(TOPSCORE_X, TOPSCORE_Y), TOPSCORE_COLOR, scoreText);
 
-    playerLevel = -1;  // Redraw
+    if (TOPNAME_Y != 0) {
+        uint16_t tx = (sizeof(hiScores[0].name) - 1 - strlen(hiScores[0].name)) * 4 / 2 + TOPNAME_X;
+        DrawTextXY(tx, TOPNAME_Y, TOPNAME_COLOR, hiScores[0].name);
+    }
+
+    playerHeight = -1;  // Redraw
     DrawScoreAndCreatures2();
 
     DrawButtons();
@@ -386,7 +480,7 @@ static void DrawScreen2(void) {
     uint8_t x, y;
     for (x = 0; x < GAME_WIDTH; x++)
         for (y = 0; y < GAME_HEIGHT; y++)
-            DrawCell(x, y, *a++);
+            DrawBallXY(x, y, 0, *a++);
 
     DrawHelp2();
     DrawCursor();
@@ -403,7 +497,7 @@ static void NewGame(void) {
 
     GenerateNewBalls();
     GameStep(true);
-    DrawScreen2();
+    DrawScreen3();
 }
 
 static void PlaySoundCantMove(void) {
@@ -422,7 +516,7 @@ static void PlaySoundJump(void) {
 static void MoveBall(void) {
     if (game[cursorX][cursorY] != 0) {
         if (selX != NO_SEL)
-            DrawCell(selX, selY, game[selX][selY]);
+            DrawBallXY(selX, selY, 0, game[selX][selY]);
         selX = cursorX;
         selY = cursorY;
         return;
@@ -446,24 +540,24 @@ static void MoveBall(void) {
             uint8_t x = path_x;
             uint8_t y = path_y;
             uint8_t dir = PathGetNextStep();
-            DrawSpriteStep(x, y, dir - 1);
-            DrawCell(path_x, path_y, c);
-            if (path_n == LAST_STEP)
-                break;
+            DrawBallXY(x, y, dir, 0);
+            DrawBallXY(path_x, path_y, 0, c);
             if (soundEnabled)
                 PlaySoundJump();
             DELAY_MS(100);
+            if (path_n == LAST_STEP)
+                break;
         };
 
         // Удаляем нарисованные шаги с экрана
         PathRewind();
         do {
-            DrawCell(path_x, path_y, 0);
+            DrawBallXY(path_x, path_y, 0, 0);
             PathGetNextStep();
         } while (path_n != LAST_STEP);
     } else {
-        DrawCell(selX, selY, 0);
-        DrawCell(cursorX, cursorY, c);
+        DrawBallXY(selX, selY, 0, 0);
+        DrawBallXY(cursorX, cursorY, 0, c);
     }
 
     // Очищаем игровое поле от временных значений
@@ -477,8 +571,10 @@ static void MoveBall(void) {
     selX = NO_SEL;
 
     // Добавляем 3 шарика
-    if (!GameStep(false))
+    if (!GameStep(false)) {
+        DrawCursor();
         return;
+    }
 
     // Если не получилось добавить, то конец игры.
 
@@ -488,7 +584,7 @@ static void MoveBall(void) {
     else
         AddToHiScores();
 
-    ReadKeyboard(false);
+    ReadKey();
     NewGame();
 }
 
@@ -500,7 +596,9 @@ static void BouncingBallAnimation(void) {
     selAnimationDelay++;
     if (selAnimationDelay >= BOUNCE_ANIMATION_DELAY) {
         selAnimationDelay = 0;
-        DrawBouncingBall(selX, selY, game[selX][selY], selAnimationFrame);
+        static const uint8_t selAnimation[] = {0, 8, 0, 9, 10, 9};
+        DrawBallXY(selX, selY, selAnimation[selAnimationFrame], game[selX][selY]);
+
         selAnimationFrame++;
         if (selAnimationFrame >= BOUNCE_ANIMATION_COUNT) {
             selAnimationFrame = 0;
@@ -510,10 +608,14 @@ static void BouncingBallAnimation(void) {
     }
 }
 
+static void ClearCursor(void) {
+    DrawBallXY(cursorX, cursorY, 0, game[cursorX][cursorY]);
+}
+
 // Главная функция
 
 int main(int, char **) {
-    Intro();
+    DrawScreen(imgTitle);
     PlayMusic();
     NewGame();
 
@@ -526,7 +628,7 @@ int main(int, char **) {
         // Анимация выбранного шарика
         BouncingBallAnimation();
 
-        char pressedKey = ReadKeyboard(true);
+        char pressedKey = InKey();
 
         // Устранение дребезга контактов
         if (keybTimeout != 0) {
@@ -545,10 +647,12 @@ int main(int, char **) {
         keybTimeout = 50;  // TODO: magic
 
         switch (pressedKey) {
+#ifdef TEST
             case '6':
-                score += 10;
+                score += 5;
                 DrawScoreAndCreatures2();
                 break;
+#endif
             case '1':
                 showPath = !showPath;
                 DrawButtons();
@@ -564,9 +668,9 @@ int main(int, char **) {
                 break;
             case '4':
                 DrawHiScores();
-                while (ReadKeyboard(false) != ' ') {
+                while (ReadKey() != ' ') {
                 }
-                DrawScreen2();
+                DrawScreen3();
                 break;
             case '5':
                 NewGame();

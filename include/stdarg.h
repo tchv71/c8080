@@ -17,7 +17,15 @@
 
 typedef void *va_list;
 
-#define va_start(v, arg) (v) = (void *)(&(arg) + 1)
-#define va_copy(destination, source) (destination) = (source)
+#define va_start(v, arg)            \
+    do {                            \
+        (v) = (void *)(&(arg) + 1); \
+    } while (0)
+#define va_copy(destination, source) \
+    do {                             \
+        (destination) = (source);    \
+    } while (0)
 #define va_arg(v, type) ((v) = (char *)(v) + sizeof(type), *(type *)((char *)(v) - sizeof(type)))
-#define va_end(v)
+#define va_end(v) \
+    do {          \
+    } while (0)

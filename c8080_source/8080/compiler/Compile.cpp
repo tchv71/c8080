@@ -81,9 +81,8 @@ void Compiler::Compile(CParser &c, OutputFormat output_format, CString output_fi
         // TODO: Use output_file_asm
         out.buffer += "__entry:\n";
     } else if (output_format == OF_RKS) {
-        out.buffer += "    org 100h - 4h\n";
+        out.buffer += "    org 0\n";
         out.buffer += "__begin:\n";
-        out.buffer += "    db  __entry & 0xFF, __entry >> 8, __end & 0xFF, __end >> 8\n";
         out.buffer += "__entry:\n";
         // TODO: CRC
     } else if (output_format == OF_CPM) {

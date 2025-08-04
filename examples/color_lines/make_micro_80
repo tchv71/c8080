@@ -1,14 +1,17 @@
 #/bin/bash
 
-../../c8080 -OCPM -DARCH_MICRO80_COLOR -olines_micro80.com \
- micro80/hal.c \
+micro80/convert_png_to_micro80/convert_png_to_micro80 micro80
+
+../../c8080 -OCPM -DARCH_MICRO80_COLOR -Imicro80 -olines_micro80.com \
  lines.c \
  music.c \
  path.c \
- micro80/imgBalls.c \
- micro80/imgBoard.c \
- micro80/imgKingLose.c \
- micro80/imgPlayer.c \
- micro80/imgPlayerWin.c \
- micro80/imgScreen.c \
- micro80/imgTitle.c
+ micro80/resources.c
+
+if [ -e  /home/alemorf/a/work/micro80_emulator/test.com ]
+then
+    cp lines_micro80.com /home/alemorf/a/work/micro80_emulator/test.com
+    echo Make /home/alemorf/a/work/micro80_emulator/test.com
+    cd /home/alemorf/a/work/micro80_emulator && make
+fi
+

@@ -119,6 +119,10 @@ void SaveFile(CString file_name, CString in) {
     SaveFile(file_name, in.data(), in.size());
 }
 
+void SaveFile(CString file_name, const std::vector<uint8_t>& in) {
+    SaveFile(file_name, in.data(), in.size());
+}
+
 void SaveFile(CString file_name, const void *data, size_t size) {
     // Check parameters
     if (data == nullptr) {

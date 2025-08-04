@@ -1,2 +1,11 @@
 #/bin/bash
 ../../c8080 -DARCH_86RK game2048.c -o game2048.86rk.com
+
+
+if [ -e  /home/alemorf/a/work/micro80_emulator/test.com ]
+then
+    cp game2048.86rk.com /home/alemorf/a/work/micro80_emulator/test.com
+    echo Make /home/alemorf/a/work/micro80_emulator/test.com
+    cd /home/alemorf/a/work/micro80_emulator && make
+fi
+

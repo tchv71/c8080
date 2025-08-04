@@ -16,11 +16,10 @@
  */
 
 #include "music.h"
-#include <hal/hal.h>
+#include <c8080/hal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "hal.h"
 
 #define ROUND_DIV(A, B) (((A) + (B) / 2) / (B))
 
@@ -45,18 +44,20 @@ static const uint16_t music[] = {
 };
 
 void PlayMusic(void) {
+    while (InKey() != 0xFF)
+        rand();
     const uint16_t *i = music;
     for (;;) {
-        uint8_t s = *i;
+        uint8_t period = *i;
         ++i;
-        if (s == 0) {
-            while (!ReadKeyboard(true))
-                ;
+        if (period == 0) {
+            while (InKey() == 0xFF)
+                rand();
             break;
         }
-        if (ReadKeyboard(true))
+        if (InKey() != 0xFF)
             break;
-        Sound(s, *i);
+        Sound(period, *i);
         ++i;
         rand();
     }

@@ -18,26 +18,10 @@
 #pragma once
 
 #include <stdint.h>
-#include <stdbool.h>
 
 static const uint8_t GAME_WIDTH = 9;
 static const uint8_t GAME_HEIGHT = 9;
-static const uint8_t LAST_STEP = 9;
-static const uint8_t HISCORE_COUNT = 8;
-static const uint8_t COLORS_COUNT = 7;
-static const uint8_t NEW_BALL_COUNT = 3;
-static const uint8_t NO_SEL = 0xFF;  // Значение для selX
-
-struct HiScore {
-    char name[10];
-    uint16_t score;
-};
 
 extern uint8_t game[GAME_WIDTH][GAME_HEIGHT];
-extern uint8_t newBalls[NEW_BALL_COUNT];
-extern uint8_t cursorX, cursorY;
 extern uint8_t selX, selY;
-extern bool showPath, showHelp, soundEnabled;
-extern uint16_t score;
-extern struct HiScore hiScores[HISCORE_COUNT];
-extern uint8_t playerLevel;
+extern uint8_t cursorX, cursorY;

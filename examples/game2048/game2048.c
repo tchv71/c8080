@@ -15,7 +15,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
-#include <hal/hal.h>
+#include <c8080/hal.h>
+#include <c8080/keys.h>
+#ifdef ARCH_MICRO80_COLOR
+#include <c8080/colors.h>
+#endif
 
 #define SIZE 4
 uint32_t score = 0;
@@ -324,6 +328,19 @@ int test() {
     return !success;
 }
 
+static bool getchar_y_n(void) {
+    for (;;) {
+        switch(getchar()) {
+            case 'y':
+            case 'Y':
+                return true;
+            case 'n':
+            case 'N':
+                return false;
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     char c;
     bool success;
@@ -391,29 +408,27 @@ int main(int argc, char *argv[]) {
                 SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_RED);
 #endif
                 printf("            GAME OVER          \n");
-                break;
+                c = 'r';
             }
         }
         if (c == 'q' || c == 'Q') {
 #ifdef ARCH_MICRO80_COLOR
             SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_RED);
 #endif
-            printf("            QUIT? (y/n)         \n");
-            c = getchar();
-            if (c == 'y' || c == 'Y') {
+            printf("            QUIT? (Y/N)         \n");
+            if (getchar_y_n())
                 break;
-            }
             prepareScreen();
         }
         if (c == 'r' || c == 'R') {
 #ifdef ARCH_MICRO80_COLOR
             SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_RED);
 #endif
-            printf("          RESTART? (y/n)       \n");
-            c = getchar();
-            if (c == 'y' || c == 'Y') {
+            printf("          RESTART? (Y/N)       \n");
+            if (getchar_y_n())
                 initBoard();
-            }
+            else
+                prepareScreen();
         }
     }
 

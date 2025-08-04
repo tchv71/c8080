@@ -78,17 +78,17 @@ void Compiler::CompileSwitch16(CNodePtr &node, std::vector<CNodePtr> &cases, Asm
     Build(node->a);
     Build(node->a, R16_HL);
 
+    uint16_t prev = 0;
     for (auto &i : cases) {
-        if (i->number.u == 0) {
-            out.ld_r8_r8(R8_A, R8_D);
-            out.alu_a_reg(ALU_OR, R8_E);
-        } else {
-            out.ld_hl_number(0x10000u - uint16_t(i->number.u));
+        uint16_t delta = uint16_t(0 - i->number.u);
+        if (delta != 0) {
+            out.ld_de_number(uint16_t(delta - prev));
             out.add_hl_de();
-            out.ld_r8_r8(R8_A, R8_L);
-            out.alu_a_reg(ALU_OR, R8_H);
         }
+        out.ld_r8_r8(R8_A, R8_L);
+        out.alu_a_reg(ALU_OR, R8_H);
         out.jz_label(i->compiler.label);
+        prev = delta;
     }
 
     out.jmp_label(default_label);

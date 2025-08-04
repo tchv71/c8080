@@ -1,1 +1,1 @@
-../../c8080.exe -ORKS -DARCH_SPECIALIST -olines_specialist.rks  specialist/hal.c  lines.c  music.c  path.c  specialist/drawtext.c  specialist/chargen.c  specialist/fillrect.c  specialist/keyboard.c  specialist/resources.c
+../../c8080.exe -ORKS -DARCH_SPECIALIST -Ispecialist -olines_specialist.rks lines.c music.c path.c specialist/resources.c

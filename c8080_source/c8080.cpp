@@ -123,6 +123,43 @@ static int BadExit(const char *text = nullptr) {
     return 1;
 }
 
+static std::string ToLowerCase(std::string str) {
+    for (char &c : str)
+        c = tolower(c);
+    return str;
+}
+
+struct RksHeader {
+    uint16_t start_le16;
+    uint16_t stop_le16;
+};
+
+struct RksFooter {
+    uint16_t crc_le16;
+};
+
+static void MakeRKS(CString file_name) {
+    std::vector<uint8_t> data;
+    FsTools::LoadFile(file_name, UINT16_MAX, data);
+
+    if (data.empty())
+        return;
+
+    uint16_t checksum = 0;
+    for(size_t i = 0; i < data.size() - 1; i++)
+        checksum += data[i] * 257;
+    checksum = (checksum & 0xFF00) + ((checksum + data.back()) & 0xFF);
+
+    uint16_t end = data.size() - 1;
+    uint8_t header[4] = { 0, 0, uint8_t(end), uint8_t(end >> 8) };
+    data.insert(data.begin(), header, header + sizeof(header));
+
+    uint8_t footer[2] = { uint8_t(checksum), uint8_t(checksum >> 8) };
+    data.insert(data.end(), footer, footer + sizeof(footer));
+
+    FsTools::SaveFile(file_name, data);
+}
+
 int main(int argc, char **argv) {
     try {
         std::cout << "C Compiler for i8080 (" __DATE__ << ")" << std::endl
@@ -155,6 +192,17 @@ int main(int argc, char **argv) {
                 o.asm_file_name = base_name + ".asm";
             if (o.bin_file_name.empty())
                 o.bin_file_name = base_name + ".bin";
+        }
+
+        std::string arch_inc1lude_dir = CatPath(std_include_dir, "arch");
+        for (auto &i : c.default_defines) {
+            if (0 == strncmp(i.c_str(), "ARCH_", 5)) {
+                std::string dir = CatPath(arch_inc1lude_dir, ToLowerCase(i.substr(5)));
+                if (DirExists(dir)) {
+                    c.include_dirs.push_back(dir);
+                    break;
+                }
+            }
         }
 
         if (o.assembler_need_path) {
@@ -198,12 +246,15 @@ int main(int argc, char **argv) {
         if (programm.error)
             return BadExit();
 
-        std::string lst_file_name = RemoveExtension(o.asm_file_name) +".lst";
+        std::string lst_file_name = RemoveExtension(o.asm_file_name) + ".lst";
 
         std::string asm_cmd_line = o.assembler + " " + o.asm_file_name + " --lst=" + lst_file_name;
         int r = system(asm_cmd_line.c_str());
         if (r != 0)
             throw std::runtime_error("Assembler error " + std::to_string(r) + " (" + asm_cmd_line + ")");
+
+        if (o.output_format == I8080::OF_RKS)
+            MakeRKS(o.bin_file_name);
 
         std::cout << "Done" << std::endl;
         return 0;

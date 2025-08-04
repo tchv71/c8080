@@ -82,8 +82,8 @@ static void ConvertImage(const std::string &inputFileName, const std::string &id
     }
 
     std::vector<uint8_t> data, data2;
-    for (int ix = 0; ix < png.getWidth(); ix += cw) {
-        for (int iy = 0; iy < png.getHeight(); iy += ch) {
+    for (int iy = 0; iy < png.getHeight(); iy += ch) {
+        for (int ix = 0; ix < png.getWidth(); ix += cw) {
             int pcc = 0;
             for (int x = 0; x < cw; x += 8) {
                 for (int y = 0; y < ch; y++) {
@@ -142,13 +142,15 @@ static void ConvertImage(const std::string &inputFileName, const std::string &id
     if (modePack) {
         PackMegalz(data);
         PackMegalz(data2);
+        data.insert(data.end(), data2.begin(), data2.end());
+        data2.clear();
     }
 
     hFile +=
         "\n"
         "static const unsigned " +
-        id + "Width = " + std::to_string(cw) + ";\n" + "static const unsigned " + id +
-        "Height = " + std::to_string(ch) + ";\n" + "static const unsigned " + id + "Size = " + id + "Width / 8 + (" +
+        id + "Width = " + std::to_string(cw / 8) + ";\n" + "static const unsigned " + id +
+        "Height = " + std::to_string(ch) + ";\n" + "static const unsigned " + id + "Size = " + id + "Width + (" +
         id + "Height << 8);\n";
 
     if (imageSize == 0) {
@@ -158,16 +160,6 @@ static void ConvertImage(const std::string &inputFileName, const std::string &id
             "\n"
             "uint8_t " +
             id + "[" + std::to_string(data.size()) + "] = {\n" + MakeCSourceArray(data.data(), data.size()) + "};\n";
-
-        if (!data2.empty()) {
-            hFile += "extern uint8_t " + id + "Colors[" + std::to_string(data2.size()) + "];\n";
-
-            cFile +=
-                "\n"
-                "uint8_t " +
-                id + "Colors[" + std::to_string(data2.size()) + "] = {\n" +
-                MakeCSourceArray(data2.data(), data2.size()) + "};\n";
-        }
     } else {
         uint32_t imageCount = data.size() / imageSize;
 
@@ -178,17 +170,6 @@ static void ConvertImage(const std::string &inputFileName, const std::string &id
             "uint8_t " +
             id + "[" + std::to_string(imageCount) + "][" + std::to_string(imageSize) + "] = {\n" +
             MakeCSourceArray2(data.data(), data.size(), imageCount, imageSize) + "};\n";
-
-        if (!data2.empty()) {
-            hFile += "extern uint8_t " + id + "Colors[" + std::to_string(imageCount) + "][" +
-                     std::to_string(imageSize) + "];\n";
-
-            cFile +=
-                "\n"
-                "uint8_t " +
-                id + "Colors[" + std::to_string(imageCount) + "][" + std::to_string(imageSize) + "] = {\n" +
-                MakeCSourceArray2(data2.data(), data2.size(), imageCount, imageSize) + "};\n";
-        }
     }
 }
 
