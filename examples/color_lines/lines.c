@@ -615,6 +615,12 @@ static void ClearCursor(void) {
 // Главная функция
 
 int main(int, char **) {
+#ifdef ARCH_SPECIALIST
+    asm {
+        ld sp, 8FFFh
+    }
+#endif
+
     DrawScreen(imgTitle);
     PlayMusic();
     NewGame();

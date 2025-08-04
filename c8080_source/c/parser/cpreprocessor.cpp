@@ -40,6 +40,8 @@ void CParserFile::Preprocessor() {
         return PreprocessorElse();
     if (l.IfToken("endif"))
         return PreprocessorEndif();
+    if (l.IfToken("if"))
+        return PreprocessorIf();
     if (l.IfToken("ifdef"))
         return PreprocessorIfdef();
     if (l.IfToken("ifndef"))
@@ -146,6 +148,55 @@ void CParserFile::PreprocessorDefine() {
 
     l.PreprocessorLeave();
     l.AddMacro(id, l.token_data, strlen(l.token_data), &args);
+}
+
+bool CParserFile::PreprocessorIfException() {
+    if (l.IfToken("defined")) {
+        if (!l.WantToken("("))
+            return false;
+        std::string id;
+        if (!l.WantIdent(id))
+            return false;
+        if (!l.WantToken(")"))
+            return false;
+        return l.FindMacro(id);
+    }
+
+    if (l.IfToken("__has_include")) {
+        std::string name;
+        if (l.token_data[0] == '(') {
+            l.ReadRaw(name, ')');
+            l.NextToken();
+        }
+
+        bool current_dir;
+        if (name.size() >= 2 && name[0] == '"' && name[name.size() - 1] == '"') {
+            current_dir = true;
+        } else if (name.size() >= 2 && name[0] == '<' && name[name.size() - 1] == '>') {
+            current_dir = false;
+        } else {
+            l.Error("__has_include expects \"FILENAME\" or <FILENAME>");
+            return false;
+        }
+        std::string file_name = name.substr(1, name.size() - 2);
+
+        std::string full_file_name;
+        if (current_dir)
+            return cparser.FindAnyIncludeFile(file_name, l.file_name, full_file_name);
+        return cparser.FindGlobalIncludeFile(file_name, full_file_name);
+    }
+
+    l.SyntaxError();
+    return false;
+}
+
+void CParserFile::PreprocessorIf() {
+    bool result = PreprocessorIfException();
+
+    if (!l.WantToken(CT_EOF))
+        return;
+
+    l.PreprocessorIf(result);
 }
 
 void CParserFile::PreprocessorIfdef() {

@@ -24,6 +24,7 @@ uint32_t __remainder;
 int main(int argc, char **argv);
 
 void __init() {
+    /* Zeroing uninitialized variables */
     asm {
         ld   de, __bss
         xor  a
@@ -35,30 +36,9 @@ __init_loop:
         jp   nc, __init_loop
     }
 
-#ifdef ARCH_86RK
-    asm {
-        call 0F830h
-        ld sp, hl
-        ld hl, 0F86Ch
-        push hl
-    }
-#endif
-
-#ifdef ARCH_MICRO80_COLOR
-    asm {
-        call 0F830h
-        ld   sp, hl
-        ld   hl, 0F86Ch
-        push hl
-    }
-#endif
-
-#ifdef ARCH_SPECIALIST
-    asm {
-        ld sp, 8E00h
-        ld hl, 0C800h
-        push hl
-    }
+    /* Init stack */
+#if __has_include(<c8080/initstack.inc>)
+#include <c8080/initstack.inc>
 #endif
 
     main(0, NULL);

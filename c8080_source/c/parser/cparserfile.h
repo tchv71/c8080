@@ -62,6 +62,8 @@ private:
     void PreprocessorPragmaOnce();
     void PreprocessorDefine();
     void PreprocessorIfdef();
+    bool PreprocessorIfException();
+    void PreprocessorIf();
     void PreprocessorIfndef();
     void PreprocessorUndef();
     void PreprocessorEndif();

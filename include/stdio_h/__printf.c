@@ -37,6 +37,8 @@ static void __printf_out(char c) {
 }
 
 static void __printf_text(const char *text) {
+    if (!text)
+        text = "(NULL)";
     for (;;) {
         uint8_t c = *text;
         if (c == '\0')
