@@ -29,4 +29,4 @@ int printf(const char *format, ...) __link("stdio_h/printf.c");
 int vprintf(const char *format, va_list va) __link("stdio_h/printf.c");
 int puts(const char *text) __link("stdio_h/puts.c");
 int getchar(void) __link("stdio_h/getchar.c");
-int putchar(int c) __link("stdio_h/putchar.c");
+int __global putchar(int c) __link("stdio_h/putchar.c");
