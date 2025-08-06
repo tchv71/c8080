@@ -86,4 +86,3 @@ uint8_t ReadKey(void);
  * The function returns 0xFF if a service key was processed
  * (for example, switching the layout) */
 uint8_t DecodeReadKey(uint8_t n);
-

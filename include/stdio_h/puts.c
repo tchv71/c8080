@@ -17,7 +17,7 @@
 #include <stdint.h>
 
 int puts(const char *text) {
-    const uint8_t* i = (const uint8_t*)text;
+    const uint8_t *i = (const uint8_t *)text;
     while (*i)
         putchar(*i++);
     return i - text;
