@@ -15,7 +15,7 @@
 
 #include <stdio.h>
 
-int __global putchar(int c) {
+int __global putchar(int) {
     asm {
 __a_1_putchar=0
         ld   a, l

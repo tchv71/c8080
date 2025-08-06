@@ -50,7 +50,7 @@
 #pragma codepage('Ч', 0x7E)
 #pragma codepage('■', 0x7F)
 
-// Not supported chars
+// Сonvert unsupported lowercase characters to uppercase
 
 #pragma codepage('a', 0x41)
 #pragma codepage('b', 0x42)
@@ -114,6 +114,8 @@
 #pragma codepage('э', 0x7C)
 #pragma codepage('щ', 0x7D)
 #pragma codepage('ч', 0x7E)
+
+// Сonvert unsupported border characters
 
 #pragma codepage('─', 0x2D)  // -
 #pragma codepage('│', 0x21)  // !

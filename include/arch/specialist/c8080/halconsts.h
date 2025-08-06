@@ -17,6 +17,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+
 #include <c8080/codepage/866.h>
 
 static uint8_t *const SCREEN = (uint8_t *)0x9000;

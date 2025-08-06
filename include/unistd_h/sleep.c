@@ -15,7 +15,6 @@
 
 #include <unistd.h>
 #include <c8080/delay.h>
-#include <hal/hal.h>
 
 unsigned sleep(unsigned seconds) {
     while (seconds != 0) {

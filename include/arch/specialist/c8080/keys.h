@@ -19,28 +19,29 @@
 
 #include <stdint.h>
 
-static const uint8_t KEY_BACKSPACE = 0x08;
+static const uint8_t KEY_F1 = 0x00;
+static const uint8_t KEY_F2 = 0x01;
+static const uint8_t KEY_F3 = 0x02;
+static const uint8_t KEY_F4 = 0x03;
+static const uint8_t KEY_F5 = 0x04;
+static const uint8_t KEY_F6 = 0x05;
+static const uint8_t KEY_F7 = 0x06;
+static const uint8_t KEY_F8 = 0x07;
+static const uint8_t KEY_LEFT = 0x08;
 static const uint8_t KEY_TAB = 0x09;
 static const uint8_t KEY_PS = 0x0A;
-static const uint8_t KEY_PV = 0x02;
+static const uint8_t KEY_F9  = 0x0B; /* Internal driver */
 static const uint8_t KEY_HOME = 0x0C;
 static const uint8_t KEY_ENTER = 0x0D;
-static const uint8_t KEY_UP = 0x17;
+static const uint8_t KEY_F10 = 0x0E; /* Internal driver */
+static const uint8_t KEY_F11 = 0x0F; /* Internal driver */
+static const uint8_t KEY_PV = 0x10;  /* Internal driver */
+static const uint8_t KEY_RUS = 0x11; /* Internal driver */
+static const uint8_t KEY_UP = 0x19;
 static const uint8_t KEY_RIGHT = 0x18;
-static const uint8_t KEY_LEFT = 0x19;
 static const uint8_t KEY_DOWN = 0x1A;
 static const uint8_t KEY_ESC = 0x1B;
+static const uint8_t KEY_F12 = 0x1F;
 static const uint8_t KEY_SPACE = 0x20;
-static const uint8_t KEY_F1 = 0xF1;
-static const uint8_t KEY_F2 = 0xF2;
-static const uint8_t KEY_F3 = 0xF3;
-static const uint8_t KEY_F4 = 0xF4;
-static const uint8_t KEY_F5 = 0xF5;
-static const uint8_t KEY_F6 = 0xF6;
-static const uint8_t KEY_F7 = 0xF7;
-static const uint8_t KEY_F8 = 0xF8;
-static const uint8_t KEY_F9 = 0xF9;
-static const uint8_t KEY_F10 = 0xFA;
-static const uint8_t KEY_F11 = 0xFB;
-static const uint8_t KEY_F12 = 0xFC;
-static const uint8_t KEY_RUS = 0xFE;
+static const uint8_t KEY_BACKSPACE = 0x7F; /* Internal driver */
+static const uint8_t KEY_F9_BIOS = 0x8A; /* BIOS */

@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
-#include <c8080/hal.h>
+#include <c8080/console.h>
 #include <c8080/keys.h>
 #ifdef ARCH_MICRO80_COLOR
 #include <c8080/colors.h>
@@ -63,7 +63,7 @@ void prepareScreen() {
     SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
 #endif
     HideCursor();
-    ClearScreen();
+    ClearConsole();
 
     printf("\n\n┌───────┬───────┬───────┬───────┐\n");
     for (y = 0;; y++) {
@@ -436,7 +436,7 @@ int main(int argc, char *argv[]) {
     SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
 #endif
     ShowCursor();
-    ClearScreen();
+    ClearConsole();
 
     return EXIT_SUCCESS;
 }

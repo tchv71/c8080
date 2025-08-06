@@ -17,6 +17,6 @@
 
 #pragma once
 
-extern uint8_t chargen6[256 * 8] __link("chargen6.c");
-
 #include <stdint.h>
+
+extern uint8_t chargen6[256 * 8] __link("chargen6.c");

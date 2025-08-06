@@ -1,0 +1,14 @@
+#/bin/bash
+
+set -e
+
+../../c8080 -ORKS -DARCH_SPECIALIST -Ispecialist -ogame2048.specialist.rks game2048.c
+
+E=/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
+if [ -e $E ]
+then
+    echo "loadFile([" >$E
+    xxd -i game2048.specialist.rks | grep , >>$E
+    echo "]);" >>$E
+    echo Make $E
+fi

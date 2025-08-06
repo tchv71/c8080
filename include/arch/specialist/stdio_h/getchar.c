@@ -14,7 +14,6 @@
 // limitations under the License.
 
 #include <stdio.h>
-#include <c8080/hal.h>
 
 int getchar(void) {
     asm {

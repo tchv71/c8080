@@ -4,7 +4,7 @@ set -e
 
 ./specialist/convert_png_to_specialist/convert_png_to_specialist specialist
 
-../../c8080 -ORKS -DARCH_SPECIALIST -Ispecialist -olines_specialist.rks \
+../../c8080 -ORKS -DARCH_SPECIALIST -Ispecialist -olines.specialist.rks \
  lines.c \
  music.c \
  path.c \
@@ -14,7 +14,7 @@ E=/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
 if [ -e $E ]
 then
     echo "loadFile([" >$E
-    xxd -i lines_specialist.rks | grep , >>$E
+    xxd -i lines.specialist.rks | grep , >>$E
     echo "]);" >>$E
     echo Make $E
 fi

@@ -17,30 +17,13 @@
 
 #pragma once
 
-#include <c8080/halconsts.h>
 #include <stdbool.h>
+#include <c8080/halconsts.h>
 
-/*** Console ***/
-
-/* Clear the screen */
-void ClearScreen(void) __link("c8080/hal_h/clearscreen.c");
+/*** Direct video ***/
 
 /* Reset screen to default settings (such as black background color) and clear the screen */
 void ResetScreen(void) __link("c8080/hal_h/resetscreen.c");
-
-/* Move console cursor to upper left corner */
-void MoveCursorHome(void) __link("c8080/hal_h/movecursorhome.c");
-
-/* Set console cursor visible */
-void ShowCursor(void) __link("c8080/hal_h/showcursor.c");
-
-/* Set console cursor hidden */
-void HideCursor(void) __link("c8080/hal_h/hidecursor.c");
-
-/* Set ink and paper color for the next console text */
-void __global SetConsoleColor(uint8_t color) __link("c8080/hal_h/setconsolecolor.c");
-
-/*** Direct video ***/
 
 /* Draw text on the screen.
  * "tile" and "x" must be calculated by DRAWTEXTARG macro. */
