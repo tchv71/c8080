@@ -139,6 +139,10 @@ void CParserFile::PreprocessorDefine() {
         if (!l.WantToken("("))
             return;
         do {
+            if (l.IfToken("...")) {
+                args.push_back("__VA_ARGS__");
+                break;
+            }
             std::string id;
             if (!l.WantIdent(id))
                 return;
