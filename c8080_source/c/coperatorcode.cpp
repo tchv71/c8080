@@ -111,7 +111,7 @@ COperatorCode NegativeCompareOperator(COperatorCode code) {
         case COP_CMP_GE:
             return COP_CMP_L;
     }
-    throw std::runtime_error("Internal error " + std::to_string(int(code)) + " in " + __PRETTY_FUNCTION__);
+    throw std::runtime_error("Internal error " + std::to_string(code) + " in " + __PRETTY_FUNCTION__);
 }
 
 const char *ToString(COperatorCode code) {
@@ -179,7 +179,7 @@ const char *ToString(COperatorCode code) {
         case COP_COMMA:
             return ",";
     }
-    throw std::runtime_error("Internal error " + std::to_string(int(code)) + " in " + __PRETTY_FUNCTION__);
+    throw std::runtime_error("Internal error " + std::to_string(code) + " in " + __PRETTY_FUNCTION__);
 }
 
 bool IsArgumentsRearrangeAllowed(COperatorCode code) {

@@ -59,6 +59,7 @@ public:
     std::function<const char *(const char *, size_t)> save_string;
     size_t endif_counter{};
     unsigned in_macro{};
+    unsigned macro_in_preprocessor{};
     CErrorPosition error_position;  // Use only if in macro > 0
 
     void Open(const char *contents, const char *file_name);

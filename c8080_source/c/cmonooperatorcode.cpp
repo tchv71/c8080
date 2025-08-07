@@ -47,6 +47,6 @@ const char *ToString(CMonoOperatorCode operator_code) {
         case MOP_STRUCT_ITEM_POINTER:
             return "->";
     }
-    throw std::runtime_error("Internal error, unsupported operator " + std::to_string(int(operator_code)) + " in " +
+    throw std::runtime_error("Internal error, unsupported operator " + std::to_string(operator_code) + " in " +
                              __PRETTY_FUNCTION__);
 }

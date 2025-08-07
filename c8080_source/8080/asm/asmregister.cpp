@@ -24,7 +24,7 @@ namespace I8080 {
 const char *ToString(AsmRegister value) {
     static const char *strings[] = {"?", "a", "b", "c", "d", "e", "h", "l", "(hl)", "af", "bc", "de", "hl", "sp"};
 
-    if (value >= std::size(strings))
+    if (value < 0 || value >= std::size(strings))
         return "?";
 
     return strings[value];

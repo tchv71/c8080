@@ -40,13 +40,14 @@ void CParserFile::Preprocessor() {
         return PreprocessorElse();
     if (l.IfToken("endif"))
         return PreprocessorEndif();
-    if (l.IfToken("if"))
-        return PreprocessorIf();
     if (l.IfToken("ifdef"))
         return PreprocessorIfdef();
     if (l.IfToken("ifndef"))
         return PreprocessorIfndef();
-    // TODO: #if #elif #elifdef #elifndef #line #embed #error #warning
+    l.macro_in_preprocessor = 1;
+    if (l.IfToken("if"))
+        return PreprocessorIf();
+    // TODO: #elif #elifdef #elifndef #line #embed #error #warning
     l.Error("invalid preprocessing directive #" + std::string(l.token_data, l.token_size));  // gcc
 }
 
@@ -150,17 +151,217 @@ void CParserFile::PreprocessorDefine() {
     l.AddMacro(id, l.token_data, strlen(l.token_data), &args);
 }
 
-bool CParserFile::PreprocessorIfException() {
-    if (l.IfToken("defined")) {
-        if (!l.WantToken("("))
-            return false;
-        std::string id;
-        if (!l.WantIdent(id))
-            return false;
-        if (!l.WantToken(")"))
-            return false;
-        return l.FindMacro(id);
+void CParserFile::PreprocessorIf() {
+    const int64_t result = PreprocessorIf0();
+    if (!l.WantToken(CT_EOF))
+        return;
+    l.macro_in_preprocessor = 0;
+    l.PreprocessorIf(result);
+}
+
+int64_t CParserFile::PreprocessorIf0() {
+    int64_t result = PreprocessorIfA();
+
+    if (l.IfToken("?")) {
+        const int64_t true_value = PreprocessorIf0();
+        l.NeedToken(":");
+        const int64_t false_value = PreprocessorIf0();
+        return result ? true_value : false_value;
     }
+
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIfA() {
+    int64_t result = PreprocessorIfB();
+    while (l.IfToken("||"))
+        result = PreprocessorIfB() || result;
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIfB() {
+    int64_t result = PreprocessorIfC();
+    while (l.IfToken("&&"))
+        result = PreprocessorIfC() && result;
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIfC() {
+    int64_t result = PreprocessorIfD();
+    while (l.IfToken("|"))
+        result = PreprocessorIfD() | result;
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIfD() {
+    int64_t result = PreprocessorIfE();
+    while (l.IfToken("^"))
+        result = PreprocessorIfE() ^ result;
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIfE() {
+    int64_t result = PreprocessorIfF();
+    while (l.IfToken("&"))
+        result = PreprocessorIfF() & result;
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIfF() {
+    int64_t result = PreprocessorIfG();
+    static const char *const operators[] = {"==", "!=", nullptr};
+    size_t n = 0;
+    while (l.IfToken(operators, n)) {
+        const int64_t y = PreprocessorIfG();
+        switch (n) {
+            case 0:
+                result = (result == y);
+                break;
+            case 1:
+                result = (result != y);
+                break;
+        }
+    }
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIfG() {
+    int64_t result = PreprocessorIfH();
+    static const char *const operators[] = {"<", "<=", ">", ">=", nullptr};
+    size_t n = 0;
+    while (l.IfToken(operators, n)) {
+        const int64_t y = PreprocessorIfH();
+        switch (n) {
+            case 0:
+                result = (result < y);
+                break;
+            case 1:
+                result = (result <= y);
+                break;
+            case 2:
+                result = (result > y);
+                break;
+            case 3:
+                result = (result >= y);
+                break;
+        }
+    }
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIfH() {
+    int64_t result = PreprocessorIfI();
+    static const char *const operators[] = {">>", "<<", nullptr};
+    size_t n = 0;
+    while (l.IfToken(operators, n)) {
+        const int64_t y = PreprocessorIfI();
+        switch (n) {
+            case 0:
+                result = (result >> y);
+                // TODO: Check overflow
+                break;
+            case 1:
+                result = (result << y);
+                // TODO: Check overflow
+                break;
+        }
+    }
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIfI() {
+    int64_t result = PreprocessorIfJ();
+    static const char *const operators[] = {"+", "-", nullptr};
+    size_t n = 0;
+    while (l.IfToken(operators, n)) {
+        const int64_t y = PreprocessorIfJ();
+        switch (n) {
+            case 0:
+                if (__builtin_add_overflow(result, y, &result))
+                    l.Error("integer overflow in preprocessor expression");  // gcc
+                break;
+            case 1:
+                if (__builtin_sub_overflow(result, y, &result))
+                    l.Error("integer overflow in preprocessor expression");  // gcc
+                break;
+        }
+    }
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIfJ() {
+    int64_t result = PreprocessorIf2();
+    static const char *const operators[] = {"*", "/", "%", nullptr};
+    size_t n = 0;
+    while (l.IfToken(operators, n)) {
+        const int64_t y = PreprocessorIf2();
+        switch (n) {
+            case 0:
+                if (__builtin_mul_overflow(result, y, &result))
+                    l.Error("integer overflow in preprocessor expression");  // gcc
+                break;
+            case 1:
+                if (y == 0)
+                    l.Error("division by zero in preprocessor expression");  // gcc
+                else
+                    result = (result / y);
+                break;
+            case 2:
+                if (y == 0)
+                    l.Error("division by zero in preprocessor expression");  // gcc
+                else
+                    result = (result % y);
+                break;
+        }
+    }
+    return result;
+}
+
+int64_t CParserFile::PreprocessorIf2() {
+    static const char *const operators[] = {"+", "-", "!", "~", nullptr};
+    size_t n = 0;
+    while (l.IfToken(operators, n)) {
+        const int64_t result = PreprocessorIf2();
+        switch (n) {
+            case 0:
+                return +result;
+            case 1:
+                return -result;
+            case 2:
+                return !result;
+            case 3:
+                return ~result;
+        }
+    }
+
+    if (l.IfToken("(")) {
+        const int64_t result = PreprocessorIf0();
+        l.WantToken(")");
+        return result;
+    }
+
+    uint64_t value;
+    if (l.IfInteger(value)) {
+        if (value > INT64_MAX)
+            l.Error("integer constant is too large for its type");
+        return int64_t(value);
+    }
+
+    const auto old_macro_in_preprocessor = l.macro_in_preprocessor;
+    l.macro_in_preprocessor = 0;
+    if (l.IfToken("defined")) {
+        const bool need_close = l.IfToken("(");
+        std::string id;
+        bool error = !l.WantIdent(id);
+        if (need_close)
+            if (!l.CloseToken(")", ")"))
+                return false;
+        if (error)
+            return false;
+        l.macro_in_preprocessor = old_macro_in_preprocessor;
+        return PreprocessorIfdefCheck(id);
+    }
+    l.macro_in_preprocessor = old_macro_in_preprocessor;
 
     if (l.IfToken("__has_include")) {
         std::string name;
@@ -168,7 +369,6 @@ bool CParserFile::PreprocessorIfException() {
             l.ReadRaw(name, ')');
             l.NextToken();
         }
-
         bool current_dir;
         if (name.size() >= 2 && name[0] == '"' && name[name.size() - 1] == '"') {
             current_dir = true;
@@ -186,17 +386,15 @@ bool CParserFile::PreprocessorIfException() {
         return cparser.FindGlobalIncludeFile(file_name, full_file_name);
     }
 
-    l.SyntaxError();
-    return false;
+    l.WantToken(CT_IDENT);
+
+    return 0;
 }
 
-void CParserFile::PreprocessorIf() {
-    bool result = PreprocessorIfException();
-
-    if (!l.WantToken(CT_EOF))
-        return;
-
-    l.PreprocessorIf(result);
+bool CParserFile::PreprocessorIfdefCheck(CString id) {
+    if (id == "__has_include")
+        return true;
+    return l.FindMacro(id);
 }
 
 void CParserFile::PreprocessorIfdef() {
@@ -206,7 +404,7 @@ void CParserFile::PreprocessorIfdef() {
     if (!l.WantToken(CT_EOF))
         return;
 
-    l.PreprocessorIf(l.FindMacro(id));
+    l.PreprocessorIf(PreprocessorIfdefCheck(id));
 }
 
 void CParserFile::PreprocessorIfndef() {
@@ -216,7 +414,7 @@ void CParserFile::PreprocessorIfndef() {
     if (!l.WantToken(CT_EOF))
         return;
 
-    l.PreprocessorIf(!l.FindMacro(id));
+    l.PreprocessorIf(!PreprocessorIfdefCheck(id));
 }
 
 void CParserFile::PreprocessorUndef() {

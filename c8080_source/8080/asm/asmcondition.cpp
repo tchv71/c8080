@@ -39,7 +39,7 @@ AsmCondition InvertAsmCondition(AsmCondition condition) {
         case JC_PE:
             return JC_PO;
     }
-    throw std::runtime_error("Incorrect AsmCondition " + std::to_string(int(condition)));
+    throw std::runtime_error("Incorrect AsmCondition " + std::to_string(condition));
 }
 
 const char *ToString(AsmCondition condition) {

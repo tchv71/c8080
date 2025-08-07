@@ -146,15 +146,15 @@ static void MakeRKS(CString file_name) {
         return;
 
     uint16_t checksum = 0;
-    for(size_t i = 0; i < data.size() - 1; i++)
+    for (size_t i = 0; i < data.size() - 1; i++)
         checksum += data[i] * 257;
     checksum = (checksum & 0xFF00) + ((checksum + data.back()) & 0xFF);
 
     uint16_t end = data.size() - 1;
-    uint8_t header[4] = { 0, 0, uint8_t(end), uint8_t(end >> 8) };
+    uint8_t header[4] = {0, 0, uint8_t(end), uint8_t(end >> 8)};
     data.insert(data.begin(), header, header + sizeof(header));
 
-    uint8_t footer[2] = { uint8_t(checksum), uint8_t(checksum >> 8) };
+    uint8_t footer[2] = {uint8_t(checksum), uint8_t(checksum >> 8)};
     data.insert(data.end(), footer, footer + sizeof(footer));
 
     FsTools::SaveFile(file_name, data);

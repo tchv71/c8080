@@ -32,8 +32,8 @@ bool DeleteNode(CNodePtr &node, char c) {
             saved_child = node->c;
             break;
         default:
-            throw std::runtime_error("Internal error, invalid argument " + std::to_string(int(c)) + " in " +
-                                     std::string(__PRETTY_FUNCTION__));
+            throw std::runtime_error("Internal error, invalid argument " + std::to_string(c) + " in " +
+                                     __PRETTY_FUNCTION__);
     }
     if (saved_child->next_node != nullptr)
         throw std::runtime_error("Internal error, next_node != nullptr in " + std::string(__PRETTY_FUNCTION__));

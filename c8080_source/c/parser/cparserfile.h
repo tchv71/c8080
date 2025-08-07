@@ -62,12 +62,24 @@ private:
     void PreprocessorPragmaOnce();
     void PreprocessorDefine();
     void PreprocessorIfdef();
-    bool PreprocessorIfException();
     void PreprocessorIf();
+    int64_t PreprocessorIf0();
+    int64_t PreprocessorIfA();
+    int64_t PreprocessorIfB();
+    int64_t PreprocessorIfC();
+    int64_t PreprocessorIfD();
+    int64_t PreprocessorIfE();
+    int64_t PreprocessorIfF();
+    int64_t PreprocessorIfG();
+    int64_t PreprocessorIfH();
+    int64_t PreprocessorIfI();
+    int64_t PreprocessorIfJ();
+    int64_t PreprocessorIf2();
     void PreprocessorIfndef();
     void PreprocessorUndef();
     void PreprocessorEndif();
     void PreprocessorElse();
+    bool PreprocessorIfdefCheck(CString id);
 
 public:
     CParserFile(CParser &p) : CParserBase(p) {

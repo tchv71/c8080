@@ -24,8 +24,8 @@ namespace I8080 {
 const char *ToString(AsmAlu value) {
     static const char *strings[] = {"xor", "or", "and", "sub", "add", "cp", "adc", "sbc"};
 
-    if (value >= std::size(strings))
-        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " " + std::to_string(int(value)));
+    if (value < 0 || value >= std::size(strings))
+        throw std::runtime_error(std::string(__PRETTY_FUNCTION__) + " " + std::to_string(value));
 
     return strings[value];
 }

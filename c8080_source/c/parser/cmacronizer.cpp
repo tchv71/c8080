@@ -83,6 +83,9 @@ void CMacroizer::NextToken() {
             if (mi == macro.end() || mi->second->disabled)  // Macro should not call itself
                 break;
 
+            if (macro_in_preprocessor >= 1)
+                macro_in_preprocessor++;
+
             Macro &m = *mi->second;
             if (m.args.size() > 0) {
                 NextToken();
@@ -132,6 +135,12 @@ void CMacroizer::Enter(Macro *active_macro, const char *contents, const char *fi
 }
 
 bool CMacroizer::Leave() {
+    if (macro_in_preprocessor >= 1) {
+        if (macro_in_preprocessor == 1)
+            return false;
+        macro_in_preprocessor--;
+    }
+
     if (endif_counter != 0)
         Error("unterminated #if");  // gcc
 
