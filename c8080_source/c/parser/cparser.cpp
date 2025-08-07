@@ -67,6 +67,12 @@ const char *CParser::LoadFile(CString file_name, const char **out_file_name) {
     if (i == loaded_files.end()) {
         std::string &contents = loaded_files[file_name];
         FsTools::LoadFile(file_name, SIZE_MAX, contents);
+
+        // Remove UTF8 header
+        static const uint8_t utf8_header[3] = {0xEF, 0xBB, 0xBF};
+        if (contents.size() >= sizeof(utf8_header) && 0 == memcmp(contents.data(), utf8_header, sizeof(utf8_header)))
+            contents.erase(0, sizeof(utf8_header));
+
         i = loaded_files.find(file_name);
         assert(i != loaded_files.end());
     }

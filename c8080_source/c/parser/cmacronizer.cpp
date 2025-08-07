@@ -33,6 +33,7 @@ void CMacroizer::Open(const char *contents, const char *file_name) {
     stack.clear();
     macro.clear();
     in_macro = 0;
+    enable_macro_in_preprocessor = false;
     endif_counter = 0;
     error_position = CErrorPosition();
 
@@ -83,9 +84,6 @@ void CMacroizer::NextToken() {
             if (mi == macro.end() || mi->second->disabled)  // Macro should not call itself
                 break;
 
-            if (macro_in_preprocessor >= 1)
-                macro_in_preprocessor++;
-
             Macro &m = *mi->second;
             if (m.args.size() > 0) {
                 NextToken();
@@ -135,11 +133,8 @@ void CMacroizer::Enter(Macro *active_macro, const char *contents, const char *fi
 }
 
 bool CMacroizer::Leave() {
-    if (macro_in_preprocessor >= 1) {
-        if (macro_in_preprocessor == 1)
-            return false;
-        macro_in_preprocessor--;
-    }
+    if (enable_macro_in_preprocessor && in_macro == 0)
+        return false;
 
     if (endif_counter != 0)
         Error("unterminated #if");  // gcc

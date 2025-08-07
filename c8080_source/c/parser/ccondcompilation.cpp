@@ -18,11 +18,11 @@
 #include "ccondcompilation.h"
 
 void CCondCompilation::NextToken() {
-    if (macro_in_preprocessor >= 1) {
-        CMacroizer::NextToken();
-        return;
-    }
     if (preprocessor_mode) {
+        if (enable_macro_in_preprocessor) {
+            CMacroizer::NextToken();
+            return;
+        }
         NextToken2();
         return;
     }
@@ -36,7 +36,7 @@ void CCondCompilation::NextToken() {
             Throw("# in macro");  // TODO
 
         preprocessor_mode = true;
-        macro_in_preprocessor = 0;
+        enable_macro_in_preprocessor = false;
         std::string directive;
         size_t line1 = token_line;
         size_t column1 = token_column;

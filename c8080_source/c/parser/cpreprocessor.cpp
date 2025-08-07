@@ -44,9 +44,10 @@ void CParserFile::Preprocessor() {
         return PreprocessorIfdef();
     if (l.IfToken("ifndef"))
         return PreprocessorIfndef();
-    l.macro_in_preprocessor = 1;
+    l.enable_macro_in_preprocessor = true;
     if (l.IfToken("if"))
         return PreprocessorIf();
+    l.enable_macro_in_preprocessor = false;
     // TODO: #elif #elifdef #elifndef #line #embed #error #warning
     l.Error("invalid preprocessing directive #" + std::string(l.token_data, l.token_size));  // gcc
 }
@@ -153,9 +154,9 @@ void CParserFile::PreprocessorDefine() {
 
 void CParserFile::PreprocessorIf() {
     const int64_t result = PreprocessorIf0();
+    l.enable_macro_in_preprocessor = false;
     if (!l.WantToken(CT_EOF))
         return;
-    l.macro_in_preprocessor = 0;
     l.PreprocessorIf(result);
 }
 
@@ -347,21 +348,18 @@ int64_t CParserFile::PreprocessorIf2() {
         return int64_t(value);
     }
 
-    const auto old_macro_in_preprocessor = l.macro_in_preprocessor;
-    l.macro_in_preprocessor = 0;
+    l.enable_macro_in_preprocessor = false;
     if (l.IfToken("defined")) {
         const bool need_close = l.IfToken("(");
         std::string id;
-        bool error = !l.WantIdent(id);
+        l.enable_macro_in_preprocessor = true;
+        l.WantIdent(id);
         if (need_close)
             if (!l.CloseToken(")", ")"))
                 return false;
-        if (error)
-            return false;
-        l.macro_in_preprocessor = old_macro_in_preprocessor;
         return PreprocessorIfdefCheck(id);
     }
-    l.macro_in_preprocessor = old_macro_in_preprocessor;
+    l.enable_macro_in_preprocessor = true;
 
     if (l.IfToken("__has_include")) {
         std::string name;

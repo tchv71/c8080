@@ -92,9 +92,13 @@ void Compiler::Compile(CParser &c, OutputFormat output_format, CString output_fi
     }
 
     // Global assembler blocks
-    for (CNodePtr *i = &p.first_node; *i != nullptr; i = &((*i)->next_node))
-        if ((*i)->type == CNT_ASM)
+    for (CNodePtr *i = &p.first_node; *i != nullptr; i = &((*i)->next_node)) {
+        if ((*i)->type == CNT_ASM) {
             out.Write2((*i)->text);
+            if (out.buffer.empty() || out.buffer.back() != '\n')
+                out.Write2("\n");
+        }
+    }
 
     // Write assembler code
     out.MakeFile();
