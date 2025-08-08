@@ -51,7 +51,7 @@ uint8_t SizeOf(CBaseType type, CConstErrorPosition &e) {
         case CBT_STRUCT:  // Must use CType::SizeOf()
             CThrow(e, "Internal error, sizeof(struct) in " + std::string(__PRETTY_FUNCTION__));
         case CBT_FUNCTION:
-            CThrow(e, "C forbids applying ‘sizeof’ to an expression of function type");  // gcc
+            CThrow(e, "C forbids applying 'sizeof' to an expression of function type");  // gcc
         case CBT_VA_LIST:
             CThrow(e, "sizeof(__builtin_va_list) not implemented");
     }

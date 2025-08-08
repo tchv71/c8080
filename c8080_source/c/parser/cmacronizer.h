@@ -28,6 +28,8 @@
 #include "../cerrorposition.h"
 #include "ctokenizer.h"
 
+enum CMacroArgsMode { CMAM_FIXED, CMAM_VA_OPT, CMAM_VAR_LAST };
+
 class CMacroizer : public CTokenizer {
 protected:
     struct Macro {
@@ -36,6 +38,7 @@ protected:
         bool disabled{};  // Macro should not call itself
         std::vector<std::string> args;
         std::shared_ptr<Macro> prev;
+        CMacroArgsMode args_mode{CMAM_FIXED};
     };
 
     struct Stack {
@@ -64,7 +67,8 @@ public:
 
     void Open(const char *contents, const char *file_name);
     void Include(const char *contents, const char *file_name);
-    void AddMacro(CString name, const char *body = "", size_t size = 0, const std::vector<std::string> *args = nullptr);
+    void AddMacro(CString name, const char *body = "", size_t size = 0, const std::vector<std::string> *args = nullptr,
+                  CMacroArgsMode mode = CMAM_FIXED);
     bool FindMacro(CString name);
     bool DeleteMacro(CString name);
     void NextToken();
@@ -73,7 +77,7 @@ public:
     void Throw(CString text);
     void Error(CString text);
     bool FindDirective(std::string &out);
-    void ReadRaw(std::string &result, char terminator);
+    bool ReadRaw(std::string &result, char terminator1, char terminator2, char open);
 };
 
 inline CErrorPosition::CErrorPosition(const CMacroizer &lex) {

@@ -1,17 +1,19 @@
-// c8080 stdlib
-// Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * c8080 stdlib
+ * Copyright (c) 2025 Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #pragma once
 
@@ -24,6 +26,14 @@
 #pragma codepage('▚', 0x05)
 #pragma codepage('▐', 0x06)
 #pragma codepage('▜', 0x07)
+#pragma codepage('☻', 0x08)
+#pragma codepage('⍾', 0x09) // human
+#pragma codepage('☺', 0x0A)
+#pragma codepage('↑', 0x0B)
+#pragma codepage('♥', 0x0C)
+#pragma codepage('♦', 0x0D)
+#pragma codepage('→', 0x0E)
+#pragma codepage('↓', 0x0F)
 
 #pragma codepage('▖', 0x10)
 #pragma codepage('▌', 0x11)
@@ -33,6 +43,14 @@
 #pragma codepage('▙', 0x15)
 #pragma codepage('▟', 0x16)
 #pragma codepage('█', 0x17)
+#pragma codepage('♣', 0x18)
+#pragma codepage('♠', 0x19)
+#pragma codepage('•', 0x1A)
+#pragma codepage('┃', 0x1B)
+#pragma codepage('━', 0x1C)
+#pragma codepage('←', 0x1D)
+#pragma codepage('æ', 0x1E) // СП
+#pragma codepage('○', 0x1F)
 
 #pragma codepage('Ю', 0x60)
 #pragma codepage('А', 0x61)
@@ -65,6 +83,7 @@
 #pragma codepage('Э', 0x7C)
 #pragma codepage('Щ', 0x7D)
 #pragma codepage('Ч', 0x7E)
+#pragma codepage('■', 0x7F)
 
 #pragma codepage('─', 0x80)
 #pragma codepage('│', 0x81)
@@ -77,8 +96,62 @@
 #pragma codepage('┬', 0x88)
 #pragma codepage('┴', 0x89)
 #pragma codepage('┼', 0x8A)
+#pragma codepage('♂', 0x8B)
+#pragma codepage('♀', 0x8C)
+#pragma codepage('♪', 0x8D)
+#pragma codepage('♫', 0x8E)
+#pragma codepage('☼', 0x8F)
 
+#pragma codepage('░', 0x90)
+#pragma codepage('▒', 0x91)
+#pragma codepage('▓', 0x92)
+#pragma codepage('►', 0x93)
+#pragma codepage('◄', 0x94)
+#pragma codepage('↕', 0x95)
+#pragma codepage('¶', 0x96)
+#pragma codepage('§', 0x97)
+#pragma codepage('‼', 0x98)
+#pragma codepage('▬', 0x99)
+#pragma codepage('↨', 0x9A)
+#pragma codepage('∟', 0x9B)
+#pragma codepage('↔', 0x9C)
+#pragma codepage('▲', 0x9D)
+#pragma codepage('▼', 0x9E)
 #pragma codepage('Ъ', 0x9F)
+
+#pragma codepage('═', 0xA0)
+#pragma codepage('║', 0xA1)
+#pragma codepage('╒', 0xA2)
+#pragma codepage('ё', 0xA3)
+#pragma codepage('╓', 0xA4)
+#pragma codepage('╔', 0xA5)
+#pragma codepage('╕', 0xA6)
+#pragma codepage('╖', 0xA7)
+#pragma codepage('╗', 0xA8)
+#pragma codepage('╘', 0xA9)
+#pragma codepage('╙', 0xAA)
+#pragma codepage('╚', 0xAB)
+#pragma codepage('╛', 0xAC)
+#pragma codepage('╜', 0xAD)
+#pragma codepage('╝', 0xAE)
+#pragma codepage('╞', 0xAF)
+
+#pragma codepage('╟', 0xB0)
+#pragma codepage('╠', 0xB1)
+#pragma codepage('╡', 0xB2)
+#pragma codepage('Ё', 0xB3)
+#pragma codepage('╢', 0xB4)
+#pragma codepage('╣', 0xB5)
+#pragma codepage('╤', 0xB6)
+#pragma codepage('╥', 0xB7)
+#pragma codepage('╦', 0xB8)
+#pragma codepage('╧', 0xB9)
+#pragma codepage('╨', 0xBA)
+#pragma codepage('╩', 0xBB)
+#pragma codepage('╪', 0xBC)
+#pragma codepage('╫', 0xBD)
+#pragma codepage('╬', 0xBE)
+#pragma codepage('©', 0xBF)
 
 #pragma codepage('`', 0xC0)
 #pragma codepage('a', 0xC1)
@@ -96,6 +169,7 @@
 #pragma codepage('m', 0xCD)
 #pragma codepage('n', 0xCE)
 #pragma codepage('o', 0xCF)
+
 #pragma codepage('p', 0xD0)
 #pragma codepage('q', 0xD1)
 #pragma codepage('r', 0xD2)
@@ -129,6 +203,7 @@
 #pragma codepage('м', 0xED)
 #pragma codepage('н', 0xEE)
 #pragma codepage('о', 0xEF)
+
 #pragma codepage('п', 0xF0)
 #pragma codepage('я', 0xF1)
 #pragma codepage('р', 0xF2)
@@ -144,3 +219,4 @@
 #pragma codepage('э', 0xFC)
 #pragma codepage('щ', 0xFD)
 #pragma codepage('ч', 0xFE)
+#pragma codepage('⌂', 0xFF)

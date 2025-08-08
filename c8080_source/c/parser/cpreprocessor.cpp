@@ -135,25 +135,31 @@ void CParserFile::PreprocessorDefine() {
         return;
 
     std::vector<std::string> args;
+    CMacroArgsMode args_mode = CMAM_FIXED;
     if (args_e) {
         if (!l.WantToken("("))
             return;
         do {
             if (l.IfToken("...")) {
                 args.push_back("__VA_ARGS__");
+                args_mode = CMAM_VA_OPT;
                 break;
             }
             std::string id;
             if (!l.WantIdent(id))
                 return;
             args.push_back(id);
+            if (l.IfToken("...")) {
+                args_mode = CMAM_VAR_LAST;
+                break;
+            }
         } while (l.IfToken(","));
         if (!l.WantToken(")"))
             return;
     }
 
     l.PreprocessorLeave();
-    l.AddMacro(id, l.token_data, strlen(l.token_data), &args);
+    l.AddMacro(id, l.token_data, strlen(l.token_data), &args, args_mode);
 }
 
 void CParserFile::PreprocessorIf() {
@@ -368,7 +374,7 @@ int64_t CParserFile::PreprocessorIf2() {
     if (l.IfToken("__has_include")) {
         std::string name;
         if (l.token_data[0] == '(') {
-            l.ReadRaw(name, ')');
+            l.ReadRaw(name, ')', ')', '(');
             l.NextToken();
         }
         bool current_dir;

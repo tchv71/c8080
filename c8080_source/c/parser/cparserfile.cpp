@@ -127,7 +127,7 @@ CNodePtr CParserFile::ParseAsm(CErrorPosition &e) {
         l.NeedToken(")");
         l.NeedToken(";");
     } else if (l.token_data[0] == '{') {
-        l.ReadRaw(str, '}');
+        l.ReadRaw(str, '}', '}', '{');
         l.NextToken();
     } else {
         l.ThrowSyntaxError();
@@ -149,7 +149,7 @@ void CParserFile::ParseEnum() {
         std::string name;
         l.NeedIdent(name);
         if (FindVariableCurrentScope(name) != nullptr)
-            programm.Error(e, std::string("redefinition of ‘") + name + "’");  // gcc
+            programm.Error(e, std::string("redefinition of '") + name + "'");  // gcc
         if (l.IfToken("="))
             value = ParseInt64();
 

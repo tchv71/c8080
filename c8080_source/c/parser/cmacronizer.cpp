@@ -86,14 +86,35 @@ void CMacroizer::NextToken() {
 
             Macro &m = *mi->second;
             if (m.args.size() > 0) {
-                NextToken();
-                if (token_size != 1 || token_data[0] != '(')
+                if (cursor[0] != '(')
                     ThrowSyntaxError();
+                NextToken();
 
+                bool no_more_args = false;
+                bool last_arg_is_empty = false;
                 for (size_t j = 0; j < m.args.size(); j++) {
                     std::string arg_body;
-                    ReadRaw(arg_body, (j + 1) < m.args.size() ? ',' : ')');
+                    const bool var_last = (m.args_mode != CMAM_FIXED && j + 1 == m.args.size());
+                    if (!no_more_args) {
+                        no_more_args = ReadRaw(arg_body, var_last ? '(' : ',', ')', '(');
+                    } else {
+                        last_arg_is_empty = true;
+                        if (!var_last)
+                            Error("not enough parameters in macro");
+                    }
                     AddMacro(m.args[j], arg_body.c_str(), arg_body.size());
+                }
+
+                if (m.args_mode == CMAM_VA_OPT) {
+                    static const std::vector<std::string> args = {"__VA_OPT__"};
+                    AddMacro("__VA_OPT__", "__VA_OPT__", last_arg_is_empty ? 0 : sizeof("__VA_OPT__") - 1, &args,
+                             CMAM_VAR_LAST);
+                }
+
+                if (!no_more_args) {
+                    Error("extra parameters in macro");
+                    std::string temp;
+                    ReadRaw(temp, '(', ')', '(');
                 }
             }
             m.disabled = true;  // Macro should not call itself
@@ -149,6 +170,8 @@ bool CMacroizer::Leave() {
 
     if (s.active_macro) {
         assert(s.active_macro->disabled);
+        if (s.active_macro->args_mode == CMAM_VA_OPT)
+            DeleteMacro("__VA_OPT__");
         for (auto i : s.active_macro->args)
             DeleteMacro(i);
         s.active_macro->disabled = false;
@@ -186,26 +209,38 @@ void CMacroizer::ReadDirective(std::string &result) {
     }
 }
 
-void CMacroizer::ReadRaw(std::string &result, char terminator) {
+bool CMacroizer::ReadRaw(std::string &result, char terminator1, char terminator2, char open) {
+    size_t level = 0;
     for (;;) {
         const char *start = cursor;
         NextToken2();
         if (token == CT_EOF)
-            Throw(std::string("expected ‘") + terminator + "’ at end of input");
+            Throw(std::string("expected '") + terminator1 + "' or '" + terminator2 + "' at end of input");
         if (token_data[0] == '#')  // MACRO(name #endif), asm { #endif }
             Throw("сan't use # here");
-        if (token_size == 1 && token_data[0] == terminator)
-            return;
+        if (token_size == 1) {
+            if (token_data[0] == open) {
+                level++;
+            } else if (token_data[0] == terminator2) {
+                if (level == 0)
+                    return true;
+                level--;
+            } else if (token_data[0] == terminator1) {
+                return false;
+            }
+        }
         if (token != CT_REMARK)
             result.append(start, cursor - start);
     }
 }
 
-void CMacroizer::AddMacro(CString name, const char *body, size_t size, const std::vector<std::string> *args) {
+void CMacroizer::AddMacro(CString name, const char *body, size_t size, const std::vector<std::string> *args,
+                          CMacroArgsMode mode) {
     // TODO: assert(!in_macro);
     std::shared_ptr<Macro> m = std::make_shared<Macro>();
     m->name = name;                     // Копия в Macro
     m->body = save_string(body, size);  // TODO: Не выделять память, а сохранить указатели???
+    m->args_mode = mode;
     if (args != nullptr)
         m->args = *args;
     auto &i = macro[m->name];  // В качестве индекса ссылка на Macro
