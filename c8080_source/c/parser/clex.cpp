@@ -34,13 +34,17 @@ bool CLex::IfString2(std::string &out_string) {
         return false;
     out_string.assign(token_data, token_size);
     NextToken();
-    while (token == CT_STRING2) {
-        out_string.append(token_data, token_size);
-        NextToken();
-    }
     const char *error = CDecodeString(out_string);
     if (error)
         Throw(error);
+    while (token == CT_STRING2) {
+        std::string temp(token_data, token_size);
+        NextToken();
+        const char *error = CDecodeString(temp);
+        if (error)
+            Throw(error);
+        out_string.append(temp);
+    }
     return true;
 }
 

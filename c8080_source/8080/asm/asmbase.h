@@ -203,14 +203,15 @@ public:
         Write("\tdd ", value, "\n");
     }
 
-    void const_string(const char *name, const char *string) {
-        const char *p = string;
+    void const_string(const char *name, CString string) {
+        const char *p = string.c_str();
+        const char *end = p + string.size();
         Write(name, ":\n");
         unsigned n = 0;
         for (;;) {
             Write(n == 0 ? "  db " : ", ");
             Write(static_cast<unsigned char>(*p));
-            if (*p == 0)
+            if (p == end)
                 break;
             p++;
             n++;

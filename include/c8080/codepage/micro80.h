@@ -27,7 +27,7 @@
 #pragma codepage('▐', 0x06)
 #pragma codepage('▜', 0x07)
 #pragma codepage('☻', 0x08)
-#pragma codepage('⍾', 0x09) // human
+#pragma codepage('⍾', 0x09)  // human
 #pragma codepage('☺', 0x0A)
 #pragma codepage('↑', 0x0B)
 #pragma codepage('♥', 0x0C)
@@ -49,7 +49,7 @@
 #pragma codepage('┃', 0x1B)
 #pragma codepage('━', 0x1C)
 #pragma codepage('←', 0x1D)
-#pragma codepage('æ', 0x1E) // СП
+#pragma codepage('æ', 0x1E)  // СП
 #pragma codepage('○', 0x1F)
 
 #pragma codepage('Ю', 0x60)

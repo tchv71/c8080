@@ -50,10 +50,13 @@ uint8_t SizeOf(CBaseType type, CConstErrorPosition &e) {
             return C_SIZEOF_LONG_DOUBLE;
         case CBT_STRUCT:  // Must use CType::SizeOf()
             CThrow(e, "Internal error, sizeof(struct) in " + std::string(__PRETTY_FUNCTION__));
+            return 1;  // no return
         case CBT_FUNCTION:
             CThrow(e, "C forbids applying 'sizeof' to an expression of function type");  // gcc
+            return 1;  // no return                                                                // no return
         case CBT_VA_LIST:
             CThrow(e, "sizeof(__builtin_va_list) not implemented");
+            return 1;  // no return
     }
     CThrow(e, "Internal error, sizeof(unknown " + std::to_string(type) + ") in " + std::string(__PRETTY_FUNCTION__));
     return 1;  // no return

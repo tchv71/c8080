@@ -15,49 +15,45 @@
 
 #include <string.h>
 
-void *__global memmove(void *destination, const void *source, size_t size) {
+void *__global memmove(void *, const void *, size_t) {
     (void)memcpy;  // Link
-    (void)destination;
-    (void)source;
-    (void)size;
     asm {
-        ex hl, de              ; de = size
-        ld hl, __a_2_memmove   ; if (destination > source) goto memmove_3
-        ld a, (__a_1_memmove)
-        sub (hl)
-        inc hl
-        ld a, (__a_1_memmove + 1)
-        sbc (hl)
-        jp nc, memmove_3
-        ld hl, (__a_1_memmove) ; return memcpy(destination, source, size`)
-        ld (__a_1_memcpy), hl
-        ld hl, (__a_2_memmove)
-        ld (__a_2_memcpy), hl
-        ex hl, de
-        jp memcpy
+__a_3_memmove=0
+        ex   hl, de              ; de = size
+        ld   hl, __a_2_memmove   ; if (destination > source) goto memmove_3
+        ld   a, (__a_1_memmove)
+        sub  (hl)
+        inc  hl
+        ld   a, (__a_1_memmove + 1)
+        sbc  (hl)
+        jp   nc, memmove_3
+        ld   hl, (__a_1_memmove) ; return memcpy(destination, source, size`)
+        ld   (__a_1_memcpy), hl
+        ld   hl, (__a_2_memmove)
+        ld   (__a_2_memcpy), hl
+        ex   hl, de
+        jp   memcpy
 
 memmove_3:
-        push bc
-        ld hl, (__a_2_memmove) ; bc = source
-        add hl, de
-        ld c, l
-        ld b, h
-        ld hl, (__a_1_memmove) ; hl = destination
-        add hl, de
-        inc d                  ; enter loop
-        xor a
-        or e
-        jp z, memmove_2
+        ld   hl, (__a_2_memmove) ; bc = source
+        add  hl, de
+        ld   c, l
+        ld   b, h
+        ld   hl, (__a_1_memmove) ; hl = destination
+        add  hl, de
+        inc  d                   ; enter loop
+        xor  a
+        or   e
+        jp   z, memmove_2
 memmove_1:
-        dec hl
-        dec bc
-        ld a, (bc)
-        ld (hl), a
-        dec e                  ; end loop
-        jp nz, memmove_1
+        dec  hl
+        dec  bc
+        ld   a, (bc)
+        ld   (hl), a
+        dec  e                   ; end loop
+        jp   nz, memmove_1
 memmove_2:
-        dec d
-        jp nz, memmove_1
-        pop bc
+        dec  d
+        jp   nz, memmove_1
     }
 }
