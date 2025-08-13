@@ -116,6 +116,20 @@ static void AddSave(AsmBase &a, Saves &saves, const AsmArgument &variable, uint6
 static void RemoveSave(Saves &saves, const AsmArgument &variable) {
     if (variable.type != AAT_STRING)
         return;
+    if (variable.string.find('(') != std::string::npos) {
+        // Это формула содержая один или несколько адресов
+        // переменных. Значение формула используется как адрес
+        // переменной. Нам придется сохранить все переменные.
+
+        // Например, эту строку нельзя удалять:
+        //   ld  (var), a  <--
+        //   ...
+        //   ld  hl, var
+        //   add (hl)
+
+        saves.clear();
+        return;
+    }
     Saves::iterator p = saves.find(variable.string);
     if (p != saves.end())
         saves.erase(p);
@@ -215,6 +229,7 @@ void LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
             case AC_LXI:
             case AC_MVI: {
                 assert(l.argument[0].type == AAT_REG);
+                RemoveSave(saves, l.argument[1]);  // Конструкция: ld hl, var / add (hl)
                 if (l.argument[0].reg == R8_M)
                     break;
                 StateRegister *sr = ResetState(s, l.argument[0].reg, true);
@@ -245,6 +260,7 @@ void LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
                     ResetState(s, l.argument[0].reg);  // TODO: Можно вычислить
                 break;
             case AC_MOV:
+                RemoveSave(saves, l.argument[1]);  // Конструкция: ld hl, var / add (hl)
                 if (l.argument[0].reg == R8_M)
                     break;
                 ResetState(s, l.argument[0].reg);  // TODO: Можно вычислить. Обработать пару hl, de.
