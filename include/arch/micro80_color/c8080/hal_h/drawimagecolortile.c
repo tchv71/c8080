@@ -17,23 +17,51 @@
 
 #include <c8080/hal.h>
 
-void __global DrawImageTile(void *tile, const void *image, uint16_t widthHeight) {
+void __global DrawImageColorTile(void *tile, const void *image, uint8_t color, uint16_t widthHeight) {
     asm {
-__a_3_drawimagetile=0
+        ld   a, (__a_3_drawimagecolortile)
+        add  a
+        add  a
+        add  a
+        ld   (drawimagecolortile_tb), a
+
+__a_4_drawimagecolortile=0
         ld   bc, hl ; width, height
-__a_1_drawimagetile=$+1
+__a_1_drawimagecolortile=$+1
         ld   hl, 0 ; tile
-__a_2_drawimagetile=$+1
+__a_2_drawimagecolortile=$+1
         ld   de, 0 ; image
-drawimagetile_l1:
+drawimagecolortile_l1:
         push bc
         push hl
-drawimagetile_l2:
+drawimagecolortile_l2:
         ld   a, h
         sub  08h
         ld   h, a
 
         ld   a, (de)
+
+        ; Change color
+        ld   b, a
+        and  47h
+        cp   1  ; From color
+        ld   a, b
+        jp   nz, drawimagecolortile_l3
+        and  ~47h
+__a_3_drawimagecolortile=$+1
+        or   0 ; To color
+        ld   b, a
+drawimagecolortile_l3:
+
+        and  7 << 3
+        cp   1 << 3  ; From color
+        ld   a, b
+        jp   nz, drawimagecolortile_l4
+        and  ~(7 << 3)
+drawimagecolortile_tb=$+1
+        or   0
+drawimagecolortile_l4:
+
         inc  de
         ld   (hl), a
 
@@ -48,7 +76,7 @@ drawimagetile_l2:
         inc  l
 
         dec  c
-        jp   nz, drawimagetile_l2
+        jp   nz, drawimagecolortile_l2
 
         pop  hl
 
@@ -58,6 +86,6 @@ drawimagetile_l2:
         pop  bc
 
         dec  b
-        jp   nz, drawimagetile_l1
+        jp   nz, drawimagecolortile_l1
     }
 }

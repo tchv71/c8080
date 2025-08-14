@@ -42,6 +42,19 @@ void __global DrawImageTile(void *tile, const void *image, uint16_t width_height
 void DrawImageTileXY(uint8_t x, uint8_t y, const void *image, uint16_t width_height)
     __link("c8080/hal_h/drawimagetilexy.c");
 
+/* Quick draw an image on the screen.
+ * The image size and position are multiples of the tile size.
+ * One of the image colors is changed to the color from args.
+ * The "tile" value must be calculated using the TILE macro. */
+void __global DrawImageColorTile(void *tile, const void *image, uint8_t color, uint16_t widthHeight)
+    __link("c8080/hal_h/drawimagecolortile.c");
+
+/* Quick draw an image on the screen.
+ * One of the image colors is changed to the color from args.
+ * The image size and position are multiples of the tile size. */
+void DrawImageColorTileXY(uint8_t x, uint8_t y, const void *image, uint8_t color, uint16_t widthHeight)
+    __link("c8080/hal_h/drawimagecolortilexy.c");
+
 /* Beautifully draw the compressed full-screen image.
  * The "tempBuffer" value is a buffer of DRAW_SCREEN_TEMP_BUFFER_SIZE bytes */
 void DrawScreenBuffer(void *tempBuffer, const void *image) __link("c8080/hal_h/drawscreen.c");

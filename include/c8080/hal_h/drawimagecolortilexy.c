@@ -17,26 +17,6 @@
 
 #include <c8080/hal.h>
 
-void __global DrawText(void *, uint8_t, uint8_t, const char *) {
-    asm {
-__a_4_drawtext=0
-        ex   hl, de
-__a_1_drawtext=$+1
-        ld   bc, 0 ; tile
-        ld   a, b
-        sub  08h
-        ld   h, a
-        ld   l, c
-drawtext_l1:
-        ld   a, (de)
-        or   a
-        ret  z
-        ld   (bc), a
-__a_3_drawtext=$+1
-        ld   (hl), 0 ; color
-        inc  c
-        inc  l
-        inc  de
-        jp   drawtext_l1
-    }
+void DrawImageColorTileXY(uint8_t x, uint8_t y, const void *image, uint8_t color, uint16_t widthHeight) {
+    DrawImageColorTile(TILE(x, y), image, color, widthHeight);
 }
