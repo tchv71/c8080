@@ -106,7 +106,7 @@ CToken CTokenizer::NextToken3() {
         if (errno == ERANGE || start == cursor)
             Throw("number out of range");
 
-        if (cursor[0] == '.' && (cursor[1] == 'e' || cursor[1] == 'E')) {
+        if (cursor[0] == '.' || cursor[0] == 'e' || cursor[0] == 'E') {
             token_float = strtold(start, (char **)&cursor);
             if (errno == ERANGE || start == cursor)
                 Throw("number out of range");

@@ -1236,6 +1236,7 @@ CNodePtr CParserFile::ParseFunctionBody() {
     }
     if (l.IfToken("for")) {
         loop_level++;
+        Enter();
         l.NeedToken("(");
         auto a = ParseFunctionBody2();
         // Always ends by ;
@@ -1250,6 +1251,7 @@ CNodePtr CParserFile::ParseFunctionBody() {
             l.NeedToken(")");
         }
         auto d = ParseFunctionBody();
+        Leave();
         loop_level--;
         return CNODE({CNT_FOR, a, b, c, d, e : e});
     }
