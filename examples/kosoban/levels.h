@@ -35,7 +35,7 @@ static const uint8_t DIR_LEFT = 4 << DIR_SHIFT;
 static const uint8_t DIR_MASK = 0xFF << DIR_SHIFT;
 
 #define GET_DIR(X) ((X)&DIR_MASK)
-#define GET_COLOR(X) ((X)&~DIR_MASK)
+#define GET_COLOR(X) ((X) & ~DIR_MASK)
 
 static const uint8_t EMPTY = 0;
 

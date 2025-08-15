@@ -50,11 +50,12 @@ static void *GetCellSprite(uint8_t x, uint8_t y) {
         imageColor = GET_COLOR(boxItem);
         if (staticItem == imageColor)
             sprite += 4;  // block + done
+        imageColor = BOX_COLOR(imageColor);
     } else if (staticItem == EMPTY) {
         imageColor = COLOR_INK_WHITE;
         sprite = 0;  // empty cell
     } else if (staticItem < DIR_UP) {
-        imageColor = staticItem + 0x40;
+        imageColor = DEST_COLOR(staticItem);
         sprite = 1;  // destination
     } else {
         imageColor = COLOR_INK_WHITE;
@@ -84,7 +85,7 @@ static void DrawCursor(void) {
 static void DrawLevelNumber(void) {
     char buf[16];
     snprintf(buf, sizeof(buf), "Уровень %u ", (uint16_t)level);  // TODO: uint8_t
-    DrawTextXY(5, 4, COLOR_INK_LIGHT_YELLOW, buf);
+    DrawTextXY(LEVEL_X, LEVEL_Y, COLOR_LEVEL, buf);
 }
 
 static void LevelAnimation1(bool mode) {
@@ -97,10 +98,7 @@ static void LevelAnimation1(bool mode) {
             if (mode) {
                 DrawCell(x, y);
             } else {
-                uint8_t color = rand() & 0x47;
-                if (color == 0)
-                    color = COLOR_INK_WHITE;
-                DrawCellAny(x, y, imgCell[14], color);
+                DrawCellAny(x, y, imgCell[14], BOX_COLOR(rand() & 7));
             }
             DELAY_MS(5);
         }
@@ -124,7 +122,7 @@ static void MoveAnimation(uint8_t dx, uint8_t dy, uint8_t count) {
         uint8_t x1 = cursorX;
         uint8_t y1 = cursorY;
         gx += dx;
-        gy += dy;
+        gy += dy * MOVE_ANIMATION_H;
         uint8_t gx1 = gx;
         uint8_t gy1 = gy;
         DrawCell(x, y);
@@ -196,7 +194,7 @@ static void Intro(void) {
         line[INTRO_WIDTH - 1] = *i;
         i++;
 
-        DrawTextXY(0, 25, COLOR_INK_LIGHT_CYAN, line);
+        DrawTextXY(0, INTRO_Y, COLOR_INTRO, line);
 
         uint8_t delay = 1;
         if (++n == INTRO_WIDTH) {

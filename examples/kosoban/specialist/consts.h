@@ -21,21 +21,34 @@
 #include <stdint.h>
 #include <c8080/colors.h>
 
-static const uint8_t CELL_W = 3;
-static const uint8_t CELL_H = 3;
+static const uint8_t CELL_W = imgCellWidth;
+static const uint8_t CELL_H = imgCellHeight;
 
-static const uint8_t GAME_X = 21;
-static const uint8_t GAME_Y = 1;
+static const uint8_t GAME_X = 3;
+static const uint8_t GAME_Y = 48;
 
-static const uint8_t INTRO_Y = 25;
+static const uint8_t INTRO_Y = 248;
 
-static const uint8_t LEVEL_X = 5;
-static const uint8_t LEVEL_Y = 4;
+static const uint8_t MOVE_ANIMATION_H = 8;
 
-static const uint8_t MOVE_ANIMATION_H = 1;
+static const uint8_t LEVEL_X = 128;
+static const uint8_t LEVEL_Y = 24;
 
-static const uint8_t COLOR_LEVEL = COLOR_INK_LIGHT_YELLOW;
-static const uint8_t COLOR_INTRO = COLOR_INK_LIGHT_CYAN;
+static const uint8_t COLOR_LEVEL = COLOR_INK_YELLOW;
+static const uint8_t COLOR_INTRO = COLOR_INK_CYAN;
 
-#define BOX_COLOR(X) (X)
-#define DEST_COLOR(X) ((X) + 0x40)
+#pragma codepage('©', 0x2D)
+
+static const uint8_t allColors[] = {
+    COLOR_INK_WHITE,
+    COLOR_INK_RED,
+    COLOR_INK_GREEN,
+    COLOR_INK_BLUE,
+    COLOR_INK_YELLOW,
+    COLOR_INK_CYAN,
+    COLOR_INK_VIOLET,
+    COLOR_INK_WHITE,
+};
+
+#define BOX_COLOR(X) (allColors[(X)])
+#define DEST_COLOR(X) (allColors[(X)])
