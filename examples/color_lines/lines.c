@@ -60,26 +60,37 @@ struct HiScore {
 };
 
 struct HiScore hiScores[] = {
-    {"Alemorf", 300}, {"B2M", 250},  {"Eltaron", 200}, {"Error404", 150},
-    {"SYSCAT", 100},  {"Mick", 80}, {"SVOFSK", 60},  {"Titus", 40},
+    {"Alemorf", 300}, {"B2M", 250}, {"Eltaron", 200}, {"Error404", 150},
+    {"SYSCAT", 100},  {"Mick", 80}, {"Svofski", 60},   {"Titus", 40},
 };
 
 void *CellAddress(uint8_t x, uint8_t y) {
     x = PLAYFIELD_X + x * CELL_TILE_WIDTH;
+#ifdef CELL_HALF_HEIGHT
+    y = PLAYFIELD_Y + (y * (CELL_TILE_HEIGHT * 2 - 1) + 1) / 2;
+#else
     y = PLAYFIELD_Y + y * CELL_TILE_HEIGHT;
+#endif
     return TILE(x, y);
 }
 
-void DrawBall(uint8_t *tile, uint8_t sprite, uint8_t color) {
-    DrawImageTile(tile, imgBalls[sprite + COLOR_STEP * color], imgBallsSize);
+void DrawBall(uint8_t *tile, uint8_t y, uint8_t sprite, uint8_t color) {
+#ifdef CELL_HALF_HEIGHT
+    if (y & 1) {
+        DrawImageColorTile(tile, color, imgBalls1[sprite]);
+        return;
+    }
+#endif
+    DrawImageColorTile(tile, color, imgBalls[sprite]);
 }
 
 static void DrawBallXY(uint8_t x, uint8_t y, uint8_t sprite, uint8_t color) {
-    DrawBall(CellAddress(x, y), sprite, color);
+    DrawBall(CellAddress(x, y), y, sprite, color);
 }
 
 void DrawCursor(void) {
-    DrawBallXY(cursorX, cursorY, 12, game[cursorX][cursorY]);
+    uint8_t c = game[cursorX][cursorY];
+    DrawBallXY(cursorX, cursorY, c ? 2 : 1, c);
 }
 
 // Удаляем линни из 5 шариков и больше
@@ -93,7 +104,7 @@ static void ClearLine(uint8_t x0, uint8_t y0, uint8_t dx, uint8_t dy, uint8_t le
         x = x0;
         y = y0;
         for (i = length; i != 0; --i) {
-            DrawBallXY(x, y, 5 + o, color);
+            DrawBallXY(x, y, 12 + o, color);
             x += dx;
             y += dy;
         }
@@ -111,11 +122,17 @@ static void ClearLine(uint8_t x0, uint8_t y0, uint8_t dx, uint8_t dy, uint8_t le
     }
 }
 
-static void DrawScoreAndCreatures2(void) {
-    char scoreText[UINT16_TO_STRING_SIZE + 1];
-    Uint16ToString(scoreText, score, 10);
+static char *Center(char *buffer, uint16_t value) {
+    char* text = Uint16ToString(buffer, value, 10);
+#ifdef CENTER_SCORE
+    buffer += (UINT16_TO_STRING_BUFFER_SIZE - 1 - strlen(text)) / 2;
+#endif
+    return buffer;
+}
 
-    DrawText(DRAWTEXTARGS(SCORE_X, SCORE_Y), SCORE_COLOR, scoreText);
+static void DrawScoreAndCreatures2(void) {
+    char buffer[UINT16_TO_STRING_BUFFER_SIZE];
+    DrawText(DRAWTEXTARGS(SCORE_X, SCORE_Y), SCORE_COLOR, Center(buffer, score));
 
     uint16_t n;
     n = (score / (hiScores[0].score / PLAYAR_MAX_HEIGHT));
@@ -126,14 +143,14 @@ static void DrawScoreAndCreatures2(void) {
         playerHeight = n;
         uint8_t y = PLAYER_Y - imgPlayerDHeight;
         for (; n > 0; n--) {
-            DrawImageTileXY(PLAYER_X, y, imgPlayerD, imgPlayerDSize);
+            DrawImageTileXY(PLAYER_X, y, imgPlayerD);
             y -= imgPlayerDHeight;
         }
         y -= (imgPlayerHeight - imgPlayerDHeight);
-        DrawImageTileXY(PLAYER_X, y, imgPlayer, imgPlayerSize);
+        DrawImageTileXY(PLAYER_X, y, imgPlayer);
         if (playerHeight == PLAYAR_MAX_HEIGHT) {
-            DrawImageTileXY(PLAYER_X + PLAYER_CROWN_DX, y - PLAYER_CROWN_DY, imgPlayerWin, imgPlayerWinSize);
-            DrawImageTile(TILE(KING_X, KING_Y), imgKingLose, imgKingLoseSize);
+            DrawImageTileXY(PLAYER_X + PLAYER_CROWN_DX, y - PLAYER_CROWN_DY, imgPlayerWin);
+            DrawImageTile(TILE(KING_X, KING_Y), imgKingLose);
         }
     }
 }
@@ -270,21 +287,26 @@ static void GenerateNewBalls(void) {
         newBalls[i] = (uint8_t)rand() % COLORS_COUNT + 1;
 }
 
-static void DrawHelp(const uint8_t *newBalls) {
-    DrawBall(TILE(HELP_1_X, HELP_1_Y), 11, newBalls[0]);
-    DrawBall(TILE(HELP_2_X, HELP_2_Y), 11, newBalls[1]);
-    DrawBall(TILE(HELP_3_X, HELP_3_Y), 11, newBalls[2]);
+static void DrawHelp(void) {
+    DrawBall(TILE(HELP_1_X, HELP_1_Y), 0, 11, newBalls[0]);
+    DrawBall(TILE(HELP_2_X, HELP_2_Y), 0, 11, newBalls[1]);
+    DrawBall(TILE(HELP_3_X, HELP_3_Y), 0, 11, newBalls[2]);
+}
+
+static void HideHelp(void) {
+    DrawBall(TILE(HELP_1_X, HELP_1_Y), 0, 18, 0);
+    DrawBall(TILE(HELP_2_X, HELP_2_Y), 0, 18, 0);
+    DrawBall(TILE(HELP_3_X, HELP_3_Y), 0, 18, 0);
 }
 
 // Показываем цвета новых шариков
 
 void DrawHelp2(void) {
     if (showHelp) {
-        DrawHelp(newBalls);
+        DrawHelp();
         return;
     }
-    static const uint8_t hideNewBalls[3];
-    DrawHelp(hideNewBalls);
+    HideHelp();
 }
 
 // Помещаем шарик в случайную свободную ячейку
@@ -339,7 +361,7 @@ static uint8_t GameStep(uint8_t newGame) {
         for (i = 0; i < NEW_ANIMATION_COUNT; i++) {
             uint8_t j;
             for (j = 0; j < newBallCount; j++)
-                DrawBallXY(coords[j].x, coords[j].y, 4 - i, newBalls[j]);
+                DrawBallXY(coords[j].x, coords[j].y, 7 + i, newBalls[j]);
             DELAY_MS(50);
         }
     }
@@ -381,14 +403,14 @@ static void DrawHiScoresWindow2(uint8_t hilight, const char *lastLine) {
     uint8_t gy = HIRECT_Y;
     for (y = 0; y < HIRECT_HEIGHT; y++) {
         uint8_t gx = HIRECT_X;
-        DrawImageTileXY(gx, gy, imgHi[0], imgHiSize);
+        DrawImageTileXY(gx, gy, imgHi[0]);
         gx += imgHiWidth;
         uint8_t x;
         for (x = 0; x < HIRECT_WIDTH; x++) {
-            DrawImageTileXY(gx, gy, imgHi[1], imgHiSize);
+            DrawImageTileXY(gx, gy, imgHi[1]);
             gx += imgHiWidth;
         }
-        DrawImageTileXY(gx, gy, imgHi[2], imgHiSize);
+        DrawImageTileXY(gx, gy, imgHi[2]);
         gy += CELL_TILE_HEIGHT;
     }
     DrawHiScoresItem(0, HI_COLOR_3, "    Рекорды");
@@ -454,17 +476,16 @@ static void AddToHiScores(void) {
 }
 
 static void DrawButtons(void) {
-    DrawImageTile(TILE(BUTTON_PATH_X, BUTTON_PATH_Y), showPath ? imgButtons[1] : imgButtons[0], imgButtonsSize);
-    DrawImageTile(TILE(BUTTON_SOUND_X, BUTTON_SOUND_Y), soundEnabled ? imgButtons[3] : imgButtons[2], imgButtonsSize);
-    DrawImageTile(TILE(BUTTON_HELP_X, BUTTON_HELP_Y), showHelp ? imgButtons[5] : imgButtons[4], imgButtonsSize);
+    ChangeTileColor(TILE(BUTTON_PATH_X, BUTTON_PATH_Y), showPath ? BUTTON_COLOR_ENABLED : BUTTON_COLOR_DISABLED, BUTTON_PATH_W, BUTTON_PATH_H);
+    ChangeTileColor(TILE(BUTTON_SOUND_X, BUTTON_SOUND_Y), soundEnabled ? BUTTON_COLOR_ENABLED : BUTTON_COLOR_DISABLED, BUTTON_SOUND_W, BUTTON_SOUND_H);
+    ChangeTileColor(TILE(BUTTON_HELP_X, BUTTON_HELP_Y), showHelp ? BUTTON_COLOR_ENABLED : BUTTON_COLOR_DISABLED, BUTTON_HELP_W, BUTTON_HELP_H);
 }
 
 static void DrawScreen3(void) {
     DrawScreen(imgScreen);
 
-    char scoreText[UINT16_TO_STRING_SIZE + 1];
-    Uint16ToString(scoreText, hiScores[0].score, 10);
-    DrawText(DRAWTEXTARGS(TOPSCORE_X, TOPSCORE_Y), TOPSCORE_COLOR, scoreText);
+    char buffer[UINT16_TO_STRING_BUFFER_SIZE];
+    DrawText(DRAWTEXTARGS(TOPSCORE_X, TOPSCORE_Y), TOPSCORE_COLOR, Center(buffer, hiScores[0].score));
 
     if (TOPNAME_Y != 0) {
         uint16_t tx = (sizeof(hiScores[0].name) - 1 - strlen(hiScores[0].name)) * 4 / 2 + TOPNAME_X;
@@ -478,9 +499,12 @@ static void DrawScreen3(void) {
 
     uint8_t *a = &game[0][0];
     uint8_t x, y;
-    for (x = 0; x < GAME_WIDTH; x++)
-        for (y = 0; y < GAME_HEIGHT; y++)
-            DrawBallXY(x, y, 0, *a++);
+    for (x = 0; x < GAME_WIDTH; x++) {
+        for (y = 0; y < GAME_HEIGHT; y++) {
+            uint8_t c = *a++;
+            DrawBallXY(x, y, c ? 11 : 0, c);
+        }
+    }
 
     DrawHelp2();
     DrawCursor();
@@ -515,8 +539,10 @@ static void PlaySoundJump(void) {
 
 static void MoveBall(void) {
     if (game[cursorX][cursorY] != 0) {
-        if (selX != NO_SEL)
-            DrawBallXY(selX, selY, 0, game[selX][selY]);
+        if (selX != NO_SEL) {
+            uint8_t c = game[selX][selY];
+            DrawBallXY(selX, selY, c ? 11 : 0, c);
+        }
         selX = cursorX;
         selY = cursorY;
         return;
@@ -540,8 +566,8 @@ static void MoveBall(void) {
             uint8_t x = path_x;
             uint8_t y = path_y;
             uint8_t dir = PathGetNextStep();
-            DrawBallXY(x, y, dir, 0);
-            DrawBallXY(path_x, path_y, 0, c);
+            DrawBallXY(x, y, dir + 2, 0);
+            DrawBallXY(path_x, path_y, 11, c);
             if (soundEnabled)
                 PlaySoundJump();
             DELAY_MS(100);
@@ -596,7 +622,7 @@ static void BouncingBallAnimation(void) {
     selAnimationDelay++;
     if (selAnimationDelay >= BOUNCE_ANIMATION_DELAY) {
         selAnimationDelay = 0;
-        static const uint8_t selAnimation[] = {0, 8, 0, 9, 10, 9};
+        static const uint8_t selAnimation[] = {11, 15, 11, 16, 17, 16};
         DrawBallXY(selX, selY, selAnimation[selAnimationFrame], game[selX][selY]);
 
         selAnimationFrame++;
@@ -609,7 +635,8 @@ static void BouncingBallAnimation(void) {
 }
 
 static void ClearCursor(void) {
-    DrawBallXY(cursorX, cursorY, 0, game[cursorX][cursorY]);
+    uint8_t c = game[cursorX][cursorY];
+    DrawBallXY(cursorX, cursorY, c ? 11 : 0, c);
 }
 
 // Главная функция
@@ -655,7 +682,7 @@ int main(int, char **) {
         switch (pressedKey) {
 #ifdef TEST
             case '6':
-                score += 5;
+                score = (score + 1) * 2;
                 DrawScoreAndCreatures2();
                 break;
 #endif

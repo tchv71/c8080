@@ -32,27 +32,32 @@ void __global DrawText(void *tile, uint8_t x, uint8_t color, const char *text) _
 /* Draw text at the screen. */
 void __global DrawTextXY(uint8_t x, uint8_t y, uint8_t color, const char *text) __link("c8080/hal_h/drawtextxy.c");
 
+/* Replace colors in screen rect
+ * The rect size and position are multiples of the tile size.
+ * The "tile" value must be calculated using the TILE macro. */
+void __global ChangeTileColor(void *tile, uint8_t color, uint8_t width, uint8_t height)  __link("c8080/hal_h/changetilecolor.c");
+
 /* Quick draw an image on the screen.
  * The image size and position are multiples of the tile size.
  * The "tile" value must be calculated using the TILE macro. */
-void __global DrawImageTile(void *tile, const void *image, uint16_t width_height) __link("c8080/hal_h/drawimagetile.c");
+void __global DrawImageTile(void *tile, const void *image) __link("c8080/hal_h/drawimagetile.c");
 
 /* Quick draw an image on the screen.
  * The image size and position are multiples of the tile size. */
-void DrawImageTileXY(uint8_t x, uint8_t y, const void *image, uint16_t width_height)
+void DrawImageTileXY(uint8_t x, uint8_t y, const void *image)
     __link("c8080/hal_h/drawimagetilexy.c");
 
 /* Quick draw an image on the screen.
  * The image size and position are multiples of the tile size.
  * One of the image colors is changed to the color from args.
  * The "tile" value must be calculated using the TILE macro. */
-void __global DrawImageColorTile(void *tile, const void *image, uint8_t color, uint16_t widthHeight)
+void __global DrawImageColorTile(void *tile, uint8_t color, const void *image)
     __link("c8080/hal_h/drawimagecolortile.c");
 
 /* Quick draw an image on the screen.
  * One of the image colors is changed to the color from args.
  * The image size and position are multiples of the tile size. */
-void DrawImageColorTileXY(uint8_t x, uint8_t y, const void *image, uint8_t color, uint16_t widthHeight)
+void DrawImageColorTileXY(uint8_t x, uint8_t y, uint8_t color, const void *image)
     __link("c8080/hal_h/drawimagecolortilexy.c");
 
 /* Beautifully draw the compressed full-screen image.

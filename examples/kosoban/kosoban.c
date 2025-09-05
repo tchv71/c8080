@@ -30,7 +30,7 @@
 #include "consts.h"
 
 static const uint8_t MAP_WIDTH = 14;
-static const uint8_t MAP_HEIGHT = 8;
+static const uint8_t MAP_HEIGHT = 7;
 
 static uint8_t mapStatic[MAP_HEIGHT][MAP_WIDTH];
 static uint8_t mapBox[MAP_HEIGHT][MAP_WIDTH];
@@ -67,7 +67,7 @@ static void *GetCellSprite(uint8_t x, uint8_t y) {
 }
 
 static void DrawCellAny(uint8_t x, uint8_t y, const void *image, uint8_t color) {
-    DrawImageColorTileXY(GAME_X + x * CELL_W, GAME_Y + y * CELL_H, image, color, imgCellSize);
+    DrawImageColorTileXY(GAME_X + x * CELL_W, GAME_Y + y * CELL_H, color, image);
 }
 
 static void DrawCell(uint8_t x, uint8_t y) {
@@ -84,8 +84,8 @@ static void DrawCursor(void) {
 
 static void DrawLevelNumber(void) {
     char buf[16];
-    snprintf(buf, sizeof(buf), "Уровень %u ", (uint16_t)level);  // TODO: uint8_t
-    DrawTextXY(LEVEL_X, LEVEL_Y, COLOR_LEVEL, buf);
+    snprintf(buf, sizeof(buf), "Уровень %2u", (uint16_t)level);
+    DrawTextXY(LEVEL_X, LEVEL_Y, LEVEL_COLOR, buf);
 }
 
 static void LevelAnimation1(bool mode) {
@@ -98,7 +98,10 @@ static void LevelAnimation1(bool mode) {
             if (mode) {
                 DrawCell(x, y);
             } else {
-                DrawCellAny(x, y, imgCell[14], BOX_COLOR(rand() & 7));
+                uint8_t c = rand() & 7;
+                if (c == 0)
+                    c = 7;
+                DrawCellAny(x, y, imgCell[14], BOX_COLOR(c));
             }
             DELAY_MS(5);
         }
@@ -128,15 +131,21 @@ static void MoveAnimation(uint8_t dx, uint8_t dy, uint8_t count) {
         DrawCell(x, y);
         for (uint8_t j = 0; j < count; j++) {
             void *image = GetCellSprite(x1, y1);
-            DrawImageColorTileXY(gx1, gy1, image, imageColor, imgCellSize);
+            DrawImageColorTileXY(gx1, gy1, imageColor, image);
             gx1 += dx * CELL_W;
             gy1 += dy * CELL_H;
             x1 += dx;
             y1 += dy;
         }
 
-        if (i == CELL_W - 1)
-            break;
+        if (dy == 0) {
+            if (i == CELL_W - 1)
+                break;
+        } else {
+            if (i == CELL_H - 1)
+                break;
+        }
+
         i++;
         DELAY_MS(100);
     }
@@ -194,7 +203,7 @@ static void Intro(void) {
         line[INTRO_WIDTH - 1] = *i;
         i++;
 
-        DrawTextXY(0, INTRO_Y, COLOR_INTRO, line);
+        DrawTextXY(0, INTRO_Y, INTRO_COLOR, line);
 
         uint8_t delay = 1;
         if (++n == INTRO_WIDTH) {

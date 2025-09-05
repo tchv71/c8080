@@ -15,37 +15,29 @@
 
 #include <c8080/hal.h>
 
-void __global DrawImageColorTile(void *, uint8_t, const void *) {
+void __global ChangeTileColor(void *tile, uint8_t color, uint8_t width, uint8_t height) {
     asm {
-__a_3_drawimagecolortile=0
-        ld   b, (hl)
-        inc  hl
-        ld   c, (hl)
-        inc  hl
-__a_1_drawimagecolortile=$+1
-        ld   de, 0
-drawimagecolortile_1:
-        push de
-        push bc
-drawimagecolortile_2:
-        ld   a, (hl)
-        cp   0x50 ; red
-        jp   nz, drawimagecolortile_3
-__a_2_drawimagecolortile=$+1
-        ld   a, 0
-drawimagecolortile_3:
-        inc  hl
-        ld   (0F802h), a
-        ld   a, (hl)
-        inc  hl
+__a_4_changetilecolor=0
+        ld   c, a ; height
+__a_1_changetilecolor=$+1
+        ld   hl, 0 ; tile
+        ld   a, h
+        sub  8
+        ld   h, a
+__a_2_changetilecolor=$+1
+        ld   a, 0 ; color
+changetilecolor_1:
+__a_3_changetilecolor=$+1
+        ld   b, 0 ; width
+        ld   de, hl
+changetilecolor_2:
         ld   (de), a
         inc  de
         dec  b
-        jp   nz, drawimagecolortile_2
-        pop  bc
-        pop  de
-        inc  d
+        jp   nz, changetilecolor_2
+        ld   de, 64
+        add  hl, de
         dec  c
-        jp   nz, drawimagecolortile_1
+        jp   nz, changetilecolor_1
     }
 }

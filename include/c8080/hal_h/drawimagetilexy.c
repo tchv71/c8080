@@ -17,6 +17,6 @@
 
 #include <c8080/hal.h>
 
-void DrawImageTileXY(uint8_t x, uint8_t y, const void *image, uint16_t widthHeight) {
-    DrawImageTile(TILE(x, y), image, widthHeight);
+void DrawImageTileXY(uint8_t x, uint8_t y, const void *image) {
+    DrawImageTile(TILE(x, y), image);
 }

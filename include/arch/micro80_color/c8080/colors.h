@@ -20,12 +20,12 @@
 #include <stdint.h>
 
 static const uint8_t COLOR_UNDERLINE = 1 << 7;
-static const uint8_t COLOR_INK_LIGHT = 1 << 6;
+static const uint8_t COLOR_INK_LIGHT = 1 << 3;
 
 static const uint8_t COLOR_INK_BLACK = 0;
+static const uint8_t COLOR_INK_BLUE = 1;
 static const uint8_t COLOR_INK_GREEN = 2;
-static const uint8_t COLOR_INK_RED = 1;
-static const uint8_t COLOR_INK_BLUE = 4;
+static const uint8_t COLOR_INK_RED = 4;
 static const uint8_t COLOR_INK_CYAN = COLOR_INK_BLUE | COLOR_INK_GREEN;
 static const uint8_t COLOR_INK_MAGENTA = COLOR_INK_BLUE | COLOR_INK_RED;
 static const uint8_t COLOR_INK_YELLOW = COLOR_INK_RED | COLOR_INK_GREEN;
@@ -39,11 +39,11 @@ static const uint8_t COLOR_INK_LIGHT_MAGENTA = COLOR_INK_LIGHT | COLOR_INK_MAGEN
 static const uint8_t COLOR_INK_LIGHT_YELLOW = COLOR_INK_LIGHT | COLOR_INK_YELLOW;
 static const uint8_t COLOR_INK_LIGHT_WHITE = COLOR_INK_LIGHT | COLOR_INK_WHITE;
 
-static const uint8_t COLOR_PAPER_BLACK = COLOR_INK_BLACK << 3;
-static const uint8_t COLOR_PAPER_RED = COLOR_INK_RED << 3;
-static const uint8_t COLOR_PAPER_BLUE = COLOR_INK_BLUE << 3;
-static const uint8_t COLOR_PAPER_CYAN = COLOR_INK_CYAN << 3;
-static const uint8_t COLOR_PAPER_GREEN = COLOR_INK_GREEN << 3;
-static const uint8_t COLOR_PAPER_MAGENTA = COLOR_INK_MAGENTA << 3;
-static const uint8_t COLOR_PAPER_YELLOW = COLOR_INK_YELLOW << 3;
-static const uint8_t COLOR_PAPER_WHITE = COLOR_INK_WHITE << 3;
+static const uint8_t COLOR_PAPER_BLACK = COLOR_INK_BLACK << 4;
+static const uint8_t COLOR_PAPER_RED = COLOR_INK_RED << 4;
+static const uint8_t COLOR_PAPER_BLUE = COLOR_INK_BLUE << 4;
+static const uint8_t COLOR_PAPER_CYAN = COLOR_INK_CYAN << 4;
+static const uint8_t COLOR_PAPER_GREEN = COLOR_INK_GREEN << 4;
+static const uint8_t COLOR_PAPER_MAGENTA = COLOR_INK_MAGENTA << 4;
+static const uint8_t COLOR_PAPER_YELLOW = COLOR_INK_YELLOW << 4;
+static const uint8_t COLOR_PAPER_WHITE = COLOR_INK_WHITE << 4;
