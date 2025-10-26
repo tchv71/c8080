@@ -116,7 +116,7 @@ public:
     }
 
     bool IsArray() const {
-        return !pointers.empty() && pointers.back().count > 0;
+        return !pointers.empty() && pointers.back().is_array;
     }
 
     CBaseType GetAsmType() const;

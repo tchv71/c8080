@@ -126,10 +126,16 @@ void Compiler::Compile(CParser &c, OutputFormat output_format, CString output_fi
     out.buffer += "__end:\n";
 
     // Write equs, variables in static static
-    for (auto &vd : p.all_top_variables)
-        if (vd->c.use_counter > 0 && !vd->only_extern && !vd->type.IsFunction() && vd->c.equ_enabled)
-            if (p.asm_names.find(vd->output_name) == p.asm_names.end())
-                out.equ(vd->output_name.c_str(), vd->c.equ_text.c_str());
+    for (auto &vd : p.all_top_variables) {
+        if (vd->c.use_counter > 0) {
+            if (vd->address_attribute.exists) {
+                out.equ(vd->output_name.c_str(), std::to_string(vd->address_attribute.value));
+            } else if (!vd->only_extern && !vd->type.IsFunction() && vd->c.equ_enabled) {
+                if (p.asm_names.find(vd->output_name) == p.asm_names.end())
+                    out.equ(vd->output_name.c_str(), vd->c.equ_text.c_str());
+            }
+        }
+    }
 
     // Save directive // TODO: Quote name
     out.buffer += "    savebin \"" + output_file_bin + "\", __begin, __bss - __begin\n";

@@ -76,16 +76,17 @@ static void ConvertCheck(CConstType to_type, CNodePtr from) {
 
     // Forgot size of last array level
     if (from_type.pointers.size() > 0 && to_type.pointers.size() == from_type.pointers.size() &&
-        to_type.pointers.back().count == 0 && from_type.pointers.back().count != 0) {
+        !to_type.pointers.back().is_array && from_type.pointers.back().is_array) {
         bool need_drop = true;
         for (size_t i = 0u; i < (to_type.pointers.size() - 1u); i++) {
-            if (from_type.pointers[i].count != to_type.pointers[i].count) {
+            if (from_type.pointers[i].is_array != to_type.pointers[i].is_array &&
+                from_type.pointers[i].array_size != to_type.pointers[i].array_size) {
                 need_drop = false;
                 break;
             }
         }
         if (need_drop)
-            from_type.pointers.back().count = 0;
+            from_type.pointers.back().ResetArray();
     }
 
     // Get const

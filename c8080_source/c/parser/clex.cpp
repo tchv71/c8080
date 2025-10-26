@@ -18,29 +18,29 @@
 #include "clex.h"
 #include "../tools/cdecodestring.h"
 
-bool CLex::IfString1(std::string &out_string) {
+bool CLex::IfString1(std::string &out_string, std::map<uint32_t, uint8_t> *codepage) {
     if (token != CT_STRING1)
         return false;
     out_string.assign(token_data, token_size);
-    const char *error = CDecodeString(out_string);
+    const char *error = CDecodeString(out_string, codepage);
     if (error)
         Throw(error);
     NextToken();
     return true;
 }
 
-bool CLex::IfString2(std::string &out_string) {
+bool CLex::IfString2(std::string &out_string, std::map<uint32_t, uint8_t> *codepage) {
     if (token != CT_STRING2)
         return false;
     out_string.assign(token_data, token_size);
     NextToken();
-    const char *error = CDecodeString(out_string);
+    const char *error = CDecodeString(out_string, codepage);
     if (error)
         Throw(error);
     while (token == CT_STRING2) {
         std::string temp(token_data, token_size);
         NextToken();
-        const char *error = CDecodeString(temp);
+        const char *error = CDecodeString(temp, codepage);
         if (error)
             Throw(error);
         out_string.append(temp);

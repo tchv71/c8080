@@ -18,5 +18,6 @@
 #pragma once
 
 #include <string>
+#include <map>
 
-const char *CDecodeString(std::string &str);
+const char *CDecodeString(std::string &str, std::map<uint32_t, uint8_t> *codepage);

@@ -187,6 +187,9 @@ void CParserFile::ParseAttributes(CNode &n) {
 
             a.exists = true;
 
+            if (!n.extern_flag)
+                programm.Error(e, "__address() can only be used with 'extern'");
+
             if (n.variable->address_attribute.exists && n.variable->address_attribute != a)
                 programm.Error(e, "previous declaration is different");
 
@@ -203,6 +206,9 @@ void CParserFile::ParseAttributes(CNode &n) {
 
             a.name_for_path = l.file_name;
             a.exists = true;
+
+            if (!n.extern_flag)
+                programm.Error(e, "__link() can only be used with 'extern'");
 
             if (n.variable->link_attribute.exists && n.variable->link_attribute != a)
                 programm.Error(e, "previous declaration is different");
@@ -365,7 +371,7 @@ void CParserFile::ParseTypeNameArray(CConstType base_type, std::string &out_name
 
     std::vector<size_t> addrs;
     while (l.IfToken("[")) {
-        uint64_t size = 1;
+        uint64_t size = 0;
         if (!l.IfToken("]")) {
             size = ParseUint64();
             l.NeedToken("]");
@@ -373,7 +379,7 @@ void CParserFile::ParseTypeNameArray(CConstType base_type, std::string &out_name
         addrs.push_back(size);
     }
     for (size_t i = addrs.size(); i != 0; i--)
-        type.pointers.push_back(CPointer{addrs[i - 1]});
+        type.pointers.push_back(CPointer(addrs[i - 1]));
     out_type = type;
 }
 
@@ -423,7 +429,7 @@ void CParserFile::ParseFunctionTypeArgs(CErrorPosition &e, CType &return_type, s
         ParseTypeNameArray(pre_type, arg.name, arg.type);
 
         for (auto &i : arg.type.pointers)
-            i.count = 0;
+            i.ResetArray();
 
         if (!arg.name.empty() && !names.try_emplace(arg.name, 0).second)
             programm.Error(e, std::string("redefinition of parameter '") + arg.name + "'");  // gcc
@@ -731,7 +737,7 @@ CNodePtr CParserFile::ParseExpressionK() {
                 }
                 break;
             case MOP_ADDR:
-                result->ctype.pointers.push_back(CPointer{0});
+                result->ctype.pointers.push_back(CPointer());
                 break;
             case MOP_NOT:
                 result->ctype = CType{CBT_BOOL};
@@ -808,7 +814,7 @@ CNodePtr CParserFile::ParseExpressionValue() {
 
         if (result->ctype.IsFunction()) {
             CType type2 = v->type;
-            type2.pointers.push_back(CPointer{0});
+            type2.pointers.push_back(CPointer());
             return CNODE({CNT_MONO_OPERATOR, result, ctype : type2, mono_operator_code : MOP_ADDR, e : e});
         }
         return result;
@@ -830,25 +836,21 @@ CNodePtr CParserFile::ParseExpressionValue() {
     }
 
     std::string str;
-    if (l.IfString2(str)) {
-        std::string translated_string;
-        Utf8To8Bit(e, str, translated_string);
+    if (l.IfString2(str, &cparser.codepage)) {
         CNodePtr result = CNODE({CNT_CONST_STRING, e : e});
         result->ctype.base_type = CBT_CHAR;
         result->ctype.flag_const = true;
-        result->ctype.pointers.push_back(CPointer{translated_string.size() + 1});
-        result->const_string = programm.RegisterConstString(translated_string);
+        result->ctype.pointers.push_back(CPointer(str.size() + 1));
+        result->const_string = programm.RegisterConstString(str);
         return result;
     }
 
-    if (l.IfString1(str)) {
-        std::string translated_string;
-        Utf8To8Bit(e, str, translated_string);
-        if (translated_string.size() == 0)
+    if (l.IfString1(str, &cparser.codepage)) {
+        if (str.size() == 0)
             programm.Error(e, "empty character constant");  // gcc
-        if (translated_string.size() != 1)
+        if (str.size() != 1)
             programm.Error(e, "empty-character character constant");  // gcc
-        return CNODE({CNT_NUMBER, ctype : {CBT_CHAR}, number : {i : translated_string[0]}, e : e});
+        return CNODE({CNT_NUMBER, ctype : {CBT_CHAR}, number : {i : str[0]}, e : e});
     }
 
     uint64_t number = 0;
@@ -1313,7 +1315,7 @@ CNodePtr CParserFile::ParseFunctionBody2() {
 }
 
 CNodePtr CParserFile::ParseInitBlock(CType &type, bool can_change_size) {
-    if (!type.pointers.empty() && type.pointers.back().count != 0u) {
+    if (!type.pointers.empty() && type.pointers.back().is_array) {
         // List
         if (l.IfToken("{")) {
             CType element_type = type;
@@ -1333,10 +1335,10 @@ CNodePtr CParserFile::ParseInitBlock(CType &type, bool can_change_size) {
                 if (!l.CloseToken(",", "}"))
                     break;
             }
-            if (can_change_size && type.pointers.back().count == 1 && items_count != 0)
-                type.pointers.back().count = items_count;
+            if (can_change_size && type.pointers.back().array_size < items_count)
+                type.pointers.back().array_size = items_count;
 
-            if (items_count > type.pointers.back().count && init.last != nullptr)
+            if (items_count > type.pointers.back().array_size && init.last != nullptr)
                 programm.Error(init.last->e, "excess elements in array initializer");  // gcc
 
             return init.first;
@@ -1344,16 +1346,16 @@ CNodePtr CParserFile::ParseInitBlock(CType &type, bool can_change_size) {
 
         // String
         CErrorPosition e(l);
-        if (type.pointers.size() == 1 && type.SizeOfBase(e) == 1 && type.pointers.back().count > 0) {
+        if (type.pointers.size() == 1 && type.SizeOfBase(e) == 1 && type.pointers.back().is_array) {
             CNodePtr init = ParseExpression();
-            if (init->type != CNT_CONST_STRING || init->ctype.pointers.size() != 1) {
+            if (init->type != CNT_CONST_STRING || init->ctype.pointers.size() != 1 ||
+                !init->ctype.pointers[0].is_array) {
                 programm.Error(init->e, "only const string or array");
                 return nullptr;
             }
-            const size_t items_count = init->ctype.pointers[0].count;
-
-            if (can_change_size && type.pointers.back().count == 1 && items_count != 0)
-                type.pointers.back().count = items_count;
+            const size_t items_count = init->ctype.pointers[0].array_size;
+            if (can_change_size && type.pointers.back().array_size < items_count)
+                type.pointers.back().array_size = items_count;
 
             // Constant strings can be truncated
 

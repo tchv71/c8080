@@ -21,7 +21,7 @@
 
 CNodePtr MakeCNodeAddr(CNodePtr a) {
     a = CNODE({CNT_MONO_OPERATOR, a : a, ctype : a->ctype, mono_operator_code : MOP_ADDR, e : a->e});
-    a->ctype.pointers.push_back(CPointer{0});
+    a->ctype.pointers.push_back(CPointer());
     std::swap(a->next_node, a->a->next_node);
     return a;
 }

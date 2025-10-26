@@ -106,7 +106,7 @@ public:
             ThrowSyntaxError();
     }
 
-    bool IfString1(std::string &out_string);
+    bool IfString1(std::string &out_string, std::map<uint32_t, uint8_t> *codepage = nullptr);
 
     void NeedString1(std::string &out_string) {
         if (!IfString1(out_string))
@@ -121,7 +121,7 @@ public:
         return true;
     }
 
-    bool IfString2(std::string &out_string);
+    bool IfString2(std::string &out_string, std::map<uint32_t, uint8_t> *codepage = nullptr);
 
     void NeedString2(std::string &out_string) {
         if (!IfString2(out_string))

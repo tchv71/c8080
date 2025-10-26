@@ -32,8 +32,8 @@ void CompileVariable(Asm &out, CProgramm &p, CVariablePtr &vd) {
         if (j->type == CNT_IMMEDIATE_STRING) {
             std::shared_ptr<CConstString> &const_string = j->const_string;
             if (const_string != nullptr) {
-                assert(j->ctype.pointers.size() == 1 && j->ctype.pointers[0].count > 0);
-                const size_t l = j->ctype.pointers[0].count;
+                assert(j->ctype.pointers.size() == 1 && j->ctype.pointers[0].is_array);
+                const size_t l = j->ctype.pointers[0].array_size;
                 const size_t s = std::min(l, const_string->text.size());
                 for (size_t i = 0; i < s; i++)
                     out.db(const_string->text[i]);

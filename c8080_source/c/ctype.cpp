@@ -66,9 +66,12 @@ std::string CType::ToString() const {
 
     switch (base_type) {
         case CBT_STRUCT:
-            assert(struct_object != nullptr);
-            result += (struct_object->is_union ? "union " : "struct ");
-            result += struct_object->name;
+            if (struct_object != nullptr) {
+                result += (struct_object->is_union ? "union " : "struct ");
+                result += struct_object->name;
+            } else {
+                result += "struct ?";
+            }
             break;
         case CBT_FUNCTION:
             assert(!function_args.empty());
@@ -130,11 +133,11 @@ std::string CType::ToString() const {
         result += "(";
     }
     for (auto &i : pointers) {
-        if (i.count == 0) {
+        if (!i.is_array) {
             result += "*";
         } else {
             result += "[";
-            result += std::to_string(i.count);
+            result += std::to_string(i.array_size);
             result += "]";
         }
         if (i.flag_const)
@@ -216,11 +219,11 @@ uint64_t CType::SizeOfBase(const CErrorPosition &e) const {
 uint64_t CType::SizeOf(const CErrorPosition &e) const {
     uint64_t total_size = 1;
     for (size_t i = pointers.size(); i != 0; i--) {
-        if (pointers[i - 1].count == 0)
+        if (!pointers[i - 1].is_array)
             return total_size * C_SIZEOF_POINTER;  // TODO: overflow
-        total_size *= pointers[i - 1].count;       // TODO: overflow
+        total_size *= pointers[i - 1].array_size;  // TODO: overflow
     }
-    return total_size * SizeOfBase(e);
+    return total_size == 0 ? 0 : (total_size * SizeOfBase(e));
 }
 
 uint64_t CType::SizeOfElement(const CErrorPosition &e) const {
@@ -228,9 +231,9 @@ uint64_t CType::SizeOfElement(const CErrorPosition &e) const {
         return 1;  // Multiplier of a regular variable (unsigned i; i++;)
     uint64_t total_size = 1;
     for (size_t i = pointers.size() - 1; i != 0; i--) {
-        if (pointers[i - 1].count == 0)
+        if (!pointers[i - 1].is_array)
             return total_size * C_SIZEOF_POINTER;  // TODO: overflow
-        total_size *= pointers[i - 1].count;       // TODO: overflow
+        total_size *= pointers[i - 1].array_size;  // TODO: overflow
     }
-    return total_size * SizeOfBase(e);
+    return total_size == 0 ? 0 : (total_size * SizeOfBase(e));
 }

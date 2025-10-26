@@ -39,15 +39,15 @@ static CType CalcResultCType(CConstNodePtr n, CConstType a, CConstType b) {
 
         // Convert array to pointer
         CType type_0_ = a;
-        type_0_.pointers.back().count = 0;
+        type_0_.pointers.back().ResetArray();
         CType type_1_ = b;
-        type_1_.pointers.back().count = 0;
+        type_1_.pointers.back().ResetArray();
         // TODO: Вычисление общего const
 
         if (type_0_.CompareNoStatic(type_1_))
             return type_0_;
 
-        return CType{CBT_VOID, flag_const : a.IsConstPointer() || b.IsConstPointer(), pointers : {CPointer{}}};
+        return CType{CBT_VOID, flag_const : a.IsConstPointer() || b.IsConstPointer(), pointers : {CPointer()}};
     }
 
     MakeOperatorError(n);

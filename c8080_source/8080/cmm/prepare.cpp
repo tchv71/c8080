@@ -31,7 +31,7 @@ bool PrepareCmmVariables(Prepare &, CNodePtr &node) {
     if (v->c.internal_cmm_name != 0)
         return false;
 
-    if (v->type.pointers.size() > 0 && v->type.pointers.back().count > 0) {
+    if (v->type.pointers.size() > 0 && v->type.pointers.back().is_array) {
         // Replace the global array with a constant.
         // For example, if "static int a[4]; int *b = a;", then the value of b is known at compile time.
         node->type = CNT_CONST;
@@ -46,7 +46,7 @@ bool PrepareCmmVariables(Prepare &, CNodePtr &node) {
         node->a->e = node->e;
         node->a->text = v->output_name;
         node->a->ctype = v->type;
-        node->a->ctype.pointers.push_back(CPointer{0});
+        node->a->ctype.pointers.push_back(CPointer());
         node->a->compiler.used_variables.push_back(v);
     }
     return true;

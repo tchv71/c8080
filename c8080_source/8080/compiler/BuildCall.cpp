@@ -85,15 +85,11 @@ bool Compiler::Case_Call(CNodePtr &node, AsmRegister reg) {
     }
 
     if (node->type == CNT_FUNCTION_CALL) {
-        if (node->variable->address_attribute.exists)
-            out.call(node->variable->address_attribute.value);
-        else
-            out.call(node->variable->output_name);
-
+        out.call(node->variable->output_name);
         MakeCallTreeEnd();
     } else {
-        Build(node->a);
-        Build(node->a, R16_HL);
+        Build(node->b);
+        Build(node->b, R16_HL);
         InternalCall(o.call_hl);
     }
 
@@ -103,12 +99,7 @@ bool Compiler::Case_Call(CNodePtr &node, AsmRegister reg) {
 
 void Compiler::InternalCall(CVariablePtr &fn) {
     MakeCallTreeBegin(fn);
-
-    if (fn->address_attribute.exists)
-        out.call(fn->address_attribute.value);
-    else
-        out.call(fn->output_name);
-
+    out.call(fn->output_name);
     MakeCallTreeEnd();
 }
 

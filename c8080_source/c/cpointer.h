@@ -21,17 +21,36 @@
 
 class CPointer {
 public:
-    uint64_t count{};
+    uint64_t array_size{};
     bool flag_const{};
     bool flag_volatile{};
     bool flag_restrict{};
+    bool is_array{};
+
+    CPointer() {
+    }
+
+    CPointer(uint64_t _array_size) {
+        array_size = _array_size;
+        is_array = true;
+    }
 
     bool operator==(const CPointer &b) const {
-        return count == b.count && flag_const == b.flag_const && flag_volatile == b.flag_volatile &&
-               flag_restrict == b.flag_restrict;
+        return array_size == b.array_size && flag_const == b.flag_const && flag_volatile == b.flag_volatile &&
+               flag_restrict == b.flag_restrict && is_array == b.is_array;
     }
 
     bool operator!=(const CPointer &b) const {
         return !(*this == b);
+    }
+
+    void SetArray(uint64_t size) {
+        is_array = true;
+        array_size = size;
+    }
+
+    void ResetArray() {
+        is_array = false;
+        array_size = 0;
     }
 };

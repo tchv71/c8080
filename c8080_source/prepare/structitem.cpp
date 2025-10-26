@@ -51,9 +51,9 @@ bool PrepareStructItem(Prepare &p, CNodePtr &node) {
         assert(node->b == nullptr);
         node->b = MakeCNodeNumberSizeT(si->struct_item_offset, node->e);
 
-        if (si->type.pointers.empty() || si->type.pointers.back().count == 0) {
+        if (si->type.pointers.empty() || !si->type.pointers.back().is_array) {
             node = MakeCNodeDeaddr(node);
-            node->a->ctype.pointers.push_back(CPointer{});
+            node->a->ctype.pointers.push_back(CPointer());
         }
         return true;
     }

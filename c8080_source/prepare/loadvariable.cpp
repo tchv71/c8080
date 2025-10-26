@@ -34,7 +34,7 @@ bool PrepareLoadVariable(Prepare &p, CNodePtr &node) {
             node->variable = nullptr;
             if (a) {
                 node = MakeCNodeDeaddr(node);
-                node->a->ctype.pointers.push_back(CPointer{0});
+                node->a->ctype.pointers.push_back(CPointer());
             }
             return true;
         }

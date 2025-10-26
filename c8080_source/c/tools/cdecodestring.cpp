@@ -18,8 +18,9 @@
 #include "cdecodestring.h"
 #include <limits.h>
 #include <stdint.h>
+#include "../../tools/parseutf8.h"
 
-const char *CDecodeString(std::string &str) {
+const char *CDecodeString(std::string &str, std::map<uint32_t, uint8_t> *codepage) {
     char *begin = &str[0];
     char *dest = begin;
     const char *src = dest + 1;
@@ -29,11 +30,11 @@ const char *CDecodeString(std::string &str) {
         return "string not quoted";
 
     while (src != src_end) {
-        char c = *src++;
-        if (c == '\\') {
+        if (*src == '\\') {
+            src++;
             if (src == src_end)
                 return "unknown ESC sequence";
-            c = *src++;
+            char c = *src++;
             switch (c) {
                 case 'n':
                     c = '\n';
@@ -81,8 +82,27 @@ const char *CDecodeString(std::string &str) {
                 default:
                     return "unknown ESC sequence";
             }
+            *dest++ = c;
+            continue;
         }
-        *dest++ = c;
+
+        if (codepage) {
+            uint32_t unicode_char;
+            if (!ParseUtf8(unicode_char, src, src_end))
+                return "unsupported symbol";  // at position " + std::to_string(src - begin) + " in string \"" + str +
+                                              // "\"");
+            auto i = codepage->find(unicode_char);
+            if (i != codepage->end()) {
+                *dest++ = char(i->second);
+            } else if (unicode_char < 128) {
+                *dest++ = char(unicode_char);
+            } else {
+                return "unsupported symbol";  // at position " + std::to_string(src - begin) + " in string \"" + str +
+                                              // "\"");
+            }
+        } else {
+            *dest++ = *src++;
+        }
     }
     str.resize(dest - begin);
     return nullptr;

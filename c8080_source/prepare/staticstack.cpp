@@ -53,7 +53,7 @@ static void PrepareFunctionStaticStack(Prepare &p, CVariable &f) {
         v->name = "?__static_stack";
         v->c.use_counter++;  // Always used
         v->type.base_type = CBT_UNSIGNED_CHAR;
-        v->type.pointers.push_back(CPointer{1});  // .count will be filled in the last step
+        v->type.pointers.push_back(CPointer(1));  // .count will be filled in the last step
         p.programm.AddVariable(v);
         p.programm.c.static_stack = v;
     }
@@ -64,7 +64,7 @@ static void PrepareFunctionStaticStack(Prepare &p, CVariable &f) {
     s->output_name = "__s_" + f.name;
     s->c.use_counter++;  // Always used
     s->type.base_type = CBT_UNSIGNED_CHAR;
-    s->type.pointers.push_back(CPointer{0});
+    s->type.pointers.push_back(CPointer());
     p.programm.AddVariable(s);
     f.c.static_stack = s;
 
@@ -123,7 +123,7 @@ bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node) {
                     arg_text = node->variable->c.static_stack->output_name + " + " + std::to_string(offset);
                     arg_type = arg->ctype;
                     if (arg_type.IsArray())
-                        arg_type.pointers.back().count = 0;
+                        arg_type.pointers.back().ResetArray();
                     if (arg_type.pointers.empty())
                         arg_type.flag_const = false;
                     else
@@ -140,7 +140,7 @@ bool PrepareStaticArgumentsCall(Prepare &p, CNodePtr &node) {
                     e : arg->e
                 });  // TODO: Replace with CNT_LOAD_VARIABLE
 
-                aa->ctype.pointers.push_back(CPointer{0});
+                aa->ctype.pointers.push_back(CPointer());
 
                 CNodePtr a =
                     CNODE({CNT_MONO_OPERATOR, a : aa, ctype : arg_type, mono_operator_code : MOP_DEADDR, e : arg->e});
@@ -266,7 +266,7 @@ void CalculateStaticStack(CProgramm &p) {
         }
     }
 
-    p.c.static_stack->type.pointers[0].count = stack_size;
+    p.c.static_stack->type.pointers[0].SetArray(stack_size);
 }
 
 void PrepareFunctionStaticStack(Prepare &p) {

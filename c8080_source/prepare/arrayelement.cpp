@@ -47,9 +47,9 @@ bool PrepareArrayElement(Prepare &p, CNodePtr &node) {
         //    static int x[5][5];
         //    return x[3];
         std::vector<CPointer> &ap = node->a->ctype.pointers;
-        if (ap.size() < 2u || ap[ap.size() - 2u].count == 0) {
+        if (ap.size() < 2u || !ap[ap.size() - 2u].is_array) {
             node = MakeCNodeDeaddr(node);
-            node->a->ctype.pointers.push_back(CPointer{});
+            node->a->ctype.pointers.push_back(CPointer());
         }
         return true;
     }
