@@ -15,27 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "nc.h"
 
-#include <stdint.h>
-
-struct FileInfo {
-    char name[8 + 3];
-    uint8_t attrib;
-    uint16_t blocks_128;
-};
-
-struct Panel {
-    struct FileInfo files[1024];  // TODO: По размеру свободной памяти
-    uint8_t drive;
-    uint8_t cursorX, cursorY;
-    uint16_t offset;
-    uint16_t count;
-    uint32_t total_bytes;
-    uint32_t free_bytes;
-    char saved_cursor[8+3];
-};
-
-extern struct Panel panelA, panelB;
-
-void NcDrawScreen(void);
+void FindFiles(struct Panel *p);
