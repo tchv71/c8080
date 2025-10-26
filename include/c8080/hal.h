@@ -35,7 +35,8 @@ void __global DrawTextXY(uint8_t x, uint8_t y, uint8_t color, const char *text) 
 /* Replace colors in screen rect
  * The rect size and position are multiples of the tile size.
  * The "tile" value must be calculated using the TILE macro. */
-void __global ChangeTileColor(void *tile, uint8_t color, uint8_t width, uint8_t height)  __link("c8080/hal_h/changetilecolor.c");
+void __global ChangeTileColor(void *tile, uint8_t color, uint8_t width, uint8_t height)
+    __link("c8080/hal_h/changetilecolor.c");
 
 /* Quick draw an image on the screen.
  * The image size and position are multiples of the tile size.
@@ -44,8 +45,7 @@ void __global DrawImageTile(void *tile, const void *image) __link("c8080/hal_h/d
 
 /* Quick draw an image on the screen.
  * The image size and position are multiples of the tile size. */
-void DrawImageTileXY(uint8_t x, uint8_t y, const void *image)
-    __link("c8080/hal_h/drawimagetilexy.c");
+void DrawImageTileXY(uint8_t x, uint8_t y, const void *image) __link("c8080/hal_h/drawimagetilexy.c");
 
 /* Quick draw an image on the screen.
  * The image size and position are multiples of the tile size.

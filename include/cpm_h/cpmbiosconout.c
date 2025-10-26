@@ -15,15 +15,14 @@
  * limitations under the License.
  */
 
-#pragma once
+#include <cpm.h>
 
-#include <stdint.h>
-
-static const uint8_t KEY_LEFT = 0x08;
-static const uint8_t KEY_ENTER = 0x0D;
-static const uint8_t KEY_RIGHT = 0x18;
-static const uint8_t KEY_UP = 0x19;
-static const uint8_t KEY_DOWN = 0x1A;
-static const uint8_t KEY_SPACE = 0x20;
-static const uint8_t KEY_BACKSPACE = 0x7F;
-static const uint8_t KEY_ESC = 0x0C;
+void __global CpmBiosConOut(char c) {
+    asm {
+__1_a_cpmbiosconout=0
+        ld   c, a
+        ld   hl, (1)
+        ld   l, 0Ch
+        jp   hl
+    }
+}

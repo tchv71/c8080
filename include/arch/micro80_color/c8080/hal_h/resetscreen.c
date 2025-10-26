@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
-#include <cpmbios.h>
+#include <c8080/hal.h>
+#include <c8080/colors.h>
+#include <string.h>
 
-uint8_t CpmBiosConSt(void) {
-    asm {
-        ld hl, (1)
-        ld l, 6
-        jp hl
-    }
+void ResetScreen(void) {
+    memset((void *)0xE000, 0, 0x800);
+    memset((void *)0xE800, COLOR_INK_LIGHT_WHITE | COLOR_PAPER_BLACK, 0x800);
 }

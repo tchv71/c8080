@@ -15,14 +15,12 @@
  * limitations under the License.
  */
 
-#include <cpmbios.h>
+#include <cpm.h>
 
-void __global CpmBiosConOut(char c) {
+uint8_t __global CpmBiosConSt(void) {
     asm {
-__1_a_cpmbiosconout=0
-        ld c, a
-        ld hl, (1)
-        ld l, 0Ch
-        jp hl
+        ld   hl, (1)
+        ld   l, 6
+        jp   hl
     }
 }

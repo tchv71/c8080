@@ -16,7 +16,7 @@
  */
 
 #include <stdio.h>
-#include <cpmbios.h>
+#include <cpm.h>
 
 int __global putchar(int c) {
     if (c == 0x0A)

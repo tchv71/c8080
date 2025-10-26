@@ -29,14 +29,22 @@ __a_1_drawtext=$+1
         ld   l, c
 drawtext_l1:
         ld   a, (de)
-        or   a
+        inc  de
+        inc  a
+        jp   nz, drawtext_l2
+        ld   a, (de)
+        ld (__a_3_drawtext), a
+        inc  de
+        jp drawtext_l1
+
+drawtext_l2:
+        dec a
         ret  z
         ld   (bc), a
 __a_3_drawtext=$+1
         ld   (hl), 0 ; color
         inc  c
         inc  l
-        inc  de
         jp   drawtext_l1
     }
 }
