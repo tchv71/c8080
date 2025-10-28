@@ -23,10 +23,12 @@
 #include "tools.h"
 #include "stdio.h"
 #include "nc.h"
+#include "config.h"
 
+uint8_t window_color = COLOR_WINDOW;
+uint8_t window_x = 0;
 char input[128];
 uint8_t input_pos;
-uint8_t window_color = COLOR_WINDOW;
 
 static void MakeString(char *str, char c, uint8_t l) {
     memset(str, c, l);
@@ -34,30 +36,30 @@ static void MakeString(char *str, char c, uint8_t l) {
 }
 
 void DrawWindowTextCenter(uint8_t y, const char *text) {
-    DrawTextXY((TEXT_WIDTH - strlen(text)) / 2, y, window_color, text);
+    DrawTextXY((WINDOW_WIDTH - strlen(text)) / 2 + window_x, y, window_color, text);
 }
 
 void DrawWindowText(uint8_t y, const char *text) {
-    DrawTextXY(WINDOW_X, y, window_color, text);
+    DrawTextXY(window_x, y, window_color, text);
 }
 
-uint8_t DrawWindow(uint8_t height, const char *title) {
-    const uint8_t y0 = ((TEXT_HEIGHT - 4) - height) / 2;
-    uint8_t y = y0;
-    DrawWindowTextCenter(y, "                                      ");
+uint8_t DrawWindow(uint8_t x, uint8_t height, const char *title) {
+    window_x = x;
+    uint8_t y = ((TEXT_HEIGHT - 6) - height) / 2;
+    const uint8_t result = y;
+    DrawWindowText(y, "╔══════════════════════════╗");
     y++;
-    DrawWindowTextCenter(y, "  ╔════════════════════════════════╗  ");
-    DrawWindowTextCenter(y, title);
-    y++;
+    ChangeTileColor(TILE(window_x + (WINDOW_WIDTH + 4), y), COLOR_WINDOW_SHADOW, 2, height + 2);
     do {
-        DrawWindowTextCenter(y, "  ║                                ║  ");
+        DrawWindowText(y, "║                          ║");
         y++;
         height--;
     } while (height != 0);
-    DrawWindowTextCenter(y, "  ╚════════════════════════════════╝  ");
-    y++;
-    DrawWindowTextCenter(y, "                                      ");
-    return y0 + 3;
+    DrawWindowText(y, "╚══════════════════════════╝");
+    ChangeTileColor(TILE(window_x + 2, y + 1), COLOR_WINDOW_SHADOW, WINDOW_WIDTH + 4, 1);
+    window_x += 2;
+    DrawWindowTextCenter(result, title);
+    return result + 2;
 }
 
 void DrawInput(uint8_t x, uint8_t y, uint8_t width, uint8_t color) {
@@ -85,22 +87,25 @@ void ProcessInput(char c) {
 }
 
 bool RunInput(uint8_t y) {
+    input[input_pos] = 0;
+    bool first = true;
+    char c;
     for (;;) {
-        DrawInput(WINDOW_X, y, WINDOW_WIDTH, COLOR_INPUT);
-        const char c = getchar();
-        if (c == KEY_ENTER) {
+        DrawInput(window_x, y, WINDOW_WIDTH, COLOR_INPUT);
+        c = getchar();
+        if (c == KEY_ENTER)
+            break;
+        if (c == KEY_ESC)
+            break;
+        if (first) {
+            first = false;
             input_pos = 0;
-            NcDrawScreen();
-            return true;
-        }
-        if (c == KEY_ESC) {
-            input_pos = 0;
-            input[input_pos] = 0;
-            NcDrawScreen();
-            return false;
         }
         ProcessInput(c);
     }
+    input_pos = 0; // Что бы введенный текст не появился в ком. строке
+    NcDrawScreen();
+    return c == KEY_ENTER;
 }
 
 void DrawProgress(uint8_t y) {
@@ -139,11 +144,12 @@ uint8_t DrawButtons(uint8_t y, uint8_t cursor, const char *items) {
             uint8_t l = strlen(p);
             if (step == 1)
                 DrawButton(x, y, cursor == i, p, l);
+            // В оригинале одна буква подсвечена
             i++;
             x += l + (4 + 3);
             p += l + 1;
         } while (*p);
-        x = (TEXT_WIDTH - x) / 2;
+        x = (WINDOW_WIDTH - x) / 2 + window_x;
         step++;
     } while (step < 2);
     return i;
@@ -174,22 +180,22 @@ uint8_t RunButtons(uint8_t y, uint8_t cursor, const char *items) {
 }
 
 bool DeleteWindow(const char *file_name) {
-    const uint8_t y = DrawWindow(6, " Delete ");
-    DrawWindowTextCenter(y, "Do you wish to delete");
+    const uint8_t y = DrawWindow(WINDOW_X_CENTER, 6, " Delete "); // Original
+    DrawWindowTextCenter(y, "Do you wish to delete"); // Original
     DrawWindowTextCenter(y + 1, file_name);
-    return RunButtons(y + 3, 0, "Yes\0No\0") == 0;
+    return RunButtons(y + 3, 0, "Delete\0Cancel\0") == 0; // Original: Delte Filters Cancel
 }
 
 void ErrorWindow(const char *text) {
     window_color = COLOR_ERROR_WINDOW;
-    const uint8_t y = DrawWindow(5, " Error ");
-    DrawWindowTextCenter(y, text);
-    RunButtons(y + 2, 0, "Ok\0");
+    const uint8_t y = DrawWindow(WINDOW_X_CENTER, 5, " Error "); // В оригинале тут заголовок прошлого окна
+    DrawWindowTextCenter(y, text); // Original
+    RunButtons(y + 2, 0, "Ok\0"); // Original
     window_color = COLOR_WINDOW;
 }
 
 uint8_t SelectDriveWindow(uint8_t cursor, bool is_right) {
-    const uint8_t y = DrawWindow(5, " Drive letter ");
-    DrawWindowTextCenter(y, is_right ? "Choose right drive:" : "Choose left drive:");
-    return RunButtons(y + 2, cursor, "A\0B\0C\0D\0");  // TODO: Config
+    const uint8_t y = DrawWindow(is_right ? WINDOW_X_RIGHT : WINDOW_X_LEFT, 5, " Drives "); // Original: Drive letter
+    DrawWindowTextCenter(y, is_right ? "Choose right drive:" : "Choose left drive:"); // Original
+    return RunButtons(y + 2, cursor, DRIVES);
 }

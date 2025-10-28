@@ -21,8 +21,10 @@
 #include <stdbool.h>
 #include <c8080/hal.h>
 
-static const uint8_t WINDOW_WIDTH = 30;
-static const uint8_t WINDOW_X = (TEXT_WIDTH - WINDOW_WIDTH) / 2;
+static const uint8_t WINDOW_WIDTH = 24;
+static const uint8_t WINDOW_X_LEFT = 2;
+static const uint8_t WINDOW_X_CENTER = (TEXT_WIDTH - WINDOW_WIDTH - 4) / 2;
+static const uint8_t WINDOW_X_RIGHT = TEXT_WIDTH / 2 + 2;
 static const uint8_t PROGRESS_WIDTH = WINDOW_WIDTH;
 static const uint8_t PROGRESS_X = (TEXT_WIDTH - PROGRESS_WIDTH) / 2;
 
@@ -30,7 +32,7 @@ extern char input[128];
 extern uint8_t input_pos;
 extern uint8_t window_color;
 
-uint8_t DrawWindow(uint8_t height, const char *title);
+uint8_t DrawWindow(uint8_t x, uint8_t height, const char *title);
 void DrawWindowText(uint8_t y, const char *text);
 void DrawWindowTextCenter(uint8_t y, const char *text);
 uint8_t DrawButtons(uint8_t y, uint8_t cursor, const char *items);

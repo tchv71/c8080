@@ -18,9 +18,12 @@
 #pragma once
 
 #include <c8080/hal.h>
+#include <stdbool.h>
 
 void SaveScreen(void);
 void RestoreScreen(void);
+void ExitScreen(void);
+void NcDisableAutorun(void);
 
 extern const char spaces[TEXT_WIDTH + 1];
 

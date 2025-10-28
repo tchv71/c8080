@@ -17,29 +17,5 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stdbool.h>
-
-struct FileInfo {
-    char name83[8 + 3];
-    uint8_t attrib;
-    uint16_t blocks_128;
-};
-
-struct Panel {
-    struct FileInfo *files;
-    uint8_t drive;
-    uint8_t cursorX, cursorY;
-    uint16_t offset;
-    uint16_t count;
-    uint32_t total_bytes;
-    uint32_t free_bytes;
-    //TODO: char saved_cursor[8+3];
-};
-
-extern struct Panel panelA, panelB;
-extern uint8_t videoOffset;
-extern bool hidden;
-
-void NcDrawScreen(void);
-void NcSwitchPanel(void);
+#define DRIVES "A\0B\0C\0"
+#define DRIVE_COUNT 3

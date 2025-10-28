@@ -16,18 +16,71 @@
  */
 
 #include <string.h>
+#include <c8080/console.h>
+#include <cpm.h>
 #include "tools.h"
+#include "nc.h"
+#include "config.h"
 
 const char spaces[TEXT_WIDTH + 1] = "                                                                ";
 
-static char saved_screen[64 * 25 * 2];
+static char saved_screen[TEXT_WIDTH * TEXT_HEIGHT * 2];
+
+extern uint8_t bios_exec_mode __address(0xF700);
+extern uint8_t storage_state __address(0xF701);
+
+static const uint8_t STATE_DRIVE_MASK = 0x0F;
+static const uint8_t STATE_TAB = 1 << 4;
+static const uint8_t STATE_HIDDEN = 1 << 5;
 
 void SaveScreen(void) {
-    memcpy(saved_screen, (void *)0xE000, 64 * 25);
-    memcpy(saved_screen + 64 * 25, (void *)0xE800, 64 * 25);
+    bios_exec_mode = 1;
+
+    // Что бы командер нижней строкой не закрывал полезные данные
+    const uint16_t xy = GetCursorPosition();
+    if (xy >= (TEXT_HEIGHT - 1) << 8) {
+        CpmConsoleWrite('\n');
+        MoveCursor(xy, (xy >> 8) - 1);
+    }
+
+    // Скрываем курсор
+    HideCursor();
+
+    // Сохраняем экран
+    memcpy(saved_screen, (void *)0xE000, TEXT_WIDTH * TEXT_HEIGHT);
+    memcpy(saved_screen + TEXT_WIDTH * TEXT_HEIGHT, (void *)0xE800, TEXT_WIDTH * TEXT_HEIGHT);
+
+    // Восстанавливаем состояние
+    if (storage_state & STATE_TAB)
+        NcSwitchPanel();
+    hidden = (storage_state & STATE_HIDDEN) != 0;
+    panelB.drive = storage_state & STATE_DRIVE_MASK;
+    if (panelB.drive >= DRIVE_COUNT)
+        panelB.drive = panelA.drive;
+
+    // TODO: Восстановить курсор в панелях.
 }
 
 void RestoreScreen(void) {
-    memcpy((void *)0xE000, saved_screen, 64 * 25);
-    memcpy((void *)0xE800, saved_screen + 64 * 25, 64 * 25);
+    memcpy((void *)0xE000, saved_screen, TEXT_WIDTH * TEXT_HEIGHT);
+    memcpy((void *)0xE800, saved_screen + TEXT_WIDTH * TEXT_HEIGHT, TEXT_WIDTH * TEXT_HEIGHT);
+}
+
+void ExitScreen(void) {
+    // Сохраняем состояние
+    storage_state = panelB.drive & STATE_DRIVE_MASK;
+    if (videoOffset)
+        storage_state |= STATE_TAB;
+    if (hidden)
+        storage_state |= STATE_HIDDEN;
+
+    // Восстанавливаем экран
+    RestoreScreen();
+
+    // Показываем курсор
+    ShowCursor();
+}
+
+void NcDisableAutorun(void) {
+    bios_exec_mode = 0;
 }
