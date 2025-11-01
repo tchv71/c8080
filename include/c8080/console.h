@@ -40,3 +40,9 @@ void HideCursor(void) __link("c8080/console_h/hidecursor.c");
 
 /* Set ink and paper color for the next console text */
 void __global SetConsoleColor(uint8_t color) __link("c8080/console_h/setconsolecolor.c");
+
+/* Get cursor position. Low byte - x, Height byte - y. From 0. */
+uint16_t GetCursorPosition(void) __link("c8080/console_h/getcursorposition.c");
+
+/* Set cursor position. */
+void __global MoveCursor(uint8_t x, uint8_t y) __link("c8080/console_h/movecursor.c");

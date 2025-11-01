@@ -32,9 +32,8 @@ __a_1_cpmparsename = $ + 1
         ld   a, (hl)
         sub  'A' - 1 ; Drive @:
         cp   16
+        jp   nc, cpmparsename_0
         ld   (de), a
-        ld   a, 1 ; Error code
-        ret  nc
         inc  hl
         inc  hl
 cpmparsename_0:
@@ -50,9 +49,10 @@ cpmparsename_0:
 cpmparsename_1:
         ld   (hl), ' '
         ld   a, (de)
-        cp   '.'
+        or   a
+        ret  m
         jp   z, cpmparsename_2
-        cp   0
+        cp   '.'
         jp   z, cpmparsename_2
         inc  de
         ld   (hl), a

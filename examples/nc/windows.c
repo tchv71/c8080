@@ -87,8 +87,7 @@ void ProcessInput(char c) {
 }
 
 bool RunInput(uint8_t y) {
-    input[input_pos] = 0;
-    bool first = true;
+    input_pos = 0;  // TODO: input_pos = strlen(input);
     char c;
     for (;;) {
         DrawInput(window_x, y, WINDOW_WIDTH, COLOR_INPUT);
@@ -97,13 +96,9 @@ bool RunInput(uint8_t y) {
             break;
         if (c == KEY_ESC)
             break;
-        if (first) {
-            first = false;
-            input_pos = 0;
-        }
         ProcessInput(c);
     }
-    input_pos = 0; // Что бы введенный текст не появился в ком. строке
+    input_pos = 0;  // Что бы введенный текст не появился в ком. строке
     NcDrawScreen();
     return c == KEY_ENTER;
 }
@@ -180,22 +175,22 @@ uint8_t RunButtons(uint8_t y, uint8_t cursor, const char *items) {
 }
 
 bool DeleteWindow(const char *file_name) {
-    const uint8_t y = DrawWindow(WINDOW_X_CENTER, 6, " Delete "); // Original
-    DrawWindowTextCenter(y, "Do you wish to delete"); // Original
+    const uint8_t y = DrawWindow(WINDOW_X_CENTER, 6, " Delete ");  // Original
+    DrawWindowTextCenter(y, "Do you wish to delete");              // Original
     DrawWindowTextCenter(y + 1, file_name);
-    return RunButtons(y + 3, 0, "Delete\0Cancel\0") == 0; // Original: Delte Filters Cancel
+    return RunButtons(y + 3, 0, "Delete\0Cancel\0") == 0;  // Original: Delte Filters Cancel
 }
 
 void ErrorWindow(const char *text) {
     window_color = COLOR_ERROR_WINDOW;
-    const uint8_t y = DrawWindow(WINDOW_X_CENTER, 5, " Error "); // В оригинале тут заголовок прошлого окна
-    DrawWindowTextCenter(y, text); // Original
-    RunButtons(y + 2, 0, "Ok\0"); // Original
+    const uint8_t y = DrawWindow(WINDOW_X_CENTER, 5, " Error ");  // В оригинале тут заголовок прошлого окна
+    DrawWindowTextCenter(y, text);                                // Original
+    RunButtons(y + 2, 0, "Ok\0");                                 // Original
     window_color = COLOR_WINDOW;
 }
 
 uint8_t SelectDriveWindow(uint8_t cursor, bool is_right) {
-    const uint8_t y = DrawWindow(is_right ? WINDOW_X_RIGHT : WINDOW_X_LEFT, 5, " Drives "); // Original: Drive letter
-    DrawWindowTextCenter(y, is_right ? "Choose right drive:" : "Choose left drive:"); // Original
+    const uint8_t y = DrawWindow(is_right ? WINDOW_X_RIGHT : WINDOW_X_LEFT, 5, " Drives ");  // Original: Drive letter
+    DrawWindowTextCenter(y, is_right ? "Choose right drive:" : "Choose left drive:");        // Original
     return RunButtons(y + 2, cursor, DRIVES);
 }

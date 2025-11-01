@@ -17,4 +17,13 @@
 
 #pragma once
 
-void FindFiles(void);
+#include <stdint.h>
+
+extern char selected_file_name[13];
+
+uint8_t GetPanelDrive(void);
+uint8_t GetPanelUser(void);
+void DrawPanel(uint8_t x);
+void DrawPanelFreeSpace(void);
+void DrawPanelFileInfo(void);
+void DrawPanelTitle(uint8_t color);

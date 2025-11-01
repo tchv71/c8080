@@ -27,9 +27,10 @@ const char spaces[TEXT_WIDTH + 1] = "                                           
 static char saved_screen[TEXT_WIDTH * TEXT_HEIGHT * 2];
 
 extern uint8_t bios_exec_mode __address(0xF700);
-extern uint8_t storage_state __address(0xF701);
+extern uint8_t cpm_current_drive_user __address(0xF701);
+extern uint8_t storage_state __address(0xF702);
+extern uint8_t storage_drive_user_b __address(0xF703);
 
-static const uint8_t STATE_DRIVE_MASK = 0x0F;
 static const uint8_t STATE_TAB = 1 << 4;
 static const uint8_t STATE_HIDDEN = 1 << 5;
 
@@ -51,14 +52,19 @@ void SaveScreen(void) {
     memcpy(saved_screen + TEXT_WIDTH * TEXT_HEIGHT, (void *)0xE800, TEXT_WIDTH * TEXT_HEIGHT);
 
     // Восстанавливаем состояние
-    if (storage_state & STATE_TAB)
-        NcSwitchPanel();
-    hidden = (storage_state & STATE_HIDDEN) != 0;
-    panelB.drive = storage_state & STATE_DRIVE_MASK;
-    if (panelB.drive >= DRIVE_COUNT)
-        panelB.drive = panelA.drive;
+    panelA.drive_user = CpmGetCurrentDrive() | (cpm_current_drive_user & 0xF0);
 
-    // TODO: Восстановить курсор в панелях.
+    panelB.drive_user = storage_drive_user_b;
+    if ((panelB.drive_user & 0x0F) >= DRIVE_COUNT)
+        panelB.drive_user = panelA.drive_user;
+
+    hidden = (storage_state & STATE_HIDDEN) != 0;
+    if (storage_state & STATE_TAB) {
+        if (videoOffset != 0)
+            videoOffset = 0;
+        else
+            videoOffset = TEXT_WIDTH / 2;
+    }
 }
 
 void RestoreScreen(void) {
@@ -68,7 +74,7 @@ void RestoreScreen(void) {
 
 void ExitScreen(void) {
     // Сохраняем состояние
-    storage_state = panelB.drive & STATE_DRIVE_MASK;
+    storage_drive_user_b = panelB.drive_user;
     if (videoOffset)
         storage_state |= STATE_TAB;
     if (hidden)

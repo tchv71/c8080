@@ -32,32 +32,37 @@ struct DPB {
 };
 
 struct FCB {
-    char drive;        // 0 = default, 1 = A, 2 = B
-    char name[8 + 3];  // File name and extension
-    uint8_t ex;        // current extent, ie (file pointer / 16384) % 32
-    uint8_t s1;
-    uint8_t s2;              // extent high byte, ie (file pointer / 524288)
-    uint8_t rc;              // number of 128 record used in this extent
-    struct FCB new_name[0];  // For CpmParseName() + CpmRename()
-    uint16_t al16[];
-    uint8_t al[16];
-    uint8_t cr;  // current record, ie (file pointer % 16384) / 128
+    char drive;            // 0 = default, 1 = A, 2 = B
+    char name83[8 + 3];    // File name and extension
+    uint8_t ex;            // current extent, ie (file pointer / 16384) % 32
+    uint8_t s1;            //
+    uint8_t s2;            // extent high byte, ie (file pointer / 524288)
+    uint8_t rc;            // number of 128 record used in this extent
+    struct FCB rename[0];  // For CpmParseName() + CpmRename()
+    uint16_t al16[0];      // TODO: union
+    uint8_t al8[16];       //
+    uint8_t cr;            // current record, ie (file pointer % 16384) / 128
     uint8_t r0;
     uint8_t r1;
     uint8_t r2;
 };
 
-// Parse name and save result into FCB
+// *** CONSTS ***
 
-uint8_t __global CpmParseName(struct FCB *fcb, const char *name) __link("cpm_h/cpmparsename.c");
+static const uint8_t CPM_MAX_USERS = 16;
+static const uint8_t CPM_MAX_DRIVES = 16;
 
-// BIOS
+// *** VARIABLES ***
+
+extern uint8_t DEFAULT_DMA[0x80] __address(0x80);
+
+// *** BIOS ***
 
 uint8_t __global CpmBiosConSt(void) __link("cpm_h/cpmbiosconst.c");
 char __global CpmBiosConIn(void) __link("cpm_h/cpmbiosconin.c");
 void __global CpmBiosConOut(char c) __link("cpm_h/cpmbiosconout.c");
 
-// BDOS
+// *** BDOS ***
 
 // 0 P_TERMCPM System Reset
 void __global CpmTerm(void) __link("cpm_h/bdos.c");
@@ -118,6 +123,9 @@ uint8_t __global CpmClose(struct FCB *fcb) __link("cpm_h/bdos.c");
 
 // 17 F_SFIRST Search for first
 struct FCB *__global CpmSearchFirst(void *dma, struct FCB *fcb) __link("cpm_h/bdos.c");
+
+// The function initiates FCB
+struct FCB *__global CpmSearchFirstAll(void *dma, struct FCB *fcb) __link("cpm_h/bdos.c");
 
 // 18 F_SNEXT Search for next
 struct FCB *__global CpmSearchNext(void) __link("cpm_h/bdos.c");
@@ -185,3 +193,11 @@ void __global CpmUpdateRandomAccessPointer(struct FCB *fcb) __link("cpm_h/cpmsiz
 // 37 DRV_RESET Selectively reset disc drives
 // Returns A=0 if OK, 0FFh if error
 uint8_t __global CpmResetDrives(uint16_t bitmap) __link("cpm_h/bdos.c");
+
+// *** Extended ***
+
+// Execute command
+void __global CpmCommand(uint8_t drive_user, const char *text) __link("cpm_h/cpmcommand.c");
+
+// Parse name and save result into FCB
+uint8_t __global CpmParseName(struct FCB *fcb, const char *name) __link("cpm_h/cpmparsename.c");

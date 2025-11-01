@@ -16,6 +16,7 @@
  */
 
 #include <cpm.h>
+#include <string.h>
 
 static uint8_t CpmCall(void) __address(5);
 static uint8_t CpmCallA(void) __address(5);
@@ -58,7 +59,7 @@ __a_1_cpmauxiliarywrite = 0
         ld   e, a
         ld   c, 4
     }
-    CpmCall();
+    CpmCallA();
 }
 
 void __global CpmPrinterWrite(char) {
@@ -131,7 +132,7 @@ void __global CpmResetAllDrives(void) {
     asm {
         ld   c, 0Dh
     }
-    CpmCall();
+    CpmCallA();
 }
 
 uint8_t __global CpmSelectDrive(uint8_t) {
@@ -197,6 +198,13 @@ __a_1_cpmsearchfirst = $+1
         ret  nc
         inc  h
     }
+}
+
+struct FCB *__global CpmSearchFirstAll(void *dma, struct FCB *fcb) {
+    fcb->drive = 0;
+    memset(fcb->name83, '?', sizeof(fcb->name83));
+    fcb->ex = '?';
+    return CpmSearchFirst(dma, fcb);
 }
 
 struct FCB *__global CpmSearchNext(void) {
@@ -271,21 +279,21 @@ __a_1_cpmsetdma = 0
         ex   hl, de
         ld   c, 1Ah
     }
-    CpmCall();
+    CpmCallA();
 }
 
 const void *__global CpmGetAllocationBitmap(void) {
     asm {
         ld   c, 1Bh
     }
-    return (const void *)CpmCallHl();
+    return CpmCallPtr();
 }
 
 void __global CpmSetCurrentDriveReadOnly(void) {
     asm {
         ld   c, 1Ch
     }
-    CpmCall();
+    CpmCallA();
 }
 
 uint16_t __global CpmGetReadOnlyDrives(void) {
@@ -308,7 +316,7 @@ const struct DPB *__global CpmGetDpb(void) {
     asm {
         ld   c, 1Fh
     }
-    return (const struct DPB *)CpmCallPtr();
+    return CpmCallPtr();
 }
 
 uint8_t __global CpmGetCurrentUser(void) {
@@ -361,7 +369,7 @@ __a_1_cpmupdaterandomaccesspointer = 0
         ex   hl, de
         ld   c, 24h
     }
-    CpmCall();
+    CpmCallA();
 }
 
 uint8_t __global CpmResetDrives(uint16_t bitmap) {
