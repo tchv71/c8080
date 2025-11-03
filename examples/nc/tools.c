@@ -52,18 +52,18 @@ void SaveScreen(void) {
     memcpy(saved_screen + TEXT_WIDTH * TEXT_HEIGHT, (void *)0xE800, TEXT_WIDTH * TEXT_HEIGHT);
 
     // Восстанавливаем состояние
-    panelA.drive_user = CpmGetCurrentDrive() | (cpm_current_drive_user & 0xF0);
+    panel_a.drive_user = CpmGetCurrentDrive() | (cpm_current_drive_user & 0xF0);
 
-    panelB.drive_user = storage_drive_user_b;
-    if ((panelB.drive_user & 0x0F) >= DRIVE_COUNT)
-        panelB.drive_user = panelA.drive_user;
+    panel_b.drive_user = storage_drive_user_b;
+    if ((panel_b.drive_user & 0x0F) >= DRIVE_COUNT)
+        panel_b.drive_user = panel_a.drive_user;
 
     hidden = (storage_state & STATE_HIDDEN) != 0;
     if (storage_state & STATE_TAB) {
-        if (videoOffset != 0)
-            videoOffset = 0;
+        if (panel_x != 0)
+            panel_x = 0;
         else
-            videoOffset = TEXT_WIDTH / 2;
+            panel_x = TEXT_WIDTH / 2;
     }
 }
 
@@ -74,8 +74,8 @@ void RestoreScreen(void) {
 
 void ExitScreen(void) {
     // Сохраняем состояние
-    storage_drive_user_b = panelB.drive_user;
-    if (videoOffset)
+    storage_drive_user_b = panel_b.drive_user;
+    if (panel_x)
         storage_state |= STATE_TAB;
     if (hidden)
         storage_state |= STATE_HIDDEN;

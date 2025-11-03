@@ -23,20 +23,33 @@
 #include "nc.h"
 #include "tools.h"
 
-char selected_file_name[13];
+struct Panel panel_a, panel_b;
+bool hidden;
+uint8_t panel_x;
 
-uint8_t GetPanelDrive(void) {
-    return panelA.drive_user & 0x0F;
+uint16_t PanelGetCursorIndex(void) {
+    return panel_a.offset + panel_a.cursorY + panel_a.cursorX * PANEL_ROWS_COUNT;
 }
 
-uint8_t GetPanelUser(void) {
-    return panelA.drive_user >> 4;
+struct FileInfo *PanelGetCursor(void) {
+    return panel_a.files + PanelGetCursorIndex();
 }
 
-void DrawPanel(uint8_t x) {
+uint8_t PanelGetDrive(void) {
+    return panel_a.drive_user & 0x0F;
+}
+
+uint8_t PanelGetUser(void) {
+    return panel_a.drive_user >> 4;
+}
+
+static void PanelDrawTop(uint8_t x) {
     DrawTextXY(x, 0, COLOR_PANEL_BORDER, "╔══════════════════════════════╗");
-    uint8_t y;
-    for (y = 1; y < TEXT_HEIGHT - 6; y++)
+}
+
+void PanelDrawBorder(uint8_t x) {
+    PanelDrawTop(x);
+    for (uint8_t y = 1; y < TEXT_HEIGHT - 6; y++)
         DrawTextXY(x, y, COLOR_PANEL_BORDER, "║              │               ║");
     DrawTextXY(x + 6, 1, COLOR_PANEL_HEADER, "Name");
     DrawTextXY(x + 6 + 15, 1, COLOR_PANEL_HEADER, "Name");
@@ -46,35 +59,36 @@ void DrawPanel(uint8_t x) {
     DrawTextXY(x, TEXT_HEIGHT - 3, COLOR_PANEL_BORDER, "╚══════════════════════════════╝");
 }
 
-void DrawPanelTitle(uint8_t color) {
-    DrawTextXY(videoOffset + (TEXT_WIDTH / 2 - strlen(panelA.path)) / 2, 0, color, panelA.path);
+void PanelDrawTitle(uint8_t color) {
+    PanelDrawTop(panel_x);
+    DrawTextXY(panel_x + (TEXT_WIDTH / 2 - strlen(panel_a.path)) / 2, 0, color, panel_a.path);
 }
 
-void DrawPanelFreeSpace(void) {
-    if (panelA.total_bytes != 0) {
-        static char text[] = "           kbytes free on drive  ";
-        Uint32ToString(text, panelA.free_bytes, 10);
+void PanelDrawFreeSpace(void) {
+    if (panel_a.total_bytes != 0) {
+        static char text[] = "           kbytes free on drive A";
+        Uint32ToString(text, panel_a.free_bytes, 10);
         text[10] = ' ';
-        text[sizeof(text) - 2] = 'A' + GetPanelDrive();
-        DrawTextXY(videoOffset + 2, TEXT_HEIGHT - 4, COLOR_PANEL_FOOTER, text + 5);
+        text[sizeof(text) - 2] = 'A' + PanelGetDrive();
+        DrawTextXY(panel_x + 2, TEXT_HEIGHT - 4, COLOR_PANEL_FOOTER, text + 5);
     }
 }
 
 static void DrawPanelFileInfoInt(const char *text) {
-    DrawTextXY(videoOffset + 2, TEXT_HEIGHT - 5, COLOR_PANEL_FOOTER, text);
+    DrawTextXY(panel_x + 2, TEXT_HEIGHT - 5, COLOR_PANEL_FOOTER, text);
 }
 
-void DrawPanelFileInfo(void) {
-    if (panelA.count == 0) {
+void PanelDrawFileInfo(void) {
+    if (panel_a.count == 0) {
         DrawPanelFileInfoInt(SPACES(TEXT_WIDTH / 2 - 4));
         return;
     }
-    struct FileInfo *file_pointer = CurrentFile();
-    memcpy(panelA.select_name, file_pointer->name83, sizeof(panelA.select_name));
-    CpmNormalizeName(selected_file_name, file_pointer->name83);
+    struct FileInfo *file_pointer = PanelGetCursor();
+    memcpy(panel_a.selected_name_83, file_pointer->name83, sizeof(panel_a.selected_name_83));
+    CpmNormalizeName(panel_a.selected_name, file_pointer->name83);
     char text[29];
     memset(text, ' ', sizeof(text) - 1);
-    memcpy(text, selected_file_name, strlen(selected_file_name));
+    memcpy(text, panel_a.selected_name, strlen(panel_a.selected_name));
     if (file_pointer->attrib & ATTRIB_DIR) {
         strcpy(&text[12 + 7], file_pointer->name83[0] == '.' ? "►UP--DIR◄" : "►SUB-DIR◄");
     } else {
@@ -82,4 +96,127 @@ void DrawPanelFileInfo(void) {
         strcpy(&text[12 + 10], " bytes");
     }
     DrawPanelFileInfoInt(text);
+}
+
+static void DrawPanelFileInt(uint8_t *tile, struct FileInfo *file_info, uint8_t color) {
+    static char screen_text[13] = "12345678 123";
+    memcpy(screen_text, file_info->name83, 8);
+    memcpy(screen_text + 9, file_info->name83 + 8, 3);
+    if (color == 0)
+        color = (file_info->attrib & ATTRIB_DIR) ? COLOR_PANEL_DIR : COLOR_PANEL_FILE;
+    DrawText(tile, 0, color, screen_text);
+}
+
+void PanelDrawCursor(uint8_t color) {
+    if (panel_a.count != 0)
+        DrawPanelFileInt(TILE(PANEL_OX + panel_a.cursorX * PANEL_COLUMN_WIDTH + panel_x, PANEL_OY + panel_a.cursorY), PanelGetCursor(), color);
+}
+
+void PanelHideCursor(void) {
+    PanelDrawCursor(0);
+}
+
+void PanelShowCursor(void) {
+    PanelDrawCursor(COLOR_PANEL_CURSOR);
+    PanelDrawFileInfo();
+}
+
+void PanelDrawFiles(void) {
+    size_t file_index = panel_a.offset;
+    for (uint8_t x = 0; x < PANEL_COLUMNS_COUNT; x++) {
+        uint8_t *screen_pointer = TILE(PANEL_OX + x * PANEL_COLUMN_WIDTH + panel_x, PANEL_OY);
+        struct FileInfo *file_pointer = panel_a.files + file_index;
+        for (uint8_t y = 0; y != PANEL_ROWS_COUNT; y++, screen_pointer += 64) {
+            if (file_index >= panel_a.count) {
+                DrawText(screen_pointer, 0, COLOR_PANEL_FILE, SPACES(12));
+                continue;
+            }
+            DrawPanelFileInt(screen_pointer, file_pointer, 0);
+            file_pointer++;
+            file_index++;
+        }
+    }
+}
+
+void PanelMoveCursorLeft(void) {
+    PanelHideCursor();
+    if (panel_a.cursorX != 0) {
+        panel_a.cursorX--;
+    } else if (panel_a.offset != 0) {
+        if (panel_a.offset > PANEL_ROWS_COUNT)
+            panel_a.offset -= PANEL_ROWS_COUNT;
+        else
+            panel_a.offset = 0;
+        PanelDrawFiles();
+    } else if (panel_a.cursorY != 0) {
+        panel_a.cursorY = 0;
+    }
+    PanelShowCursor();
+}
+
+void PanelMoveCursorRight(void) {
+    PanelHideCursor();
+
+    // Переместится вправо нельзя
+    uint16_t w = PanelGetCursorIndex();
+    if (w + PANEL_ROWS_COUNT >= panel_a.count) {  //! перепутаны > и >=
+        // Это последний файл
+        if (w + 1 >= panel_a.count) {
+            PanelShowCursor();
+            return;
+        }
+        // Вычисляем положение по Y
+        panel_a.cursorY = panel_a.count - (panel_a.offset + panel_a.cursorX * PANEL_ROWS_COUNT + 1);
+        // Корректируем курсор
+        if (panel_a.cursorY > PANEL_ROWS_COUNT - 1) {
+            panel_a.cursorY -= PANEL_ROWS_COUNT;
+            if (panel_a.cursorX == 1) {
+                panel_a.offset += PANEL_ROWS_COUNT;
+                PanelDrawFiles();
+            } else {
+                panel_a.cursorX++;
+            }
+        }
+    } else if (panel_a.cursorX == 1) {
+        panel_a.offset += PANEL_ROWS_COUNT;
+        PanelDrawFiles();
+    } else {
+        panel_a.cursorX++;
+    }
+    PanelShowCursor();
+}
+
+void PanelMoveCursorUp(void) {
+    PanelHideCursor();
+    if (panel_a.cursorY != 0) {
+        panel_a.cursorY--;
+    } else if (panel_a.cursorX != 0) {
+        panel_a.cursorX--;
+        panel_a.cursorY = PANEL_ROWS_COUNT - 1;
+    } else if (panel_a.offset != 0) {
+        panel_a.offset--;
+        PanelDrawFiles();
+    }
+    PanelShowCursor();
+}
+
+void PanelMoveCursorDown(void) {
+    if (PanelGetCursorIndex() + 1 >= panel_a.count)
+        return;
+    PanelHideCursor();
+    if (panel_a.cursorY < PANEL_ROWS_COUNT - 1) {
+        panel_a.cursorY++;
+    } else if (panel_a.cursorX == 0) {
+        panel_a.cursorY = 0;
+        panel_a.cursorX++;
+    } else {
+        panel_a.offset++;
+        PanelDrawFiles();
+    }
+    PanelShowCursor();
+}
+
+void PanelSwap(void) {
+    panel_x = TEXT_WIDTH / 2 - panel_x;
+    memswap(&panel_a, &panel_b, sizeof(panel_a));
 }

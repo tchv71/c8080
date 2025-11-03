@@ -17,4 +17,5 @@
 
 #pragma once
 
+void FindFolder(void);
 void FindFiles(void);
