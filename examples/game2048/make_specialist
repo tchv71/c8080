@@ -1,8 +1,13 @@
 #/bin/bash
-
 set -e
-
-../../c8080 -ORKS -DARCH_SPECIALIST -Ispecialist -ogame2048.specialist.rks game2048.c
+platform=$(uname -o)
+EXT=
+ASM=
+if [ "$platform" == "Darwin" ]; then
+    EXT=.macos
+    ASM=-A../../include/sjasmplus.macos
+fi
+../../c8080$EXT $ASM -ORKS -DARCH_SPECIALIST -Ispecialist -ogame2048.specialist.rks game2048.c
 
 E=/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
 if [ -e $E ]
