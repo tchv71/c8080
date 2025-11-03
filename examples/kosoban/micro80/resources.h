@@ -2,17 +2,17 @@
 
 #include <stdint.h>
 
-static const unsigned imgIntroWidth = 64;
-static const unsigned imgIntroHeight = 26;
-static const unsigned imgIntroSize = imgIntroWidth + (imgIntroHeight << 8);
-extern uint8_t imgIntro[1355];
+static const unsigned imgGameWidth = 64;
+static const unsigned imgGameHeight = 25;
+static const unsigned imgGameSize = imgGameWidth + (imgGameHeight << 8);
+extern uint8_t imgGame[301];
 
 static const unsigned imgCellWidth = 4;
 static const unsigned imgCellHeight = 3;
 static const unsigned imgCellSize = imgCellWidth + (imgCellHeight << 8);
 extern uint8_t imgCell[30][26];
 
-static const unsigned imgGameWidth = 64;
-static const unsigned imgGameHeight = 25;
-static const unsigned imgGameSize = imgGameWidth + (imgGameHeight << 8);
-extern uint8_t imgGame[301];
+static const unsigned imgIntroWidth = 64;
+static const unsigned imgIntroHeight = 26;
+static const unsigned imgIntroSize = imgIntroWidth + (imgIntroHeight << 8);
+extern uint8_t imgIntro[1355];
