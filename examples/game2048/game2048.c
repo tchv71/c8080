@@ -57,7 +57,7 @@ void drawBoard() {
     printf("\n\n\n\n");
 }
 
-void prepareScreen() {
+void PrepareScreen() {
     uint8_t x, y, i;
 #ifdef ARCH_MICRO80_COLOR
     SetConsoleColor(COLOR_PAPER_BLUE | COLOR_INK_LIGHT_WHITE);
@@ -272,7 +272,7 @@ void initBoard() {
     }
     addRandom();
     addRandom();
-    prepareScreen();
+    PrepareScreen();
     score = 0;
     drawBoard();
 }
@@ -330,7 +330,7 @@ int test() {
 
 static bool getchar_y_n(void) {
     for (;;) {
-        switch(getchar()) {
+        switch (getchar()) {
             case 'y':
             case 'Y':
                 return true;
@@ -418,7 +418,7 @@ int main(int argc, char *argv[]) {
             printf("            QUIT? (Y/N)         \n");
             if (getchar_y_n())
                 break;
-            prepareScreen();
+            PrepareScreen();
         }
         if (c == 'r' || c == 'R') {
 #ifdef ARCH_MICRO80_COLOR
@@ -428,7 +428,7 @@ int main(int argc, char *argv[]) {
             if (getchar_y_n())
                 initBoard();
             else
-                prepareScreen();
+                PrepareScreen();
         }
     }
 

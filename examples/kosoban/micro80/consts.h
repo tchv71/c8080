@@ -35,6 +35,7 @@ static const uint8_t LEVEL_COLOR = COLOR_INK_LIGHT_WHITE | COLOR_PAPER_BLUE;
 
 static const uint8_t MOVE_ANIMATION_H = 1;
 
+static const uint8_t COLOR_LEVEL = COLOR_INK_YELLOW;
 static const uint8_t INTRO_COLOR = COLOR_INK_LIGHT_CYAN;
 
 #define BOX_COLOR(X) (X)

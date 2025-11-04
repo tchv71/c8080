@@ -61,7 +61,7 @@ struct HiScore {
 
 struct HiScore hiScores[] = {
     {"Alemorf", 300}, {"B2M", 250}, {"Eltaron", 200}, {"Error404", 150},
-    {"SYSCAT", 100},  {"Mick", 80}, {"Svofski", 60},   {"Titus", 40},
+    {"SYSCAT", 100},  {"Mick", 80}, {"Svofski", 60},  {"Titus", 40},
 };
 
 void *CellAddress(uint8_t x, uint8_t y) {
@@ -123,7 +123,7 @@ static void ClearLine(uint8_t x0, uint8_t y0, uint8_t dx, uint8_t dy, uint8_t le
 }
 
 static char *Center(char *buffer, uint16_t value) {
-    char* text = Uint16ToString(buffer, value, 10);
+    char *text = Uint16ToString(buffer, value, 10);
 #ifdef CENTER_SCORE
     buffer += (UINT16_TO_STRING_BUFFER_SIZE - 1 - strlen(text)) / 2;
 #endif
@@ -476,9 +476,12 @@ static void AddToHiScores(void) {
 }
 
 static void DrawButtons(void) {
-    ChangeTileColor(TILE(BUTTON_PATH_X, BUTTON_PATH_Y), showPath ? BUTTON_COLOR_ENABLED : BUTTON_COLOR_DISABLED, BUTTON_PATH_W, BUTTON_PATH_H);
-    ChangeTileColor(TILE(BUTTON_SOUND_X, BUTTON_SOUND_Y), soundEnabled ? BUTTON_COLOR_ENABLED : BUTTON_COLOR_DISABLED, BUTTON_SOUND_W, BUTTON_SOUND_H);
-    ChangeTileColor(TILE(BUTTON_HELP_X, BUTTON_HELP_Y), showHelp ? BUTTON_COLOR_ENABLED : BUTTON_COLOR_DISABLED, BUTTON_HELP_W, BUTTON_HELP_H);
+    ChangeTileColor(TILE(BUTTON_PATH_X, BUTTON_PATH_Y), showPath ? BUTTON_COLOR_ENABLED : BUTTON_COLOR_DISABLED,
+                    BUTTON_PATH_W, BUTTON_PATH_H);
+    ChangeTileColor(TILE(BUTTON_SOUND_X, BUTTON_SOUND_Y), soundEnabled ? BUTTON_COLOR_ENABLED : BUTTON_COLOR_DISABLED,
+                    BUTTON_SOUND_W, BUTTON_SOUND_H);
+    ChangeTileColor(TILE(BUTTON_HELP_X, BUTTON_HELP_Y), showHelp ? BUTTON_COLOR_ENABLED : BUTTON_COLOR_DISABLED,
+                    BUTTON_HELP_W, BUTTON_HELP_H);
 }
 
 static void DrawScreen3(void) {

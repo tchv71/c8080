@@ -7,6 +7,7 @@ if [ "$platform" == "Darwin" ]; then
     ASM=-A../../include/sjasmplus.macos
 fi
 
+make -C micro80/convert_png_to_micro80
 micro80/convert_png_to_micro80/convert_png_to_micro80$EXT micro80
 
 ../../c8080$EXT $ASM -ORKS -DARCH_MICRO80_COLOR -Imicro80 -olines.micro80.rk \
@@ -14,10 +15,3 @@ micro80/convert_png_to_micro80/convert_png_to_micro80$EXT micro80
  music.c \
  path.c \
  micro80/resources.c
-
-if [ -e  /home/alemorf/a/work/micro80_emulator ]
-then
-    cp lines.micro80.rk /home/alemorf/a/work/micro80_emulator/test.rk
-    cd /home/alemorf/a/work/micro80_emulator && make
-fi
-

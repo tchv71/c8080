@@ -8,6 +8,7 @@ if [ "$platform" == "Darwin" ]; then
     ASM=-A../../include/sjasmplus.macos
 fi
 
+make -C specialist/convert_png_to_specialist
 specialist/convert_png_to_specialist/convert_png_to_specialist${EXT} specialist
 
 ../../c8080$EXT $ASM -ORKS -DARCH_SPECIALIST -Ispecialist -olines.specialist.rks \
@@ -15,12 +16,3 @@ specialist/convert_png_to_specialist/convert_png_to_specialist${EXT} specialist
  music.c \
  path.c \
  specialist/resources.c
-
-E=/home/alemorf/a/work/retro_computers/Specialist/my_emulator.html/file_lines.js
-if [ -e $E ]
-then
-    echo "loadFile([" >$E
-    xxd -i lines.specialist.rks | grep , >>$E
-    echo "]);" >>$E
-    echo Make $E
-fi

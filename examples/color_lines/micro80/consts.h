@@ -78,6 +78,7 @@ static const uint8_t HELP_3_Y = 21;
 static const uint8_t TOPSCORE_X = 7;
 static const uint8_t TOPSCORE_Y = 18;
 static const uint8_t TOPSCORE_COLOR = COLOR_INK_LIGHT_GREEN;
+
 static const uint8_t TOPNAME_X = 0;
 static const uint8_t TOPNAME_Y = 0;
 static const uint8_t TOPNAME_COLOR = COLOR_INK_LIGHT_GREEN;

@@ -38,7 +38,6 @@ static const uint16_t DRAW_SCREEN_TEMP_BUFFER_SIZE = SCREEN_SIZE;
         *(uint8_t *)0xFFFE = (C)&0xD0; \
     } while (0)
 
-void __global ChangeTileColor(void *tile, uint8_t width, uint8_t height) __link("c8080/hal_h/changetilecolor.c");
 void __global DrawImageTileMono(void *tile, const void *image, uint16_t width_height)
     __link("c8080/hal_h/drawimagetilemono.c");
 uint8_t ScanKey(void) __link("c8080/hal_h/scankey.c");

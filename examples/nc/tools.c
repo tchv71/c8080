@@ -26,16 +26,16 @@ const char spaces[TEXT_WIDTH + 1] = "                                           
 
 static char saved_screen[TEXT_WIDTH * TEXT_HEIGHT * 2];
 
-extern uint8_t bios_exec_mode __address(0xF700);
-extern uint8_t cpm_current_drive_user __address(0xF701);
-extern uint8_t storage_state __address(0xF702);
-extern uint8_t storage_drive_user_b __address(0xF703);
+extern uint8_t glob_dont_exec __address(0xF740);
+extern uint8_t glob_tdrive __address(0xF741);
+extern uint8_t glob_state __address(0xF700);
+extern uint8_t glob_drive_user_b __address(0xF701);
 
 static const uint8_t STATE_TAB = 1 << 4;
 static const uint8_t STATE_HIDDEN = 1 << 5;
 
 void SaveScreen(void) {
-    bios_exec_mode = 1;
+    glob_dont_exec = 0;
 
     // Что бы командер нижней строкой не закрывал полезные данные
     const uint16_t xy = GetCursorPosition();
@@ -52,14 +52,14 @@ void SaveScreen(void) {
     memcpy(saved_screen + TEXT_WIDTH * TEXT_HEIGHT, (void *)0xE800, TEXT_WIDTH * TEXT_HEIGHT);
 
     // Восстанавливаем состояние
-    panel_a.drive_user = CpmGetCurrentDrive() | (cpm_current_drive_user & 0xF0);
+    panel_a.drive_user = CpmGetCurrentDrive() | (glob_tdrive & 0xF0);
 
-    panel_b.drive_user = storage_drive_user_b;
+    panel_b.drive_user = glob_drive_user_b;
     if ((panel_b.drive_user & 0x0F) >= DRIVE_COUNT)
         panel_b.drive_user = panel_a.drive_user;
 
-    hidden = (storage_state & STATE_HIDDEN) != 0;
-    if (storage_state & STATE_TAB) {
+    hidden = (glob_state & STATE_HIDDEN) != 0;
+    if (glob_state & STATE_TAB) {
         if (panel_x != 0)
             panel_x = 0;
         else
@@ -74,11 +74,10 @@ void RestoreScreen(void) {
 
 void ExitScreen(void) {
     // Сохраняем состояние
-    storage_drive_user_b = panel_b.drive_user;
-    if (panel_x)
-        storage_state |= STATE_TAB;
+    glob_drive_user_b = panel_b.drive_user;
+    glob_state = (panel_x ? STATE_TAB : 0);
     if (hidden)
-        storage_state |= STATE_HIDDEN;
+        glob_state |= STATE_HIDDEN;
 
     // Восстанавливаем экран
     RestoreScreen();
@@ -88,5 +87,5 @@ void ExitScreen(void) {
 }
 
 void NcDisableAutorun(void) {
-    bios_exec_mode = 0;
+    glob_dont_exec = 1;
 }

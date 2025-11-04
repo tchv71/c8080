@@ -34,20 +34,14 @@ static const uint8_t MOVE_ANIMATION_H = 8;
 static const uint8_t LEVEL_X = 128;
 static const uint8_t LEVEL_Y = 24;
 
-static const uint8_t COLOR_LEVEL = COLOR_INK_YELLOW;
-static const uint8_t COLOR_INTRO = COLOR_INK_CYAN;
+static const uint8_t LEVEL_COLOR = COLOR_INK_YELLOW;
+static const uint8_t INTRO_COLOR = COLOR_INK_CYAN;
 
 #pragma codepage('©', 0x2D)
 
 static const uint8_t allColors[] = {
-    COLOR_INK_WHITE,
-    COLOR_INK_RED,
-    COLOR_INK_GREEN,
-    COLOR_INK_BLUE,
-    COLOR_INK_YELLOW,
-    COLOR_INK_CYAN,
-    COLOR_INK_VIOLET,
-    COLOR_INK_WHITE,
+    COLOR_INK_WHITE,  COLOR_INK_RED,  COLOR_INK_GREEN,  COLOR_INK_BLUE,
+    COLOR_INK_YELLOW, COLOR_INK_CYAN, COLOR_INK_VIOLET, COLOR_INK_WHITE,
 };
 
 #define BOX_COLOR(X) (allColors[(X)])
