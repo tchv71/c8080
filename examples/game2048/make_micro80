@@ -6,4 +6,4 @@ if [ "$platform" == "Darwin" ]; then
     EXT=.macos
     ASM=-A../../include/sjasmplus.macos
 fi
-../../c8080$EXT $ASM -DARCH_MICRO80_COLOR game2048.c -o game2048.micro80.com
+../../c8080$EXT $ASM -DARCH_MICRO80_COLOR -DARCH_CPM_CCP game2048.c -o game2048.micro80.com

@@ -17,6 +17,8 @@
 
 #include <cpm.h>
 
+#ifdef ARCH_CPM_CCP
+
 void __global CpmCommand(uint8_t drive_user, const char *text) {
     asm {
         ; Адрес строки с командой в DE
@@ -63,3 +65,5 @@ __a_1_cpmcommand = $ + 1
         jp   (hl)
     }
 }
+
+#endif

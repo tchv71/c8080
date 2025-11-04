@@ -58,8 +58,13 @@ extern uint8_t DEFAULT_DMA[0x80] __address(0x80);
 
 // *** BIOS ***
 
+// TODO
 uint8_t __global CpmBiosConSt(void) __link("cpm_h/cpmbiosconst.c");
+
+// TODO
 char __global CpmBiosConIn(void) __link("cpm_h/cpmbiosconin.c");
+
+// TODO
 void __global CpmBiosConOut(char c) __link("cpm_h/cpmbiosconout.c");
 
 // *** BDOS ***
@@ -194,10 +199,16 @@ void __global CpmUpdateRandomAccessPointer(struct FCB *fcb) __link("cpm_h/cpmsiz
 // Returns A=0 if OK, 0FFh if error
 uint8_t __global CpmResetDrives(uint16_t bitmap) __link("cpm_h/bdos.c");
 
-// *** Extended ***
+// *** CCP ***
+
+#ifdef ARCH_CPM_CCP
 
 // Execute command
 void __global CpmCommand(uint8_t drive_user, const char *text) __link("cpm_h/cpmcommand.c");
+
+#endif
+
+// *** Extended ***
 
 // Parse name and save result into FCB
 uint8_t __global CpmParseName(struct FCB *fcb, const char *name) __link("cpm_h/cpmparsename.c");
