@@ -40,7 +40,7 @@ __a_2_cpmcommand = 0
 CpmCommand_1:
         ld   a, l
         cp   88h
-        ret  z  ; Выход, если слишком длинная ком строка
+        jp   z, 0  ; Перезагрузка, если слишком длинная ком строка
         ld   a, (de)
         inc  de
         ld   (hl), a

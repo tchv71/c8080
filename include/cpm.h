@@ -154,7 +154,7 @@ uint16_t __global CpmGetLoggedDrives(void) __link("cpm_h/bdos.c");
 uint8_t __global CpmGetCurrentDrive(void) __link("cpm_h/bdos.c");
 
 // 26 F_DMAOFF Set DMA address
-void __global CpmSetDma(struct void *buffer) __link("cpm_h/bdos.c");
+void __global CpmSetDma(void *buffer) __link("cpm_h/bdos.c");
 
 // 27 DRV_ALLOCVEC Return address of allocation map
 const void *__global CpmGetAllocationBitmap(void) __link("cpm_h/bdos.c");

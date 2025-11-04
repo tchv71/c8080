@@ -273,7 +273,7 @@ uint8_t __global CpmGetCurrentDrive(void) {
     return CpmCallA();
 }
 
-void __global CpmSetDma(struct void *buffer) {
+void __global CpmSetDma(void *buffer) {
     asm {
 __a_1_cpmsetdma = 0
         ex   hl, de
