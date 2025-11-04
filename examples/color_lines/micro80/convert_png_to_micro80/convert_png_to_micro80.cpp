@@ -79,7 +79,7 @@ const uint32_t palette[] = {
 };
 
 static uint32_t FindColor(uint32_t color) {
-    assert(palette != nullptr);
+    // assert(palette != nullptr);
     uint32_t bestIndex = 0;
     uint32_t bestDist = UINT32_MAX;
     for (uint8_t i = 0; i < std::size(palette); i++) {
@@ -176,7 +176,7 @@ static void Encode4(Png &png, unsigned x, unsigned y, uint8_t& out_char, uint8_t
         if (!found) {
             out_char = 0;
             std::cerr << "Incorrect char at " << x << " " << y << std::endl;
-            fprintf(stderr, "%04lx%016lx ink %u paper %u\n", id.data[1], id.data[0], ink, paper);
+            fprintf(stderr, "%04llx%016llx ink %u paper %u\n", id.data[1], id.data[0], ink, paper);
         }
     }
 

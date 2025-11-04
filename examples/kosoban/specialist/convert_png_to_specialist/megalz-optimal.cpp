@@ -110,7 +110,7 @@ void update_optch(ULONG position, struct lzcode *codes, ULONG (*get_lz_price)(OF
     ULONG newpos;
     LONG len;
 
-    for (codepos = 0; len = codes[codepos].length; codepos++)  // loop through all existing lz codes
+    for (codepos = 0; (len = codes[codepos].length); codepos++)  // loop through all existing lz codes
     {
         bitlen = (*get_lz_price)(position, &codes[codepos]);  // get bit length of given lz code
         if (!bitlen) {
