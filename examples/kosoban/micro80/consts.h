@@ -29,7 +29,7 @@ static const uint8_t GAME_Y = 1;
 
 static const uint8_t INTRO_Y = 24;
 
-static const uint8_t LEVEL_X = (TEXT_WIDTH - 10) / 2; // "Уровень 00"
+static const uint8_t LEVEL_X = (TEXT_WIDTH - 10) / 2;  // "Уровень 00"
 static const uint8_t LEVEL_Y = 0;
 static const uint8_t LEVEL_COLOR = COLOR_INK_LIGHT_WHITE | COLOR_PAPER_BLUE;
 

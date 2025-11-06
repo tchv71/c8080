@@ -142,7 +142,7 @@ static void MoveAnimation(uint8_t dx, uint8_t dy, uint8_t count) {
             if (i == CELL_W - 1)
                 break;
         } else {
-            if (i == CELL_H - 1)
+            if (i == CELL_H / MOVE_ANIMATION_H - 1)
                 break;
         }
 
