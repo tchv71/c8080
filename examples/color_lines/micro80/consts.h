@@ -32,7 +32,7 @@ static const uint8_t SCORE_X = 53;
 static const uint8_t SCORE_Y = 18;
 
 static const uint8_t PLAYAR_MAX_HEIGHT = 3;
-static const uint8_t PLAYER_Y = 16;
+static const uint8_t PLAYER_Y = 15;
 static const uint8_t PLAYER_X = 48;
 static const uint8_t PLAYER_CROWN_DX = 5;
 static const uint8_t PLAYER_CROWN_DY = 0;
