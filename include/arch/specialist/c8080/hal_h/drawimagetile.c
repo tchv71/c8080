@@ -15,14 +15,15 @@
 
 #include <c8080/hal.h>
 
-void __global DrawImageTile(void *tile, const void *image, uint16_t widthHeight) {
+void __global DrawImageTile(void *tile, const void *image) {
     asm {
-__a_3_drawimagetile=0
-        ld   bc, hl
+__a_2_drawimagetile=0
+        ld   b, (hl)
+        inc  hl
+        ld   c, (hl)
+        inc  hl
 __a_1_drawimagetile=$+1
         ld   de, 0
-__a_2_drawimagetile=$+1
-        ld   hl, 0
 DrawImageTile_1:
         push de
         push bc

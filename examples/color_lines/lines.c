@@ -75,6 +75,7 @@ void *CellAddress(uint8_t x, uint8_t y) {
 }
 
 void DrawBall(uint8_t *tile, uint8_t y, uint8_t sprite, uint8_t color) {
+    color = BALL_COLOR(color);
 #ifdef CELL_HALF_HEIGHT
     if (y & 1) {
         DrawImageColorTile(tile, color, imgBalls1[sprite]);
@@ -288,15 +289,15 @@ static void GenerateNewBalls(void) {
 }
 
 static void DrawHelp(void) {
-    DrawBall(TILE(HELP_1_X, HELP_1_Y), 0, 11, newBalls[0]);
-    DrawBall(TILE(HELP_2_X, HELP_2_Y), 0, 11, newBalls[1]);
-    DrawBall(TILE(HELP_3_X, HELP_3_Y), 0, 11, newBalls[2]);
+    DrawBall(TILE(HELP_1_X, HELP_1_Y), 0, 18, newBalls[0]);
+    DrawBall(TILE(HELP_2_X, HELP_2_Y), 0, 18, newBalls[1]);
+    DrawBall(TILE(HELP_3_X, HELP_3_Y), 0, 18, newBalls[2]);
 }
 
 static void HideHelp(void) {
-    DrawBall(TILE(HELP_1_X, HELP_1_Y), 0, 18, 0);
-    DrawBall(TILE(HELP_2_X, HELP_2_Y), 0, 18, 0);
-    DrawBall(TILE(HELP_3_X, HELP_3_Y), 0, 18, 0);
+    DrawBall(TILE(HELP_1_X, HELP_1_Y), 0, 19, 0);
+    DrawBall(TILE(HELP_2_X, HELP_2_Y), 0, 19, 0);
+    DrawBall(TILE(HELP_3_X, HELP_3_Y), 0, 19, 0);
 }
 
 // Показываем цвета новых шариков
@@ -645,12 +646,6 @@ static void ClearCursor(void) {
 // Главная функция
 
 int main(int, char **) {
-#ifdef ARCH_SPECIALIST
-    asm {
-        ld sp, 8FFFh
-    }
-#endif
-
     DrawScreen(imgTitle);
     PlayMusic();
     NewGame();

@@ -55,10 +55,18 @@ static const uint8_t HI_COLOR_3 = COLOR_INK_WHITE;
 
 static const uint8_t BUTTON_PATH_X = 4;
 static const uint8_t BUTTON_PATH_Y = 240;
+static const uint8_t BUTTON_PATH_W = 4;
+static const uint8_t BUTTON_PATH_H = 8;
 static const uint8_t BUTTON_SOUND_X = 13;
 static const uint8_t BUTTON_SOUND_Y = 240;
+static const uint8_t BUTTON_SOUND_W = 4;
+static const uint8_t BUTTON_SOUND_H = 8;
 static const uint8_t BUTTON_HELP_X = 22;
 static const uint8_t BUTTON_HELP_Y = 240;
+static const uint8_t BUTTON_HELP_W = 4;
+static const uint8_t BUTTON_HELP_H = 8;
+static const uint8_t BUTTON_COLOR_ENABLED = COLOR_INK_GREEN;
+static const uint8_t BUTTON_COLOR_DISABLED = COLOR_INK_BLUE;
 
 static const uint8_t HELP_1_X = 20;
 static const uint8_t HELP_1_Y = 3;
@@ -74,3 +82,11 @@ static const uint8_t TOPSCORE_COLOR = COLOR_INK_GREEN;
 static const uint8_t TOPNAME_X = 9;
 static const uint8_t TOPNAME_Y = 190;
 static const uint8_t TOPNAME_COLOR = COLOR_INK_GREEN;
+
+static const uint8_t all_colors[] = {
+    COLOR_INK_BLACK,  COLOR_INK_RED,  COLOR_INK_GREEN,  COLOR_INK_BLUE,
+    COLOR_INK_YELLOW, COLOR_INK_CYAN, COLOR_INK_VIOLET, COLOR_INK_WHITE,
+};
+
+#define BALL_COLOR(X) (all_colors[(X)])
+

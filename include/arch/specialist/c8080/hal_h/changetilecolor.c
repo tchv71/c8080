@@ -15,15 +15,18 @@
 
 #include <c8080/hal.h>
 
-void __global ChangeTileColor(void *tile, uint8_t width, uint8_t height) {
+void __global ChangeTileColor(void *tile, uint8_t color, uint8_t width, uint8_t height) {
     asm {
-__a_3_changetilecolor=0
+__a_4_changetilecolor=0
         ld   c, a
+__a_2_changetilecolor=$+1
+	ld   a, 0
+	ld   (0F802h), a
 __a_1_changetilecolor=$+1
         ld   de, 0
         ld   h, d
 ChangeRectColor_1:
-__a_2_changetilecolor=$+1
+__a_3_changetilecolor=$+1
         ld   b, 0
 ChangeRectColor_2:
         ld   a, (de)

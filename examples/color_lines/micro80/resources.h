@@ -2,10 +2,25 @@
 
 #include <stdint.h>
 
-static const unsigned imgScreenWidth = 64;
-static const unsigned imgScreenHeight = 25;
-static const unsigned imgScreenSize = imgScreenWidth + (imgScreenHeight << 8);
-extern uint8_t imgScreen[470];
+static const unsigned imgBallsWidth = 3;
+static const unsigned imgBallsHeight = 3;
+static const unsigned imgBallsSize = imgBallsWidth + (imgBallsHeight << 8);
+extern uint8_t imgBalls[20][20];
+
+static const unsigned imgBalls1Width = 3;
+static const unsigned imgBalls1Height = 2;
+static const unsigned imgBalls1Size = imgBalls1Width + (imgBalls1Height << 8);
+extern uint8_t imgBalls1[20][14];
+
+static const unsigned imgHiWidth = 3;
+static const unsigned imgHiHeight = 3;
+static const unsigned imgHiSize = imgHiWidth + (imgHiHeight << 8);
+extern uint8_t imgHi[12][20];
+
+static const unsigned imgKingLoseWidth = 11;
+static const unsigned imgKingLoseHeight = 10;
+static const unsigned imgKingLoseSize = imgKingLoseWidth + (imgKingLoseHeight << 8);
+extern uint8_t imgKingLose[222];
 
 static const unsigned imgPlayerWidth = 13;
 static const unsigned imgPlayerHeight = 11;
@@ -17,32 +32,17 @@ static const unsigned imgPlayerDHeight = 1;
 static const unsigned imgPlayerDSize = imgPlayerDWidth + (imgPlayerDHeight << 8);
 extern uint8_t imgPlayerD[28];
 
-static const unsigned imgBalls1Width = 3;
-static const unsigned imgBalls1Height = 2;
-static const unsigned imgBalls1Size = imgBalls1Width + (imgBalls1Height << 8);
-extern uint8_t imgBalls1[20][14];
-
-static const unsigned imgTitleWidth = 64;
-static const unsigned imgTitleHeight = 25;
-static const unsigned imgTitleSize = imgTitleWidth + (imgTitleHeight << 8);
-extern uint8_t imgTitle[1032];
-
-static const unsigned imgKingLoseWidth = 11;
-static const unsigned imgKingLoseHeight = 10;
-static const unsigned imgKingLoseSize = imgKingLoseWidth + (imgKingLoseHeight << 8);
-extern uint8_t imgKingLose[222];
-
 static const unsigned imgPlayerWinWidth = 4;
 static const unsigned imgPlayerWinHeight = 3;
 static const unsigned imgPlayerWinSize = imgPlayerWinWidth + (imgPlayerWinHeight << 8);
 extern uint8_t imgPlayerWin[26];
 
-static const unsigned imgBallsWidth = 3;
-static const unsigned imgBallsHeight = 3;
-static const unsigned imgBallsSize = imgBallsWidth + (imgBallsHeight << 8);
-extern uint8_t imgBalls[20][20];
+static const unsigned imgScreenWidth = 64;
+static const unsigned imgScreenHeight = 25;
+static const unsigned imgScreenSize = imgScreenWidth + (imgScreenHeight << 8);
+extern uint8_t imgScreen[470];
 
-static const unsigned imgHiWidth = 3;
-static const unsigned imgHiHeight = 3;
-static const unsigned imgHiSize = imgHiWidth + (imgHiHeight << 8);
-extern uint8_t imgHi[12][20];
+static const unsigned imgTitleWidth = 64;
+static const unsigned imgTitleHeight = 25;
+static const unsigned imgTitleSize = imgTitleWidth + (imgTitleHeight << 8);
+extern uint8_t imgTitle[1032];

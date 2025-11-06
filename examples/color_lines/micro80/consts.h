@@ -85,3 +85,5 @@ static const uint8_t TOPNAME_COLOR = COLOR_INK_LIGHT_GREEN;
 
 #define CELL_HALF_HEIGHT
 #define CENTER_SCORE
+
+#define BALL_COLOR(X) (X)
