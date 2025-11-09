@@ -21,3 +21,4 @@
 #include <c8080/c8080.h>
 
 uint8_t __global GetBitPosition(uint8_t b) __link("c8080/getbitposition.c");
+uint8_t __global GetZeroBitPosition16(uint16_t b) __link("c8080/getbitposition.c");

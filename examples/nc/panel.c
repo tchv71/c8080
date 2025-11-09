@@ -109,7 +109,8 @@ static void DrawPanelFileInt(uint8_t *tile, struct FileInfo *file_info, uint8_t 
 
 void PanelDrawCursor(uint8_t color) {
     if (panel_a.count != 0)
-        DrawPanelFileInt(TILE(PANEL_OX + panel_a.cursorX * PANEL_COLUMN_WIDTH + panel_x, PANEL_OY + panel_a.cursorY), PanelGetCursor(), color);
+        DrawPanelFileInt(TILE(PANEL_OX + panel_a.cursorX * PANEL_COLUMN_WIDTH + panel_x, PANEL_OY + panel_a.cursorY),
+                         PanelGetCursor(), color);
 }
 
 void PanelHideCursor(void) {

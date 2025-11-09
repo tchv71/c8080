@@ -189,6 +189,15 @@ void ErrorWindow(const char *text) {
     window_color = COLOR_WINDOW;
 }
 
+bool MakeDirWindow(void) {
+    uint8_t y = DrawWindow(WINDOW_X_CENTER, 7, " Make directory ");  // Original
+    DrawWindowText(y, "Create the directory");                       // Original
+    DrawButtons(y + 4, 0, "Create\0");
+
+    input[0] = 0;
+    return RunInput(y + 2);
+}
+
 uint8_t SelectDriveWindow(uint8_t cursor, bool is_right) {
     const uint8_t y = DrawWindow(is_right ? WINDOW_X_RIGHT : WINDOW_X_LEFT, 5, " Drives ");  // Original: Drive letter
     DrawWindowTextCenter(y, is_right ? "Choose right drive:" : "Choose left drive:");        // Original

@@ -19,13 +19,31 @@
 
 uint8_t __global GetBitPosition(uint8_t b) {
     asm {
+__a_1_getbitposition = 0
         ld   d, -1
         scf
-NumberOfBit_0:
+GetBitPosition_0:
         rra
         inc  d
-        jp   nc, NumberOfBit_0
-NumberOfBit_1:
+        jp   nc, GetBitPosition_0
         ld    a, d
+    }
+}
+
+uint8_t __global GetZeroBitPosition16(uint16_t b) {
+    asm {
+__a_1_getzerobitposition16 = 0
+        or   a ; Clear CF
+        ld   d, -1
+        ld   a, l
+        inc  l
+        jp   nz, GetZeroBitPosition_0
+        ld   d, 7
+        ld   a, h
+GetZeroBitPosition_0:
+        rra
+        inc  d
+        jp   c, GetZeroBitPosition_0
+        ld   a, d
     }
 }

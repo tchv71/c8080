@@ -33,7 +33,7 @@ struct FileInfo {
 };
 
 static const uint8_t ATTRIB_DIR = 0x80;
-#define GET_USER_FROM_ATTRIB(X) ((X) & 0x0F)
+#define GET_USER_FROM_ATTRIB(X) ((X)&0x0F)
 
 struct Panel {
     struct FileInfo *files;
@@ -68,4 +68,3 @@ void PanelMoveCursorDown(void);
 uint16_t PanelGetCursorIndex(void);
 struct FileInfo *PanelGetCursor(void);
 void PanelSwap(void);
-

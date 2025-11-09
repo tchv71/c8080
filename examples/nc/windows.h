@@ -42,6 +42,7 @@ void ProcessInput(char c);
 bool RunInput(uint8_t y);
 void DrawProgress(uint8_t y);
 void DrawProgressNext(uint8_t y, uint8_t width);
+bool MakeDirWindow(void);
 
 bool DeleteWindow(const char *file_name);
 void ErrorWindow(const char *text);
