@@ -58,7 +58,7 @@ void SaveScreen(void) {
     if ((panel_b.drive_user & 0x0F) >= DRIVE_COUNT)
         panel_b.drive_user = panel_a.drive_user;
 
-    hidden = (glob_state & STATE_HIDDEN) != 0;
+    panels_hidden = (glob_state & STATE_HIDDEN) != 0;
     if (glob_state & STATE_TAB) {
         if (panel_x != 0)
             panel_x = 0;
@@ -67,7 +67,7 @@ void SaveScreen(void) {
     }
 }
 
-void RestoreScreen(void) {
+void RestoreConsole(void) {
     memcpy((void *)0xE000, saved_screen, TEXT_WIDTH * TEXT_HEIGHT);
     memcpy((void *)0xE800, saved_screen + TEXT_WIDTH * TEXT_HEIGHT, TEXT_WIDTH * TEXT_HEIGHT);
 }
@@ -76,11 +76,11 @@ void ExitScreen(void) {
     // Сохраняем состояние
     glob_drive_user_b = panel_b.drive_user;
     glob_state = (panel_x ? STATE_TAB : 0);
-    if (hidden)
+    if (panels_hidden)
         glob_state |= STATE_HIDDEN;
 
     // Восстанавливаем экран
-    RestoreScreen();
+    RestoreConsole();
 
     // Показываем курсор
     ShowCursor();

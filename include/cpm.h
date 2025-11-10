@@ -129,9 +129,6 @@ uint8_t __global CpmClose(struct FCB *fcb) __link("cpm_h/bdos.c");
 // 17 F_SFIRST Search for first
 struct FCB *__global CpmSearchFirst(void *dma, struct FCB *fcb) __link("cpm_h/bdos.c");
 
-// The function initiates FCB
-struct FCB *__global CpmSearchFirstAll(void *dma, struct FCB *fcb) __link("cpm_h/bdos.c");
-
 // 18 F_SNEXT Search for next
 struct FCB *__global CpmSearchNext(void) __link("cpm_h/bdos.c");
 
@@ -212,3 +209,6 @@ void __global CpmCommand(uint8_t drive_user, const char *text) __link("cpm_h/cpm
 
 // Parse name and save result into FCB
 uint8_t __global CpmParseName(struct FCB *fcb, const char *name) __link("cpm_h/cpmparsename.c");
+
+// Set the 11 attributes to the 7th bits of the file name.
+void __global CpmSetAttrib(char *name83, uint16_t attrib) __link("cpm_h/cpmsetattrib.c");

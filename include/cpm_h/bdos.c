@@ -200,13 +200,6 @@ __a_1_cpmsearchfirst = $+1
     }
 }
 
-struct FCB *__global CpmSearchFirstAll(void *dma, struct FCB *fcb) {
-    fcb->drive = 0;
-    memset(fcb->name83, '?', sizeof(fcb->name83));
-    fcb->ex = '?';
-    return CpmSearchFirst(dma, fcb);
-}
-
 struct FCB *__global CpmSearchNext(void) {
     asm {
         ld   c, 12h

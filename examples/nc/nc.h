@@ -20,9 +20,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <c8080/hal.h>
+#include <cpm.h>
 #include "panel.h"
 
-extern bool hidden;
+extern bool panels_hidden;
+
+static const uint8_t MAX_DIRS = CPM_MAX_USERS - 1;
 
 void NcDrawScreen(void);
 void CpmNormalizeName(char *out_name, const char *fcb_name);  // Убрать

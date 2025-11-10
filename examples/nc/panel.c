@@ -19,16 +19,19 @@
 #include <c8080/hal.h>
 #include <c8080/uint32tostring.h>
 #include <string.h>
+#include <c8080/tolowercase.h>
 #include "colors.h"
 #include "nc.h"
 #include "tools.h"
 
-struct Panel panel_a, panel_b;
-bool hidden;
+size_t max_panel_files;
+struct Panel panel_a;
+struct Panel panel_b;
+bool panels_hidden;
 uint8_t panel_x;
 
 uint16_t PanelGetCursorIndex(void) {
-    return panel_a.offset + panel_a.cursorY + panel_a.cursorX * PANEL_ROWS_COUNT;
+    return panel_a.offset + panel_a.cursor_y + panel_a.cursor_x * PANEL_ROWS_COUNT;
 }
 
 struct FileInfo *PanelGetCursor(void) {
@@ -39,7 +42,7 @@ uint8_t PanelGetDrive(void) {
     return panel_a.drive_user & 0x0F;
 }
 
-uint8_t PanelGetUser(void) {
+uint8_t PanelGetDirIndex(void) {
     return panel_a.drive_user >> 4;
 }
 
@@ -61,7 +64,7 @@ void PanelDrawBorder(uint8_t x) {
 
 void PanelDrawTitle(uint8_t color) {
     PanelDrawTop(panel_x);
-    DrawTextXY(panel_x + (TEXT_WIDTH / 2 - strlen(panel_a.path)) / 2, 0, color, panel_a.path);
+    DrawTextXY(panel_x + (PANEL_WIDTH - strlen(panel_a.short_path)) / 2, 0, color, panel_a.short_path);
 }
 
 void PanelDrawFreeSpace(void) {
@@ -84,7 +87,6 @@ void PanelDrawFileInfo(void) {
         return;
     }
     struct FileInfo *file_pointer = PanelGetCursor();
-    memcpy(panel_a.selected_name_83, file_pointer->name83, sizeof(panel_a.selected_name_83));
     CpmNormalizeName(panel_a.selected_name, file_pointer->name83);
     char text[29];
     memset(text, ' ', sizeof(text) - 1);
@@ -102,14 +104,19 @@ static void DrawPanelFileInt(uint8_t *tile, struct FileInfo *file_info, uint8_t 
     static char screen_text[13] = "12345678 123";
     memcpy(screen_text, file_info->name83, 8);
     memcpy(screen_text + 9, file_info->name83 + 8, 3);
+
+    if ((file_info->attrib & ATTRIB_DIR) == 0)
+        ToLowerCase(screen_text);
+
     if (color == 0)
         color = (file_info->attrib & ATTRIB_DIR) ? COLOR_PANEL_DIR : COLOR_PANEL_FILE;
+
     DrawText(tile, 0, color, screen_text);
 }
 
 void PanelDrawCursor(uint8_t color) {
     if (panel_a.count != 0)
-        DrawPanelFileInt(TILE(PANEL_OX + panel_a.cursorX * PANEL_COLUMN_WIDTH + panel_x, PANEL_OY + panel_a.cursorY),
+        DrawPanelFileInt(TILE(PANEL_OX + panel_a.cursor_x * PANEL_COLUMN_WIDTH + panel_x, PANEL_OY + panel_a.cursor_y),
                          PanelGetCursor(), color);
 }
 
@@ -141,16 +148,16 @@ void PanelDrawFiles(void) {
 
 void PanelMoveCursorLeft(void) {
     PanelHideCursor();
-    if (panel_a.cursorX != 0) {
-        panel_a.cursorX--;
+    if (panel_a.cursor_x != 0) {
+        panel_a.cursor_x--;
     } else if (panel_a.offset != 0) {
         if (panel_a.offset > PANEL_ROWS_COUNT)
             panel_a.offset -= PANEL_ROWS_COUNT;
         else
             panel_a.offset = 0;
         PanelDrawFiles();
-    } else if (panel_a.cursorY != 0) {
-        panel_a.cursorY = 0;
+    } else if (panel_a.cursor_y != 0) {
+        panel_a.cursor_y = 0;
     }
     PanelShowCursor();
 }
@@ -167,33 +174,33 @@ void PanelMoveCursorRight(void) {
             return;
         }
         // Вычисляем положение по Y
-        panel_a.cursorY = panel_a.count - (panel_a.offset + panel_a.cursorX * PANEL_ROWS_COUNT + 1);
+        panel_a.cursor_y = panel_a.count - (panel_a.offset + panel_a.cursor_x * PANEL_ROWS_COUNT + 1);
         // Корректируем курсор
-        if (panel_a.cursorY > PANEL_ROWS_COUNT - 1) {
-            panel_a.cursorY -= PANEL_ROWS_COUNT;
-            if (panel_a.cursorX == 1) {
+        if (panel_a.cursor_y > PANEL_ROWS_COUNT - 1) {
+            panel_a.cursor_y -= PANEL_ROWS_COUNT;
+            if (panel_a.cursor_x == 1) {
                 panel_a.offset += PANEL_ROWS_COUNT;
                 PanelDrawFiles();
             } else {
-                panel_a.cursorX++;
+                panel_a.cursor_x++;
             }
         }
-    } else if (panel_a.cursorX == 1) {
+    } else if (panel_a.cursor_x == 1) {
         panel_a.offset += PANEL_ROWS_COUNT;
         PanelDrawFiles();
     } else {
-        panel_a.cursorX++;
+        panel_a.cursor_x++;
     }
     PanelShowCursor();
 }
 
 void PanelMoveCursorUp(void) {
     PanelHideCursor();
-    if (panel_a.cursorY != 0) {
-        panel_a.cursorY--;
-    } else if (panel_a.cursorX != 0) {
-        panel_a.cursorX--;
-        panel_a.cursorY = PANEL_ROWS_COUNT - 1;
+    if (panel_a.cursor_y != 0) {
+        panel_a.cursor_y--;
+    } else if (panel_a.cursor_x != 0) {
+        panel_a.cursor_x--;
+        panel_a.cursor_y = PANEL_ROWS_COUNT - 1;
     } else if (panel_a.offset != 0) {
         panel_a.offset--;
         PanelDrawFiles();
@@ -205,11 +212,11 @@ void PanelMoveCursorDown(void) {
     if (PanelGetCursorIndex() + 1 >= panel_a.count)
         return;
     PanelHideCursor();
-    if (panel_a.cursorY < PANEL_ROWS_COUNT - 1) {
-        panel_a.cursorY++;
-    } else if (panel_a.cursorX == 0) {
-        panel_a.cursorY = 0;
-        panel_a.cursorX++;
+    if (panel_a.cursor_y < PANEL_ROWS_COUNT - 1) {
+        panel_a.cursor_y++;
+    } else if (panel_a.cursor_x == 0) {
+        panel_a.cursor_y = 0;
+        panel_a.cursor_x++;
     } else {
         panel_a.offset++;
         PanelDrawFiles();

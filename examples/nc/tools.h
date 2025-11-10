@@ -21,7 +21,7 @@
 #include <stdbool.h>
 
 void SaveScreen(void);
-void RestoreScreen(void);
+void RestoreConsole(void);
 void ExitScreen(void);
 void NcDisableAutorun(void);
 
