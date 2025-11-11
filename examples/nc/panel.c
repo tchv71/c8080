@@ -87,7 +87,7 @@ void PanelDrawFileInfo(void) {
         return;
     }
     struct FileInfo *file_pointer = PanelGetCursor();
-    CpmNormalizeName(panel_a.selected_name, file_pointer->name83);
+    CpmConvertFromName83(panel_a.selected_name, file_pointer->name83);
     char text[29];
     memset(text, ' ', sizeof(text) - 1);
     memcpy(text, panel_a.selected_name, strlen(panel_a.selected_name));
@@ -101,7 +101,7 @@ void PanelDrawFileInfo(void) {
 }
 
 static void DrawPanelFileInt(uint8_t *tile, struct FileInfo *file_info, uint8_t color) {
-    static char screen_text[13] = "12345678 123";
+    static char screen_text[13] = "            ";
     memcpy(screen_text, file_info->name83, 8);
     memcpy(screen_text + 9, file_info->name83 + 8, 3);
 

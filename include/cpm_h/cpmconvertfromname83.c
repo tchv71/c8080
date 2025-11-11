@@ -17,25 +17,41 @@
 
 #include <cpm.h>
 
-void __global CpmSetAttrib(char *, uint16_t) {
+void __global CpmConvertFromName83(char *out_name, const char *name83) {
     asm {
-__a_2_cpmsetattrib = 0
-        add  hl, hl
-        add  hl, hl
-        add  hl, hl
-        add  hl, hl
-        add  hl, hl
-__a_1_cpmsetattrib = $ + 1
-        ld   de, 0
-        ld   c, 8 + 3
-CpmSetAttrib_1:
+__a_2_cpmconvertfromname83 = 0
+        ex   hl, de
+__a_1_cpmconvertfromname83 = $ + 1
+        ld   bc, 0
+
+        ld   hl, bc
+        ld   a, 8
+        call CpmConvertFromName83_1
+
+        ld   hl, bc
+        ld   (hl), '.'
+        inc  hl
+        ld   a, 3
+        jp   CpmConvertFromName83_1
+
+        ; Copy chars
+CpmConvertFromName83_1:
+        push af
         ld   a, (de)
-        add  a
-        add  hl, hl
-        rra
-        ld   (de), a
         inc  de
-        dec  c
-        jp   nz, CpmSetAttrib_1
+        and  7Fh
+        sub  1  ; Replace 0 (teminator) by 1
+        adc  1
+        ld   (hl), a
+        inc  hl
+        cp   ' '
+        jp   z, CpmConvertFromName83_2
+        ld   bc, hl
+CpmConvertFromName83_2:
+        pop  af
+        dec  a
+        jp   nz, CpmConvertFromName83_1
+
+        ld   (bc), a
     }
 }

@@ -212,3 +212,9 @@ uint8_t __global CpmParseName(struct FCB *fcb, const char *name) __link("cpm_h/c
 
 // Set the 11 attributes to the 7th bits of the file name.
 void __global CpmSetAttrib(char *name83, uint16_t attrib) __link("cpm_h/cpmsetattrib.c");
+
+// Convert the name83 stored in the FСB to a file name without
+// spaces at the end and with a terminating null.
+// The function resets 7 bit.
+// { 'F','I','L','E','1',' ','T' | 0x80,'X' | 0x80,'T' ] -> "FILE1.TXT"
+void __global CpmConvertFromName83(char *out_name, const char *name83) __link("cpm_h/cpmconvertfromname83.c");

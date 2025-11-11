@@ -22,6 +22,10 @@
 #include "files.h"
 #include "panel.h"
 
+static const uint16_t STACK_SIZE = 1024;
+
+static uint8_t copy_buffer_size;
+
 static void NcDrawCommandLine(void) {
     const uint8_t s = strlen(panel_a.short_path) - 1;
     char *last_char = &panel_a.short_path[s];
@@ -81,6 +85,57 @@ static void NcCommand(const char *text) {
     CpmCommand(panel_a.drive_user, text);
 }
 
+static void NcExecute(void) {
+    // Выход, если папка пуста или файл не выбран
+    if (panel_a.count == 0)
+        return;
+
+    // Это папка
+    const uint8_t attrib = PanelGetCursor()->attrib;
+    if (attrib & ATTRIB_DIR) {
+        find_files_select_dir = (PanelGetDirIndex() << ATTRIB_DIR_SHIFT) | ATTRIB_DIR;
+        panel_a.drive_user = PanelGetDrive() | ((attrib << (4 - ATTRIB_DIR_SHIFT)) & 0xF0);
+        panel_a.cursor_x = 0;
+        panel_a.cursor_y = 0;
+        panel_a.offset = 0;
+        FindFiles();
+
+        NcDrawCommandLine();
+        PanelDrawTitle(COLOR_PANEL_TITLE_ACTIVE);
+        PanelDrawFiles();
+        PanelShowCursor();
+        return;
+    }
+
+    char text[sizeof(panel_a.selected_name)];
+    strcpy(text, panel_a.selected_name);
+
+    char *ext = strchr(text, '.');
+    if (ext && ext[1] == 'C' && ext[2] == 'O' && ext[3] == 'M') {
+        ext[0] = 0;
+        NcCommand(text);
+    }
+
+    // TODO: Запуск TXT, BAS файлов
+}
+
+static void NcSelectDrive(uint8_t offset) {
+    const bool swap = panel_x != offset;
+    const uint8_t result = SelectDriveWindow((swap ? panel_b.drive_user : panel_a.drive_user) & 0x0F, offset);
+    if (result == 0xFF)
+        return;
+    if (swap)
+        PanelSwap();
+    panel_a.drive_user = result;
+    panel_a.cursor_x = 0;
+    panel_a.cursor_y = 0;
+    panel_a.offset = 0;
+    FindFiles();
+    if (swap)
+        PanelSwap();
+    NcDrawScreen();
+}
+
 static void NcDriveChanged(uint8_t drive_user) {
     if (panel_a.drive_user == drive_user)
         FindFiles();
@@ -100,7 +155,7 @@ static void NcCopyMoveRename(bool rename) {
     // Исходный файл
     struct FileInfo *source_file = PanelGetCursor();
     struct FCB source;
-    source.drive = 0;
+    source.drive = PanelGetDrive() + 1;
     memcpy(source.name83, source_file->name83, sizeof(source_file->name83));
 
     // Окно
@@ -122,18 +177,26 @@ static void NcDelete(void) {
 
     // Удаление файла
     struct FCB f;
-    f.drive = 0;
+    f.drive = PanelGetDrive() + 1;
     memcpy(f.name83, PanelGetCursor()->name83, sizeof(f.name83));
-    NcSelectDriveUser();
-    CpmDelete(&f);  // TODO: Проверить ошибку
+    CpmSetCurrentUser(PanelGetDirIndex());
+    CpmDelete(&f); // TODO: Проверить ошибку
 
     // Обновить список файлов
     NcDriveChanged(panel_a.drive_user);
 }
 
 int main(int, char **) {
-    max_panel_files = GetUnusedRam((void **)&panel_a.files, STACK_SIZE) / (sizeof(panel_a.files[0]) * 2);
-    panel_b.files = panel_a.files + max_panel_files;
+    const size_t unused_size = GetUnusedRam((void **)&panel_a.files, STACK_SIZE) / 2;
+    panel_b.files = (void *)panel_a.files + unused_size;
+    max_panel_files = unused_size / sizeof(panel_a.files[0]);
+
+    copy_buffer_size = 1;
+    uint8_t stop_size = unused_size / (128 * 2);
+    if (stop_size > 64)
+        stop_size = 64;  // Иначе будет переполнение
+    while (copy_buffer_size <= stop_size)
+        copy_buffer_size *= 2;
 
     NcDrawScreen();
 
