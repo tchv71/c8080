@@ -42,11 +42,11 @@ void PanelReloadOrCopy(void) {
     }
 }
 
-bool PanelReload(void) {
+void PanelReload(void) {
     panel_a.count = 0;
 
     if (CpmSelectDrive(PanelGetDrive()) == 0xFF)
-        return false;
+        return; // TODO: Вывод ошибки
 
     // Получение размера накопителя и свободного места
     // Тут ограничение размера накопителя в 64 МБ
@@ -61,7 +61,7 @@ bool PanelReload(void) {
         static const struct FileInfo parent = {"..         ", ATTRIB_DIR_UP};
         memcpy(d, &parent, sizeof(parent));
         d++;
-        panel_a.count++;
+        panel_a.count = 1;
     }
 
     // Подготовка к построению дерева папок
@@ -111,6 +111,7 @@ bool PanelReload(void) {
         panel_a.count--;
 
         // Сортировка. Но первый элемент ".." не перемещаем.
+        // TODO: Проверить на 1 элемент
         SortFiles(panel_a.files + (dir_index ? 1 : 0), panel_a.files + panel_a.count);
 
         // Объединение экстентов
@@ -128,13 +129,12 @@ bool PanelReload(void) {
 
             // Установка курсора на папку предка при выходе из папки
             if (panel_reload_select_dir == (d->attrib & ATTRIB_DIR_MASK)) {
-                const size_t index = d - panel_a.files;
-                // В текущей реализации в CP/M может быть 15 папок и все они поместятся в одну колонку
-                if (index < PANEL_ROWS_COUNT) {
-                    panel_a.offset = 0;
-                    panel_a.cursor_x = 0;
-                    panel_a.cursor_y = index;
-                }
+                // В текущей реализации в CP/M может быть 15 папок и все они поместятся
+                // в одну колонку. Но если вдруг не поместятся, то ниже cursor_y будет
+                // проверен и сброшен в 0.
+                panel_a.offset = 0;
+                panel_a.cursor_x = 0;
+                panel_a.cursor_y = d - panel_a.files;
             }
 
             panel_a.count--;
@@ -147,11 +147,10 @@ bool PanelReload(void) {
 
     // Сброс режима установки курсора на папку предка при выходе из папки
     panel_reload_select_dir = 0xFF;
-    return true;
 }
 
 uint16_t PanelGetCursorIndex(void) {
-    uint16_t result = panel_a.offset + panel_a.cursor_y + panel_a.cursor_x * PANEL_ROWS_COUNT;
+    const uint16_t result = panel_a.offset + panel_a.cursor_y + panel_a.cursor_x * PANEL_ROWS_COUNT;
 
     // Предотвращение выхода за пределы буфера
     // Может быть при восстановлении состояния при запуске или после удаления файла
@@ -159,7 +158,7 @@ uint16_t PanelGetCursorIndex(void) {
         panel_a.cursor_x = 0;
         panel_a.cursor_y = 0;
         panel_a.offset = 0;
-        result = 0;
+        return 0;
     }
 
     return result;
@@ -230,32 +229,28 @@ void PanelDrawFileInfo(void) {
     DrawTextXY(panel_x + 2, TEXT_HEIGHT - 5, COLOR_PANEL_FOOTER, text);
 }
 
-static const char *panel_cursor_text;
+static char panel_cursor_text[13] = "            ";
+static uint8_t panel_cursor_color;
 
-static uint8_t DrawPanelFileInt(size_t file_index) {
-    if (file_index >= panel_a.count) {
-        panel_cursor_text = "            ";
-        return COLOR_PANEL_FILE;
-    }
-
+static void DrawPanelFileInt(size_t file_index) {
     struct FileInfo *file_info = panel_a.files + file_index;
 
-    static char text[13] = "            ";
-    panel_cursor_text = text;
-    memcpy(text, file_info->name83, 8);
-    memcpy(text + 9, file_info->name83 + 8, 3);
+    memcpy(panel_cursor_text, file_info->name83, 8);
+    memcpy(panel_cursor_text + 9, file_info->name83 + 8, 3);
 
     if ((file_info->attrib & ATTRIB_DIR_ALL) == 0)
-        ToLowerCase(text);
+        ToLowerCase(panel_cursor_text);
 
-    return (file_info->attrib & ATTRIB_DIR_ALL) ? COLOR_PANEL_DIR : COLOR_PANEL_FILE;
+    panel_cursor_color = (file_info->attrib & ATTRIB_DIR_ALL) ? COLOR_PANEL_DIR : COLOR_PANEL_FILE;
 }
 
 void PanelDrawCursor(uint8_t color) {
-    uint8_t c = DrawPanelFileInt(PanelGetCursorIndex());
-    if (color == 0)
-        color = c;
-    DrawTextXY(PANEL_OX + panel_a.cursor_x * PANEL_COLUMN_WIDTH + panel_x, PANEL_OY + panel_a.cursor_y, color,
+    if (panel_a.count == 0)
+        return;
+    DrawPanelFileInt(PanelGetCursorIndex());
+    if (color != 0)
+        panel_cursor_color = color;
+    DrawTextXY(PANEL_OX + panel_a.cursor_x * PANEL_COLUMN_WIDTH + panel_x, PANEL_OY + panel_a.cursor_y, panel_cursor_color,
                panel_cursor_text);
 }
 
@@ -276,9 +271,13 @@ void PanelDrawFiles(void) {
     do {
         uint8_t y = PANEL_OY;
         do {
-            uint8_t c = DrawPanelFileInt(file_index);
-            DrawTextXY(x, y, c, panel_cursor_text);
-            file_index++;
+            if (file_index >= panel_a.count) {
+                DrawTextXY(x, y, COLOR_PANEL_FILE, "            ");
+            } else {
+                DrawPanelFileInt(file_index);
+                DrawTextXY(x, y, panel_cursor_color, panel_cursor_text);
+                file_index++;
+            }
             y++;
         } while (y < PANEL_OY + PANEL_ROWS_COUNT);
         x += PANEL_COLUMN_WIDTH;
@@ -365,6 +364,6 @@ void PanelMoveCursorDown(void) {
 }
 
 void PanelSwap(void) {
-    panel_x = TEXT_WIDTH / 2 - panel_x;
+    panel_x = PANEL_WIDTH - panel_x;
     memswap(&panel_a, &panel_b, sizeof(panel_a));
 }

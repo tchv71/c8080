@@ -109,6 +109,7 @@ static void NcExecute(void) {
     if (ext && ext[1] == 'C' && ext[2] == 'O' && ext[3] == 'M') {
         ext[0] = 0;
         NcCommand(text);
+        return;
     }
 
     // TODO: Запуск TXT, BAS файлов
@@ -132,11 +133,11 @@ static void NcSelectDrive(uint8_t offset) {
 }
 
 static void NcDriveChanged(uint8_t drive_user) {
-    if (panel_a.drive_user == drive_user)
+    if (panel_a.drive_user == drive_user || drive_user == 0xFF)
         PanelReload();
-    if (panel_b.drive_user == drive_user) {
+    if (panel_b.drive_user == drive_user || drive_user == 0xFF) {
         PanelSwap();
-        PanelReload();
+        PanelReloadOrCopy();
         PanelSwap();
     }
     NcDrawScreen();
@@ -156,7 +157,64 @@ static void NcCopyMoveRename(bool rename) {
     // Окно
     const char *title = rename ? " Rename or move " : " Copy ";
     const uint8_t y = DrawWindow(WINDOW_X_CENTER, 8, title);  // Original: Copy | Rename
-    DrawWindowText(y, "File");                          // Original: Copy | Rename or move
+    DrawWindowText(y, "File");                                // Original: Copy | Rename or move
+    DrawWindowText(y + 1, panel_a.selected_name);             // TODO: Можно добавить путь
+    DrawWindowText(y + 2, "to");
+    DrawButtons(y + 5, 0, rename ? "Rename\0Cancel\0" : "Copy\0Cancel\0");
+    // Original: Copy\0Cancel | Rename/Move\0Cancel
+    input[0] = 0;
+    if (!RunInput(y + 3))
+        return;
+
+    ToUpperCase(input);
+
+    struct FCB dest;
+    uint8_t dest_drive_user = DirParsePathName(&dest, input, panel_b.drive_user, panel_a.drive_user);
+    if (dest_drive_user == 0xFF) {
+        ErrorWindow("Incorrect file name");
+        return;
+    }
+
+    CpmSetCurrentUser(PanelGetDirIndex());
+
+    if (CpmClose(&source) == 0xFF) {
+        rename = false;  // Не удалять исходный файл при ошибке
+        ErrorWindow("Can't close the file");
+    }
+
+    if (rename)
+        if (CpmDelete(&source) == 0xFF)
+            ErrorWindow("Can't delete the file");
+
+    // Обновить все панели нужно в любом случае, потому что:
+    // 1) panel_b.files использован как буфер
+    // 2) при переносе из panel_a удален файл
+    // 3) копирование могло быть в panel_a или panel_b (указано в dest_drive_user)
+    NcDriveChanged(0xFF);
+}
+
+static void NcMakeDir(void) {
+    if (!MakeDirWindow())
+        return;
+
+    ToUpperCase(input);
+
+    static const char *errors[] = {
+        "Folder creation limit",
+        "Incorrect file name",
+        "The file already exists",
+        "Can't create the file",
+        "Can't close the file"
+    };
+
+    const uint8_t drive_dir = DirMake(panel_a.drive_user, input);
+    if (drive_dir >= DIR_MAKE_ERROR_LIMIT) {
+        ErrorWindow(errors[drive_dir - DIR_MAKE_ERROR_LIMIT]);
+        return;
+    }
+
+    // TODO: Курсор на созданную папку
+    NcDriveChanged(drive_dir);
 }
 
 static void NcDelete(void) {
@@ -194,16 +252,19 @@ static void NcDelete(void) {
 }
 
 int main(int, char **) {
-    const size_t unused_size = GetUnusedRam((void **)&panel_a.files, STACK_SIZE) / 2;
-    panel_b.files = (void *)panel_a.files + unused_size;
-    panel_files_max = unused_size / sizeof(panel_a.files[0]);
+    const size_t panel_buffer_bytes = GetUnusedRam((void **)&panel_a.files, STACK_SIZE) / 2;
+    panel_b.files = (void *)panel_a.files + panel_buffer_bytes;
+    panel_files_max = panel_buffer_bytes / sizeof(panel_a.files[0]);
 
+    // Вычисление круглого кол-ва 128 байтных буферов в panel_a.files
+    uint8_t allow_loop = panel_buffer_bytes / (CPM_128_BLOCK * 2); // Еще можно умножить на 2
+    if (allow_loop < 2)
+        return 1; // Недостаточно памяти для copy_buffer_size и panel_a.files
+    static const uint8_t MAX_ROUND_UINT8 = 128;
     copy_buffer_size = 1;
-    uint8_t stop_size = unused_size / (128 * 2);
-    if (stop_size > 64)
-        stop_size = 64;  // Иначе будет переполнение
-    while (copy_buffer_size <= stop_size)
+    do {
         copy_buffer_size *= 2;
+    } while (copy_buffer_size <= allow_loop && copy_buffer_size < MAX_ROUND_UINT8 / 2);
 
     NcDrawScreen();
 
@@ -216,9 +277,7 @@ int main(int, char **) {
                         PanelDrawTitle(COLOR_PANEL_TITLE);
                         PanelHideCursor();
                         PanelSwap();
-                        PanelDrawTitle(COLOR_PANEL_TITLE_ACTIVE);
-                        PanelShowCursor();
-                        NcDrawCommandLine();
+                        NcPanelDrawActiveTitleAndCommandLine();
                         continue;
                     case '1':
                         NcSelectDrive(0);

@@ -68,18 +68,60 @@ void DirInfoMakePath(struct DirInfo *self, char *out, uint8_t out_size, uint8_t 
     strcpy(out, result);
 }
 
-uint8_t DirAllocate(void) {
+uint8_t DirParsePathName(struct FCB *fcb, const char *file_name, uint8_t drive_dir_for_empty, uint8_t drive_dir) {
+    memset(fcb, 0, sizeof(*fcb));
+
+    if (CpmParseName(fcb, file_name))
+        return 0xFF;
+
+    if (fcb->drive != 0)
+        return fcb->drive - 1; // TODO: Пока нельзя указывать путь
+
+    uint8_t dest_drive_user = (fcb->name83[0] == ' ') ? drive_dir_for_empty : drive_dir;
+    fcb->drive = (dest_drive_user & 0x0F) + 1;
+    return dest_drive_user;
+}
+
+uint8_t DirMake(uint8_t drive_dir, const char* name) {
+    // Поиск свободного номера папки
     uint16_t bitmap = 1;
     struct FCB f;
     f.drive = '?';
     struct FCB *x = CpmSearchFirst(DEFAULT_DMA, &f);
     while (x != NULL) {
-        if (x->drive < 0x10) {
+        if (x->drive < CPM_MAX_USERS) {
             const uint8_t dir_index = CpmGetAttrib(x->name83 - 3) & 0x0F;
             if (dir_index != 0)
                 bitmap |= 1 << dir_index;
         }
+        // TODO: Тут можно проверить на уникальность имени
+        // TODO: Тут можно использовать DirInfoAdd
         x = CpmSearchNext();
     }
-    return GetZeroBitPosition16(bitmap);
+    const uint8_t dir_index = GetZeroBitPosition16(bitmap);
+    if (dir_index > MAX_DIRS)
+        return DIR_MAKE_ERROR_LIMIT;
+
+    // Поиск пути и имени
+    struct FCB dir;
+    drive_dir = DirParsePathName(&dir, name, drive_dir, drive_dir);
+    if (drive_dir == 0xFF || dir.name83[0] == ' ')
+        return DIR_MAKE_ERROR_NAME;
+
+    // Установка номера новой папки
+    CpmSetAttrib(dir.name83, dir_index << 3);
+
+    // Проверка уникальности имени
+    CpmSetCurrentUser(drive_dir >> 4);
+    if (CpmSearchFirst(DEFAULT_DMA, &dir) != NULL)
+        return DIR_MAKE_ERROR_EXISTS;
+
+    // Создание
+    if (CpmCreate(&dir) == 0xFF)
+        return DIR_MAKE_ERROR_CREATE;
+
+    if (CpmClose(&dir) == 0xFF)
+        return DIR_MAKE_ERROR_CLOSE;
+
+    return drive_dir;
 }

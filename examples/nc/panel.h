@@ -66,7 +66,7 @@ extern uint8_t panel_x;
 extern uint8_t panel_reload_select_dir;  // Глобальная переменная для оптимизации размера
 
 void PanelReloadOrCopy(void);
-bool PanelReload(void);
+void PanelReload(void);
 uint8_t PanelGetDrive(void);
 uint8_t PanelGetDirIndex(void);
 void PanelDrawBorder(uint8_t x);
