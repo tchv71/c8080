@@ -25,6 +25,4 @@
 
 extern bool panels_hidden;
 
-static const uint8_t MAX_DIRS = CPM_MAX_USERS - 1;
-
 void NcDrawScreen(void);

@@ -17,5 +17,22 @@
 
 #pragma once
 
-void FindFolder(void);
-void FindFiles(void);
+#include <cpm.h>
+#include <stddef.h>
+
+static const uint8_t MAX_DIRS = CPM_MAX_USERS - 1;
+
+struct DirInfoItem {
+    uint8_t parent;
+    char name[8 + 1 + 3 + 1];
+};
+
+struct DirInfo {
+    uint8_t drive;
+    struct DirInfoItem items[MAX_DIRS];
+};
+
+void DirInfoReset(struct DirInfo *self, uint8_t drive);
+uint8_t DirInfoAdd(struct DirInfo *self, struct FCB *fcb);
+void DirInfoMakePath(struct DirInfo *self, char *out, uint8_t out_size, uint8_t dir_index);
+uint8_t DirAllocate(void);

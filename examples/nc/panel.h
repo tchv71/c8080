@@ -27,6 +27,7 @@ static const uint8_t PANEL_COLUMN_WIDTH = 15;
 static const uint8_t PANEL_COLUMNS_COUNT = 2;
 static const uint8_t PANEL_ROWS_COUNT = TEXT_HEIGHT - 8;
 static const uint8_t PANEL_WIDTH = TEXT_WIDTH / 2;
+static const uint8_t PANEL_SHORT_PATH = PANEL_WIDTH - 4;
 
 struct FileInfo {
     char name83[8 + 3];
@@ -34,23 +35,24 @@ struct FileInfo {
     uint16_t blocks_128;
 };
 
-static const uint8_t ATTRIB_DIR = 0x80;
+static const uint8_t ATTRIB_DIR_UP = 0x80;
 static const uint8_t ATTRIB_DIR_MAX = 0x0F;
 static const uint8_t ATTRIB_DIR_SHIFT = 3;
 static const uint8_t ATTRIB_DIR_MASK = ATTRIB_DIR_MAX << ATTRIB_DIR_SHIFT;
-static const uint8_t ATTRIB_DIR_ALL = ATTRIB_DIR_MASK | ATTRIB_DIR;
+static const uint8_t ATTRIB_DIR_ALL = ATTRIB_DIR_MASK | ATTRIB_DIR_UP;
 #define GET_DIR_FROM_ATTRIB(X) (((X) >> ATTRIB_DIR_SHIFT) & ATTRIB_DIR_MAX)
 
 struct Panel {
     uint8_t copy_start[0];
     uint8_t drive_user;
     char path[128];
-    uint32_t total_bytes;
-    uint32_t free_bytes;
+    uint8_t short_path_skip;
+    uint8_t short_path_size;
+    uint16_t total_kb;
+    uint16_t free_kb;
     uint16_t count;
     uint8_t copy_end[0];
 
-    char *short_path;
     uint16_t offset;
     uint8_t cursor_x;
     uint8_t cursor_y;
@@ -58,10 +60,13 @@ struct Panel {
     char selected_name[8 + 1 + 3 + 1];
 };
 
-extern size_t max_panel_files;
 extern struct Panel panel_a, panel_b;
+extern size_t panel_files_max;
 extern uint8_t panel_x;
+extern uint8_t panel_reload_select_dir;  // Глобальная переменная для оптимизации размера
 
+void PanelReloadOrCopy(void);
+bool PanelReload(void);
 uint8_t PanelGetDrive(void);
 uint8_t PanelGetDirIndex(void);
 void PanelDrawBorder(uint8_t x);
