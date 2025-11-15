@@ -15,16 +15,16 @@ files:
 	find . -type f >c8080.files
 
 c8080: ${OBJ_FILES}
-	g++ -Wall -Wno-switch -g -static --std=c++17 -o $@ $^
+	g++ -s -Wall -Wno-switch -O2 -static --std=c++17 -o $@ $^
 
 build/%.o: %.cpp
 	mkdir -p $(dir $@)
-	g++ -MD -Wall -Wno-switch -g -static --std=c++17 -c -o $@ $<
+	g++ -MD -Wall -Wno-switch -O2 -static --std=c++17 -c -o $@ $<
 
 -include $(OBJ_FILES:.o=.d)
 
 c8080.exe: ${W64_FILES}
-	x86_64-w64-mingw32-g++ -O2 -static --std=c++17 -o $@ $^
+	x86_64-w64-mingw32-g++ -s -O2 -static --std=c++17 -o $@ $^
 
 build.w64/%.o: %.cpp
 	mkdir -p $(dir $@)
@@ -33,7 +33,7 @@ build.w64/%.o: %.cpp
 -include $(W64_FILES:.o=.d)
 
 c8080.win32.exe: ${W32_FILES}
-	i686-w64-mingw32-g++ -O2 -static --std=c++17 -o $@ $^
+	i686-w64-mingw32-g++ -s -O2 -static --std=c++17 -o $@ $^
 
 build.w32/%.o: %.cpp
 	mkdir -p $(dir $@)
