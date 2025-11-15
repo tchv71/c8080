@@ -15,28 +15,30 @@
  * limitations under the License.
  */
 
-#include <c8080/hal.h>
+#include <c8080/touppercase.h>
 
-void __global DrawText(void *, uint8_t, uint8_t, const char *) {
+void __global ToUpperCase(char *text) {
     asm {
-__a_4_drawtext=0
-        ex   hl, de
-__a_1_drawtext=$+1
-        ld   bc, 0 ; tile
-        ld   a, b
-        sub  08h
-        ld   h, a
-        ld   l, c
-drawtext_l1:
-        ld   a, (de)
-        inc  de
+__a_1_touppercase = 0
+        dec  hl
+ToUpperCase_1:
+        inc  hl
+        ld   a, (hl)
         or   a
         ret  z
-        ld   (bc), a
-__a_3_drawtext=$+1
-        ld   (hl), 0 ; color
-        inc  c
-        inc  l
-        jp   drawtext_l1
+        cp   'A' + 0x80
+        jp   c, ToUpperCase_1
+        cp   'Z' + 0x80 + 1
+        jp   c, ToUpperCase_2
+        cp   0x60 + 0x80 ; А
+        jp   c, ToUpperCase_1
+        cp   0x7F + 0x80 ; Я
+        jp   nc, ToUpperCase_1
+ToUpperCase_2:
+        sub  0x80
+        ld   (hl), a
+        jp   ToUpperCase_1
+
+        ; TODO: Ъ ъ
     }
 }

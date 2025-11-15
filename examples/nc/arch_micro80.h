@@ -17,14 +17,18 @@
 
 #pragma once
 
-#include <c8080/hal.h>
-#include <stdbool.h>
+#define NC_GLOB
+#define NC_SAVE_SCREEN
 
-void SaveScreen(void);
-void RestoreConsole(void);
-void ExitScreen(void);
-void NcDisableAutorun(void);
-
-extern const char spaces[TEXT_WIDTH + 1];
-
-#define SPACES(count) (spaces + sizeof(spaces) - 1 - (count))
+// Место в памяти Микро 80 специально выделенное для NC
+// Оно сохраняется при теплой перезагрузки
+extern uint8_t glob_dont_resart_nc __address(0xF740);
+extern uint8_t glob_tdrive __address(0xF741);
+extern uint8_t glob_state __address(0xF700);
+extern uint8_t glob_drive_user_b __address(0xF701);
+extern uint16_t glob_a_offset __address(0xF702);
+extern uint8_t glob_a_cursor_x __address(0xF704);
+extern uint8_t glob_a_cursor_y __address(0xF705);
+extern uint16_t glob_b_offset __address(0xF706);
+extern uint8_t glob_b_cursor_x __address(0xF708);
+extern uint8_t glob_b_cursor_y __address(0xF709);

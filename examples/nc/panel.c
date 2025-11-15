@@ -23,7 +23,6 @@
 #include <c8080/zerobitcount.h>
 #include "colors.h"
 #include "nc.h"
-#include "tools.h"
 #include "dir.h"
 #include "files.h"
 
@@ -46,7 +45,7 @@ void PanelReload(void) {
     panel_a.count = 0;
 
     if (CpmSelectDrive(PanelGetDrive()) == 0xFF)
-        return; // TODO: Вывод ошибки
+        return;  // TODO: Вывод ошибки
 
     // Получение размера накопителя и свободного места
     // Тут ограничение размера накопителя в 64 МБ
@@ -86,7 +85,7 @@ void PanelReload(void) {
 
             // Сохранение файлов нашей папки
             if (x->drive == dir_index) {
-                d->blocks_128 = x->rc + (x->ex % 32) * 128;  // TODO: Ограчение размера файла в 512 КБ
+                d->blocks_128 = x->rc + (x->ex & 0x1F) * 128;  // TODO: Ограчение размера файла в 512 КБ
                 d++;
                 panel_a.count++;
                 if (panel_a.count == panel_files_max)
@@ -250,8 +249,8 @@ void PanelDrawCursor(uint8_t color) {
     DrawPanelFileInt(PanelGetCursorIndex());
     if (color != 0)
         panel_cursor_color = color;
-    DrawTextXY(PANEL_OX + panel_a.cursor_x * PANEL_COLUMN_WIDTH + panel_x, PANEL_OY + panel_a.cursor_y, panel_cursor_color,
-               panel_cursor_text);
+    DrawTextXY(PANEL_OX + panel_a.cursor_x * PANEL_COLUMN_WIDTH + panel_x, PANEL_OY + panel_a.cursor_y,
+               panel_cursor_color, panel_cursor_text);
 }
 
 void PanelHideCursor(void) {

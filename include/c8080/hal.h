@@ -104,3 +104,9 @@ uint8_t ReadKey(void);
  * The function returns 0xFF if a service key was processed
  * (for example, switching the layout) */
 uint8_t DecodeReadKey(uint8_t n);
+
+/* Save screen, current color, cursor position, cursor visibility */
+void SaveScreen(SavedScreen *s) __link("c8080/hal_h/savescreen.c");
+
+/* Restore screen, current color, cursor position, cursor visibility */
+void RestoreScreen(SavedScreen *s) __link("c8080/hal_h/restorescreen.c");

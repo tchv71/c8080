@@ -51,6 +51,7 @@ struct FCB {
 
 static const uint8_t CPM_MAX_USERS = 16;
 static const uint8_t CPM_MAX_DRIVES = 16;
+static const uint8_t CPM_128_BLOCK = 128;
 
 // *** VARIABLES ***
 
@@ -212,6 +213,9 @@ uint8_t __global CpmParseName(struct FCB *fcb, const char *name) __link("cpm_h/c
 
 // Set the 11 attributes to the 7th bits of the file name.
 void __global CpmSetAttrib(char *name83, uint16_t attrib) __link("cpm_h/cpmsetattrib.c");
+
+// Get 11 attributes from 7 bits of file name.
+uint16_t __global CpmGetAttrib(char *) __link("cpm_h/cpmgetattrib.c");
 
 // Convert the name83 stored in the FСB to a file name without
 // spaces at the end and with a terminating null.

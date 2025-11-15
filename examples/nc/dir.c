@@ -75,14 +75,21 @@ uint8_t DirParsePathName(struct FCB *fcb, const char *file_name, uint8_t drive_d
         return 0xFF;
 
     if (fcb->drive != 0)
-        return fcb->drive - 1; // TODO: Пока нельзя указывать путь
+        return fcb->drive - 1;  // TODO: Пока нельзя указывать путь
 
     uint8_t dest_drive_user = (fcb->name83[0] == ' ') ? drive_dir_for_empty : drive_dir;
     fcb->drive = (dest_drive_user & 0x0F) + 1;
     return dest_drive_user;
 }
 
-uint8_t DirMake(uint8_t drive_dir, const char* name) {
+void DirMakePathName(char *out, uint8_t out_size, uint8_t dir_index, struct FCB *fcb) {
+    // TODO: Пока путь не восстанавливает
+    out[0] = 'A' + (dir_index & 0x0F);
+    out[1] = ':';
+    CpmConvertFromName83(out + 2, fcb->name83);
+}
+
+uint8_t DirMake(uint8_t drive_dir, const char *name) {
     // Поиск свободного номера папки
     uint16_t bitmap = 1;
     struct FCB f;

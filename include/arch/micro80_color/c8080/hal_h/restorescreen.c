@@ -16,27 +16,19 @@
  */
 
 #include <c8080/hal.h>
+#include <c8080/console.h>
+#include <string.h>
 
-void __global DrawText(void *, uint8_t, uint8_t, const char *) {
-    asm {
-__a_4_drawtext=0
-        ex   hl, de
-__a_1_drawtext=$+1
-        ld   bc, 0 ; tile
-        ld   a, b
-        sub  08h
-        ld   h, a
-        ld   l, c
-drawtext_l1:
-        ld   a, (de)
-        inc  de
-        or   a
-        ret  z
-        ld   (bc), a
-__a_3_drawtext=$+1
-        ld   (hl), 0 ; color
-        inc  c
-        inc  l
-        jp   drawtext_l1
-    }
+extern uint8_t BIOS_COLOR __address(0xF759);
+extern uint16_t BIOS_CURSOR __address(0xF75A);
+extern uint8_t BIOS_CURSOR_VISIBLE __address(0xF75E);
+
+void RestoreScreen(SavedScreen *s) {
+    HideCursor();
+    BIOS_COLOR = s->color;
+    BIOS_CURSOR = s->cursor;
+    memcpy(SCREEN_ATTRIB, s->screen, TEXT_WIDTH * TEXT_HEIGHT);
+    memcpy(SCREEN, s->screen + TEXT_WIDTH * TEXT_HEIGHT, TEXT_WIDTH * TEXT_HEIGHT);
+    if (s->cursor_visible)
+        ShowCursor();
 }

@@ -32,6 +32,9 @@ extern char input[128];
 extern uint8_t input_pos;
 extern uint8_t window_color;
 
+extern char spaces[TEXT_WIDTH + 1];
+#define SPACES(count) (spaces + sizeof(spaces) - 1 - (count))
+
 uint8_t DrawWindow(uint8_t x, uint8_t height, const char *title);
 void DrawWindowText(uint8_t y, const char *text);
 void DrawWindowTextCenter(uint8_t y, const char *text);
@@ -42,8 +45,9 @@ void ProcessInput(char c);
 bool RunInput(uint8_t y);
 void DrawProgress(uint8_t y);
 void DrawProgressNext(uint8_t y, uint8_t width);
-bool MakeDirWindow(void);
+void MakeString(char *str, char c, uint8_t l);
 
 bool DeleteWindow(const char *file_name);
 void ErrorWindow(const char *text);
 uint8_t SelectDriveWindow(uint8_t cursor, bool is_right);
+bool MakeDirWindow(void);

@@ -35,7 +35,9 @@ struct DirInfo {
 void DirInfoReset(struct DirInfo *self, uint8_t drive);
 uint8_t DirInfoAdd(struct DirInfo *self, struct FCB *fcb);
 void DirInfoMakePath(struct DirInfo *self, char *out, uint8_t out_size, uint8_t dir_index);
+void DirInfoMakePathEx(char *out, uint8_t out_size, uint8_t dir_index);
 uint8_t DirParsePathName(struct FCB *fcb, const char *file_name, uint8_t drive_dir_for_empty, uint8_t drive_dir);
+void DirMakePathName(char *out, uint8_t out_size, uint8_t dir_index, struct FCB *fcb);
 uint8_t DirMake(uint8_t drive_dir, const char *name);
 
 static const uint8_t DIR_MAKE_ERROR_LIMIT = 0xFB;

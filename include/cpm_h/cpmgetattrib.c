@@ -15,28 +15,23 @@
  * limitations under the License.
  */
 
-#include <c8080/hal.h>
+#include <cpm.h>
 
-void __global DrawText(void *, uint8_t, uint8_t, const char *) {
+uint16_t __global CpmGetAttrib(char *) {
     asm {
-__a_4_drawtext=0
+__a_1_cpmgetattrib = 0
         ex   hl, de
-__a_1_drawtext=$+1
-        ld   bc, 0 ; tile
-        ld   a, b
-        sub  08h
-        ld   h, a
-        ld   l, c
-drawtext_l1:
+        ld   hl, 0
+        ld   c, 8 + 3
+CpmGetAttrib_1:
+        add  hl, hl
         ld   a, (de)
         inc  de
-        or   a
-        ret  z
-        ld   (bc), a
-__a_3_drawtext=$+1
-        ld   (hl), 0 ; color
-        inc  c
-        inc  l
-        jp   drawtext_l1
+        add  a
+        ld   a, l
+        adc  0
+        ld   l, a
+        dec  c
+        jp   nz, CpmGetAttrib_1
     }
 }

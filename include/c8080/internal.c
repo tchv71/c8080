@@ -38,10 +38,11 @@ __init_loop:
 
     /* Init stack */
 #if __has_include(<c8080/initstack.inc>) && !defined(ARCH_CPM_CCP) && !defined(ARCH_CPM_BDOS) && !defined(ARCH_CPM_BIOS)
-    #include <c8080/initstack.inc>
+#include <c8080/initstack.inc>
 #endif
 
 #ifdef ARCH_CPM_CCP /* CCP remains in memory */
+    // clang-format off
     asm {
         pop  de
         ld   a, (7)
@@ -51,6 +52,7 @@ __init_loop:
         ld   sp, hl
         push de
     }
+    // clang-format on
 #endif
 
 #ifdef ARCH_CPM_BDOS /* BDOS remains in memory */
@@ -65,7 +67,7 @@ __init_loop:
 #endif
 
 #ifdef ARCH_CPM_BIOS /* BIOS remains in memory */
-    TODO
+#error TODO
 #endif
 
     main(0, NULL);

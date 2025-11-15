@@ -19,6 +19,7 @@
 #include <c8080/codepage/micro80.h>
 
 static uint8_t *const SCREEN = (uint8_t *)0xE800;
+static uint8_t *const SCREEN_ATTRIB = (uint8_t *)0xE000;
 static const uint16_t SCREEN_SIZE = 0x800;
 static const uint8_t SCREEN_BPL = 64;
 static const uint8_t TEXT_WIDTH = 64;
@@ -27,6 +28,13 @@ static const uint8_t TILE_WIDTH = 64;
 static const uint8_t TILE_HEIGHT = 25;
 static const uint8_t SCREEN_WIDTH = TILE_WIDTH * 2;
 static const uint8_t SCREEN_HEIGHT = TILE_HEIGHT * 2;
+
+typedef struct SavedScreen_s {
+    char screen[TEXT_WIDTH * TEXT_HEIGHT * 2];
+    uint16_t cursor;
+    uint8_t cursor_visible;
+    uint8_t color;
+} SavedScreen;
 
 #define TILE(X, Y) (SCREEN + (X) + (Y)*SCREEN_BPL)
 #define DRAWTEXTARGS(X, Y) (SCREEN + (X) + (Y)*SCREEN_BPL), 0

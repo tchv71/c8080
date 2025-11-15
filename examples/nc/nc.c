@@ -16,16 +16,51 @@
  */
 
 #include "nc.h"
-#include "tools.h"
+#include <c8080/hal.h>
+#include <c8080/keys.h>
+#include <c8080/console.h>
+#include <c8080/uint32tostring.h>
+#include <c8080/touppercase.h>
+#include <c8080/getunusedram.h>
+#include <string.h>
+#include <stdio.h>
+#include <cpm.h>
 #include "colors.h"
 #include "windows.h"
-#include "files.h"
 #include "panel.h"
 #include "dir.h"
+#include "config.h"
+
+#ifdef ARCH_MICRO80_COLOR
+#include "arch_micro80.h"
+#endif
+
+#ifdef NC_SAVE_SCREEN
+static SavedScreen saved_screen;
+#endif
+
+#ifdef NC_GLOB
+static const uint8_t STATE_TAB = 1 << 4;
+#ifdef NC_SAVE_SCREEN
+static const uint8_t STATE_HIDDEN = 1 << 5;
+#endif
+#endif
 
 static const uint16_t STACK_SIZE = 1024;
 
 static uint8_t copy_buffer_size;  // Размер panel.buffer в 128 байтных блоках
+
+static const char help_64_no_fn[] =
+    " ;\0Tab  \0"
+    " 1\0Left \0"
+    " 2\0Right\0"
+    " 3\0View \0"
+    " 4\0Edit \0"
+    " 5\0Copy \0"
+    " 6\0Ren  \0"
+    " 7\0Mkdir\0"
+    " 8\0Del  \0"
+    " \0";
 
 static void NcDrawCommandLine(void) {
     DrawInput(panel_a.short_path_size + 1, TEXT_HEIGHT - 2, TEXT_WIDTH - 1 - panel_a.short_path_size,
@@ -40,18 +75,37 @@ static void NcPanelDrawActiveTitleAndCommandLine(void) {
     PanelShowCursor();
 }
 
+static void NcDrawHelp(void) {
+    const char *text = help_64_no_fn;
+    uint8_t x = 0;
+    uint8_t color = COLOR_COMMAND_LINE;
+    do {
+        DrawTextXY(x, TEXT_HEIGHT - 1, color, text);
+        color ^= COLOR_COMMAND_LINE ^ COLOR_HELP_LINE;
+        const uint8_t text_size = strlen(text);
+        x += text_size;
+        text += text_size + 1;
+    } while (*text != 0);
+}
+
 void NcDrawScreen(void) {
-    if (panels_hidden)
-        RestoreConsole();
+#ifdef NC_SAVE_SCREEN
+    if (panels_hidden) {
+        RestoreScreen(&saved_screen);
+        HideCursor();
+    }
+#endif
 
-    DrawTextXY(0, TEXT_HEIGHT - 1, COLOR_COMMAND_LINE, help);
+    NcDrawHelp();
 
+#ifdef NC_SAVE_SCREEN
     if (panels_hidden) {
         if (panel_a.total_kb == 0)
             PanelReload();  // Для вычисления пути, который будет отображен в ком. строке
         NcDrawCommandLine();
         return;
     }
+#endif
 
     PanelDrawBorder(0);
     PanelDrawBorder(PANEL_WIDTH);
@@ -73,8 +127,33 @@ void NcDrawScreen(void) {
     PanelSwap();
 }
 
+static void NcBeforeExit(void) {
+    // Сохранение состояния
+#ifdef NC_GLOB
+    glob_drive_user_b = panel_b.drive_user;
+    glob_state = (panel_x ? STATE_TAB : 0);
+#ifdef NC_SAVE_SCREEN
+    if (panels_hidden)
+        glob_state |= STATE_HIDDEN;
+#endif
+    glob_a_cursor_x = panel_a.cursor_x;
+    glob_a_cursor_y = panel_a.cursor_y;
+    glob_a_offset = panel_a.offset;
+    glob_b_cursor_x = panel_b.cursor_x;
+    glob_b_cursor_y = panel_b.cursor_y;
+    glob_b_offset = panel_b.offset;
+#endif
+
+    // Восстанавление экрана
+#ifdef NC_SAVE_SCREEN
+    RestoreScreen(&saved_screen);
+#else
+    ClearConsole();
+#endif
+}
+
 static void NcCommand(const char *text) {
-    ExitScreen();
+    NcBeforeExit();
     puts(panel_a.path);
     puts(">");
     puts(text);
@@ -175,6 +254,125 @@ static void NcCopyMoveRename(bool rename) {
         return;
     }
 
+    // Если имя файла не указано, то используется имя исходного файла
+    if (dest.name83[0] == ' ')
+        memcpy(dest.name83, source.name83, sizeof(dest.name83));
+
+    // Копирование атрибут (и папок)
+    CpmSetAttrib(dest.name83, source_file->attrib & ~ATTRIB_DIR_UP);  // TODO: Расширить атрибуты до 16 бит
+
+    // Для вывода на экран
+    DirMakePathName(input, sizeof(input), dest_drive_user, &dest);
+
+    // Есть ли файл в папке назначения?
+    const uint8_t dest_user = dest_drive_user >> 4;
+    CpmSetCurrentUser(dest_user);
+    if (CpmSearchFirst(DEFAULT_DMA, &dest) != NULL) {
+        ErrorWindow("The file already exists");  // Original
+        // В оригинале предлагается заменить файл
+        // Если это сделаем, то нужно проверить, что мы не переносим файл сам в себя
+        return;
+    }
+
+    CpmSetCurrentUser(PanelGetDirIndex());
+
+    // Переименование файла.
+    // Средствами системы нельзя переносить файл между папками, т.к. нельзя изменять пользователя.
+    // А может и можно.
+    if (rename && panel_a.drive_user == dest_drive_user) {
+        memcpy(source.rename, &dest, sizeof(dest.drive) + sizeof(dest.name83));
+        CpmRename(&source);  // TODO: Error
+        NcDriveChanged(dest_drive_user);
+        return;
+    }
+
+    if (source_file->attrib & ATTRIB_DIR_ALL) {
+        if (!rename || source.drive != dest.drive) {
+            ErrorWindow("Can't copy the folder");
+            return;
+        }
+    }
+
+    if (CpmOpen(&source) == 0xFF) {
+        ErrorWindow("Can't open the file");  // Original
+        return;
+    }
+
+    CpmSetCurrentUser(dest_user);
+
+    if (CpmCreate(&dest) == 0xFF) {
+        ErrorWindow("Can't create the file");  // Original
+        rename = false;                        // Не удалять исходный файл при ошибке
+    } else {
+        uint8_t y = DrawWindow(WINDOW_X_CENTER, 9, title);
+        DrawWindowTextCenter(y, "File");
+        // Original: Copying the file or directory | Renaming or Moving the file or directory
+        DrawWindowTextCenter(y + 1, panel_a.selected_name);
+        DrawWindowTextCenter(y + 2, "to");
+        DrawWindowTextCenter(y + 3, input);
+        DrawProgress(y + 4);
+        DrawButtons(y + 6, 0, "Cancel\0");  // В оригинале нет кнопки
+
+        panel_b.count = 0;  // Список файлов будет уничтожен
+
+        uint16_t i = 0;
+        for (;;) {
+            CpmSetCurrentUser(PanelGetDirIndex());
+
+            uint8_t *buffer = (void *)panel_b.files;
+            uint8_t count = 0;
+            uint8_t result;
+            do {
+                CpmSetDma(buffer);
+                result = CpmRead(&source);
+                if (result != 0) {
+                    if (result == CPM_READ_EOF)
+                        break;
+                    ErrorWindow("Can't read the file");  // Original
+                    rename = false;  // Не удалять исходный файл при ошибке
+                    goto break2;
+                }
+                buffer += CPM_128_BLOCK;
+                count++;
+                i++;
+            } while (count < copy_buffer_size);
+
+            CpmSetCurrentUser(dest_user);  // TODO: Error
+
+            buffer = (void *)panel_b.files;
+            while (count > 0) {
+                CpmSetDma(buffer);
+                if (CpmWrite(&dest) != 0) {
+                    ErrorWindow("Can't write the file");  // Original
+                    rename = false;  // Не удалять исходный файл при ошибке
+                    goto break2;
+                }
+                buffer += CPM_128_BLOCK;
+                count--;
+            }
+
+            if (result == CPM_READ_EOF)
+                break;
+
+            DrawProgressNext(y + 4, (uint32_t)i * PROGRESS_WIDTH / source_file->blocks_128);
+
+            if (CpmConsoleDirect(0xFF) == KEY_ESC) {
+                rename = false;  // Не удалять исходный файл
+                break;
+            }
+        }
+        DrawProgressNext(y + 4, PROGRESS_WIDTH);
+
+    break2:
+        CpmSetDma(DEFAULT_DMA);
+        CpmSetCurrentUser(dest_user);
+
+        if (CpmClose(&dest) == 0xFF) {
+            rename = false;  // Не удалять исходный файл при ошибке
+            ErrorWindow("Can't close the file");
+        }
+    }
+
     CpmSetCurrentUser(PanelGetDirIndex());
 
     if (CpmClose(&source) == 0xFF) {
@@ -199,13 +397,8 @@ static void NcMakeDir(void) {
 
     ToUpperCase(input);
 
-    static const char *errors[] = {
-        "Folder creation limit",
-        "Incorrect file name",
-        "The file already exists",
-        "Can't create the file",
-        "Can't close the file"
-    };
+    static const char *errors[] = {"Folder creation limit", "Incorrect file name", "The file already exists",
+                                   "Can't create the file", "Can't close the file"};
 
     const uint8_t drive_dir = DirMake(panel_a.drive_user, input);
     if (drive_dir >= DIR_MAKE_ERROR_LIMIT) {
@@ -213,7 +406,7 @@ static void NcMakeDir(void) {
         return;
     }
 
-    // TODO: Курсор на созданную папку
+    // TODO: Курсор на созданную папку. У нас есть для этого переменная.
     NcDriveChanged(drive_dir);
 }
 
@@ -257,14 +450,69 @@ int main(int, char **) {
     panel_files_max = panel_buffer_bytes / sizeof(panel_a.files[0]);
 
     // Вычисление круглого кол-ва 128 байтных буферов в panel_a.files
-    uint8_t allow_loop = panel_buffer_bytes / (CPM_128_BLOCK * 2); // Еще можно умножить на 2
+    uint8_t allow_loop = panel_buffer_bytes / (CPM_128_BLOCK * 2);  // Еще можно умножить на 2
     if (allow_loop < 2)
-        return 1; // Недостаточно памяти для copy_buffer_size и panel_a.files
+        return 1;  // Недостаточно памяти для copy_buffer_size и panel_a.files
     static const uint8_t MAX_ROUND_UINT8 = 128;
     copy_buffer_size = 1;
     do {
         copy_buffer_size *= 2;
     } while (copy_buffer_size <= allow_loop && copy_buffer_size < MAX_ROUND_UINT8 / 2);
+
+    // CCP будет запускать A:NC вместо ожидания ввода команды пользователем
+#ifdef NC_GLOB
+    glob_dont_resart_nc = 0;
+#endif
+
+    // Что бы командер нижней строкой не закрывал полезные данные
+    const uint16_t xy = GetCursorPosition();
+    if (xy >= (TEXT_HEIGHT - 1) << 8) {
+        CpmConsoleWrite('\n');
+        MoveCursor(xy, (xy >> 8) - 1);
+    }
+
+    // Сохранение консоли
+#ifdef NC_SAVE_SCREEN
+    SaveScreen(&saved_screen);
+#endif
+
+    // Скрытие курсора
+    HideCursor();
+
+    // Для рисования ком. строки
+    MakeString(spaces, ' ', sizeof(spaces) - 1);
+
+#ifdef NC_GLOB
+    // Текущий диск и папку в активную панель
+    panel_a.drive_user = CpmGetCurrentDrive() | (glob_tdrive & 0xF0);
+
+    // Восстановление состояния
+    panel_a.cursor_x = glob_a_cursor_x;
+    panel_a.cursor_y = glob_a_cursor_y;
+    panel_a.offset = glob_a_offset;
+    panel_b.cursor_x = glob_b_cursor_x;
+    panel_b.cursor_y = glob_b_cursor_y;
+    panel_b.offset = glob_b_offset;
+
+#ifdef NC_SAVE_SCREEN
+    panels_hidden = (glob_state & STATE_HIDDEN) != 0;
+#endif
+
+    if (glob_state & STATE_TAB) {
+        if (panel_x != 0)
+            panel_x = 0;
+        else
+            panel_x = TEXT_WIDTH / 2;
+    }
+
+    panel_b.drive_user = glob_drive_user_b;
+    if ((panel_b.drive_user & 0x0F) >= DRIVE_COUNT)
+        panel_b.drive_user = panel_a.drive_user;
+#else
+    // Текущий диск и папку в активную панель
+    panel_a.drive_user = CpmGetCurrentDrive() | (CpmGetCurrentUser() << 4);
+    panel_b.drive_user = panel_a.drive_user;
+#endif
 
     NcDrawScreen();
 
@@ -317,14 +565,27 @@ int main(int, char **) {
                     continue;
             }
         }
+        if (input_pos == 0) {
+            switch (c) {
+                case '0':
+                    NcBeforeExit();
+#ifdef NC_GLOB
+                    glob_dont_resart_nc = 1;
+#endif
+                    return 0;
+            }
+        }
+
         switch (c) {
             case KEY_ENTER:
                 NcCommand(input);
                 continue;
+#ifdef NC_SAVE_SCREEN
             case 0x0F:  // CTRL+O
                 panels_hidden = !panels_hidden;
                 NcDrawScreen();
                 continue;
+#endif
         }
         ProcessInput(c);
         NcDrawCommandLine();

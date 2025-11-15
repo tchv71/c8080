@@ -15,28 +15,30 @@
  * limitations under the License.
  */
 
-#include <c8080/hal.h>
+#include <c8080/tolowercase.h>
 
-void __global DrawText(void *, uint8_t, uint8_t, const char *) {
+void __global ToLowerCase(char *text) {
     asm {
-__a_4_drawtext=0
-        ex   hl, de
-__a_1_drawtext=$+1
-        ld   bc, 0 ; tile
-        ld   a, b
-        sub  08h
-        ld   h, a
-        ld   l, c
-drawtext_l1:
-        ld   a, (de)
-        inc  de
+__a_1_tolowercase = 0
+        dec  hl
+ToLowerCase_1:
+        inc  hl
+        ld   a, (hl)
         or   a
         ret  z
-        ld   (bc), a
-__a_3_drawtext=$+1
-        ld   (hl), 0 ; color
-        inc  c
-        inc  l
-        jp   drawtext_l1
+        cp   'A'
+        jp   c, ToLowerCase_1
+        cp   'Z' + 1
+        jp   c, ToLowerCase_2
+        cp   0x60 ; А
+        jp   c, ToLowerCase_1
+        cp   0x7F ; Я
+        jp   nc, ToLowerCase_1
+ToLowerCase_2:
+        add  0x80
+        ld   (hl), a
+        jp   ToLowerCase_1
+
+        ; TODO: Ъ ъ
     }
 }

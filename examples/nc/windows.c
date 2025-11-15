@@ -20,17 +20,17 @@
 #include <c8080/keys.h>
 #include <string.h>
 #include "colors.h"
-#include "tools.h"
 #include "stdio.h"
 #include "nc.h"
 #include "config.h"
 
+char spaces[TEXT_WIDTH + 1];
 uint8_t window_color = COLOR_WINDOW;
 uint8_t window_x = 0;
 char input[128];
 uint8_t input_pos;
 
-static void MakeString(char *str, char c, uint8_t l) {
+void MakeString(char *str, char c, uint8_t l) {
     memset(str, c, l);
     str[l] = 0;
 }
@@ -113,6 +113,7 @@ void DrawProgressNext(uint8_t y, uint8_t width) {
     char buf[PROGRESS_WIDTH + 1];
     if (width > PROGRESS_WIDTH)
         width = PROGRESS_WIDTH;
+    // TODO: Прогресс
     MakeString(buf, '█', width);
     DrawWindowText(y, buf);
 }
