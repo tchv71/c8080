@@ -2,12 +2,13 @@ CPP_FILES=$(shell find . -name "*.cpp" -not \( -path "./test*" -or -path "./buil
 H_FILES=  $(shell find . -name "*.h"   -not \( -path "./test*" -or -path "./build*" \))
 OBJ_FILES=$(addprefix build/,$(CPP_FILES:%.cpp=%.o))
 W64_FILES=$(addprefix build.w64/,$(CPP_FILES:%.cpp=%.o))
+W32_FILES=$(addprefix build.w32/,$(CPP_FILES:%.cpp=%.o))
 
 all: c8080 files
 
 .PHONY: clean
 clean:
-	rm -r -f build build.w64 c8080.creator.user c8080.files
+	rm -r -f build build.w64 build.w32 c8080.creator.user c8080.files
 
 .PHONY: files
 files:
@@ -30,6 +31,15 @@ build.w64/%.o: %.cpp
 	x86_64-w64-mingw32-g++ -O2 -static --std=c++17 -c -o $@ $<
 
 -include $(W64_FILES:.o=.d)
+
+c8080.win32.exe: ${W32_FILES}
+	i686-w64-mingw32-g++ -O2 -static --std=c++17 -o $@ $^
+
+build.w32/%.o: %.cpp
+	mkdir -p $(dir $@)
+	i686-w64-mingw32-g++ -O2 -static --std=c++17 -c -o $@ $<
+
+-include $(W32_FILES:.o=.d)
 
 .PHONY: check
 check: 

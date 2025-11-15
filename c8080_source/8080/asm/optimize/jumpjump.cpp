@@ -72,6 +72,15 @@ static bool OraAfterAlu(AsmBase &a, AsmBase::Line &l, size_t i) {
     return false;
 }
 
+static bool RemoveUnusedLabel(AsmBase &a, AsmBase::Line &l) {
+    if (l.opcode == AC_LABEL && l.argument[0].label && l.argument[0].label->used <= 1) {
+        l.argument[0].label = NULL;
+        l.opcode = AC_REMOVED;
+        return true;
+    }
+    return false;
+}
+
 static bool JumpToJump(AsmBase &a, AsmBase::Line &l, AsmBase::Line *l1) {
     if (l.opcode == AC_JMP || l.opcode == AC_JMP_CONDITION) {
         // Replace
@@ -180,6 +189,8 @@ static bool JumpJump(AsmBase &a, AsmBase::Line &l, size_t i) {
     if (JumpOverJump(a, l, l1, l2))
         return true;
     if (OraAfterAlu(a, l, i))
+        return true;
+    if (RemoveUnusedLabel(a, l))
         return true;
     if (JumpToJump(a, l, l1))
         return true;
