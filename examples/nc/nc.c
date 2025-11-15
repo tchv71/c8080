@@ -258,8 +258,8 @@ static void NcCopyMoveRename(bool rename) {
     if (dest.name83[0] == ' ')
         memcpy(dest.name83, source.name83, sizeof(dest.name83));
 
-    // Копирование атрибут (и папок)
-    CpmSetAttrib(dest.name83, source_file->attrib & ~ATTRIB_DIR_UP);  // TODO: Расширить атрибуты до 16 бит
+    // Копирование атрибут
+    CpmSetAttrib(dest.name83, source_file->attrib_16[0] >> ATTRIB_SHIFT);
 
     // Для вывода на экран
     DirMakePathName(input, sizeof(input), dest_drive_user, &dest);

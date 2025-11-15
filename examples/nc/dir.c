@@ -24,7 +24,7 @@ void DirInfoReset(struct DirInfo *self, uint8_t drive) {
     memset(self->items, 0, sizeof(self->items));
 }
 
-uint8_t DirInfoAdd(struct DirInfo *self, struct FCB *fcb) {
+uint8_t DirInfoAdd(struct DirInfo *self, const struct FCB *fcb) {
     const uint8_t dir_index = CpmGetAttrib(fcb->name83 - 3) & 0x0F;
     if (dir_index == 0)
         return 0xFF;  // Это не папка

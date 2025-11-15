@@ -17,21 +17,32 @@
 
 #include <cpm.h>
 
-uint16_t __global CpmGetAttrib(const char *) {
+uint16_t __global CpmGetNameAndAttrib(void *, const void *) {
     asm {
-__a_1_cpmgetattrib = 0
+__a_2_cpmgetnameandattrib = 0
         ex   hl, de
+__a_1_cpmgetnameandattrib = $ + 1
+        ld   bc, 0
         ld   hl, 0
-        ld   c, 8 + 3
-CpmGetAttrib_1:
+        ld   a, 8 + 3
+CpmGetNameAndAttrib_1:
+        push af
         add  hl, hl
+
         ld   a, (de)
-        inc  de
         add  a
         ld   a, l
         adc  0
         ld   l, a
-        dec  c
-        jp   nz, CpmGetAttrib_1
+
+        ld   a, (de)
+        inc  de
+        and  7Fh
+        ld   (bc), a
+        inc  bc
+
+        pop  af
+        dec  a
+        jp   nz, CpmGetNameAndAttrib_1
     }
 }

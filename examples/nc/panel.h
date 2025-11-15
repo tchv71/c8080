@@ -31,13 +31,16 @@ static const uint8_t PANEL_SHORT_PATH = PANEL_WIDTH - 4;
 
 struct FileInfo {
     char name83[8 + 3];
+    uint16_t attrib_16[0];
     uint8_t attrib;
+    uint8_t attrib_high;
     uint16_t blocks_128;
 };
 
-static const uint8_t ATTRIB_DIR_UP = 0x80;
+static const uint8_t ATTRIB_SHIFT = 1;
+static const uint8_t ATTRIB_DIR_UP = 1;
 static const uint8_t ATTRIB_DIR_MAX = 0x0F;
-static const uint8_t ATTRIB_DIR_SHIFT = 3;
+static const uint8_t ATTRIB_DIR_SHIFT = 4;
 static const uint8_t ATTRIB_DIR_MASK = ATTRIB_DIR_MAX << ATTRIB_DIR_SHIFT;
 static const uint8_t ATTRIB_DIR_ALL = ATTRIB_DIR_MASK | ATTRIB_DIR_UP;
 #define GET_DIR_FROM_ATTRIB(X) (((X) >> ATTRIB_DIR_SHIFT) & ATTRIB_DIR_MAX)

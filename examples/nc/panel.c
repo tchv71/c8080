@@ -24,13 +24,75 @@
 #include "colors.h"
 #include "nc.h"
 #include "dir.h"
-#include "files.h"
 
 size_t panel_files_max;
 struct Panel panel_a;
 struct Panel panel_b;
 bool panels_hidden;
 uint8_t panel_x;
+uint8_t panel_reload_select_dir = 0xFF;  // Глобальная переменная для оптимизации размера
+
+#define SORT_STACK_MAX 32
+
+static uint8_t SortFilesPred(struct FileInfo *a, struct FileInfo *b) {
+    if ((a->attrib ^ b->attrib) & ATTRIB_DIR_MASK)
+        return b->attrib & ATTRIB_DIR_MASK;
+
+    int r = memcmp(a->name83 + 8, b->name83 + 8, 3);
+    if (r != 0)
+        return r == 1;
+    if (1 == memcmp(a->name83, b->name83, 8))
+        return 1;
+    return 0;
+}
+
+static void SortFiles(struct FileInfo *low, struct FileInfo *high) {
+    struct FileInfo *stack_place[SORT_STACK_MAX * 2];
+    struct FileInfo **stack = stack_place;
+    uint8_t stack_count = 0;
+    for (;;) {
+        struct FileInfo *l = low;
+        struct FileInfo *h = high;
+        struct FileInfo *m = l + (h - l) / 2;
+        do {
+            while (0 != SortFilesPred(m, l))
+                l++;
+            while (0 != SortFilesPred(h, m))
+                h--;
+            if (l <= h) {
+                memswap(l, h, sizeof(struct FileInfo));
+                if (m == l)
+                    m = h;
+                else if (m == h)
+                    m = l;
+                l++;
+                h--;
+            }
+        } while (h > l);
+        if (l < high) {
+            if (low < h && stack_count != SORT_STACK_MAX) {
+                *stack = low;
+                stack++;
+                *stack = h;
+                stack++;
+                stack_count++;
+            }
+            low = l;
+            continue;
+        }
+        if (low < h) {
+            high = h;
+            continue;
+        }
+        if (stack_count == 0)
+            break;
+        stack_count--;
+        stack--;
+        high = *stack;
+        stack--;
+        low = *stack;
+    }
+}
 
 void PanelReloadOrCopy(void) {
     if (panel_a.drive_user == panel_b.drive_user) {
@@ -57,7 +119,7 @@ void PanelReload(void) {
     struct FileInfo *d = panel_a.files;
     const uint8_t dir_index = PanelGetDirIndex();
     if (dir_index != 0) {
-        static const struct FileInfo parent = {"..         ", ATTRIB_DIR_UP};
+        static const struct FileInfo parent = {"..         ", {}, ATTRIB_DIR_UP};
         memcpy(d, &parent, sizeof(parent));
         d++;
         panel_a.count = 1;
@@ -70,10 +132,10 @@ void PanelReload(void) {
     // Поиск всех файлов
     struct FCB search_args;
     search_args.drive = '?';
-    struct FCB *x = CpmSearchFirst(DEFAULT_DMA, &search_args);
+    const struct FCB *x = CpmSearchFirst(DEFAULT_DMA, &search_args);
     while (x != NULL) {
         if (x->drive < CPM_MAX_USERS) {
-            d->attrib = CopyNameAndDropAttribs(x->name83, d->name83) & ~ATTRIB_DIR_UP;
+            d->attrib_16[0] = CpmGetNameAndAttrib(d->name83, x->name83) << ATTRIB_SHIFT;
 
             // Построение дерева папок
             if (d->attrib & ATTRIB_DIR_MASK) {
