@@ -29,12 +29,12 @@ static const uint8_t TILE_HEIGHT = 25;
 static const uint8_t SCREEN_WIDTH = TILE_WIDTH * 2;
 static const uint8_t SCREEN_HEIGHT = TILE_HEIGHT * 2;
 
-typedef struct SavedScreen_s {
+struct SavedScreen {
     char screen[TEXT_WIDTH * TEXT_HEIGHT * 2];
     uint16_t cursor;
     uint8_t cursor_visible;
     uint8_t color;
-} SavedScreen;
+};
 
 #define TILE(X, Y) (SCREEN + (X) + (Y)*SCREEN_BPL)
 #define DRAWTEXTARGS(X, Y) (SCREEN + (X) + (Y)*SCREEN_BPL), 0

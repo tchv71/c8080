@@ -106,7 +106,8 @@ uint8_t ReadKey(void);
 uint8_t DecodeReadKey(uint8_t n);
 
 /* Save screen, current color, cursor position, cursor visibility */
-void SaveScreen(SavedScreen *s) __link("c8080/hal_h/savescreen.c");
+struct SavedScreen;
+void SaveScreen(struct SavedScreen *s) __link("c8080/hal_h/savescreen.c");
 
 /* Restore screen, current color, cursor position, cursor visibility */
-void RestoreScreen(SavedScreen *s) __link("c8080/hal_h/restorescreen.c");
+void RestoreScreen(struct SavedScreen *s) __link("c8080/hal_h/restorescreen.c");

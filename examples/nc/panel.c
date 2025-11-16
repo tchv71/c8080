@@ -28,7 +28,6 @@
 size_t panel_files_max;
 struct Panel panel_a;
 struct Panel panel_b;
-bool panels_hidden;
 uint8_t panel_x;
 uint8_t panel_reload_select_dir = 0xFF;  // Глобальная переменная для оптимизации размера
 

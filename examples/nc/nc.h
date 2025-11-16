@@ -17,12 +17,4 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <c8080/hal.h>
-#include <cpm.h>
-#include "panel.h"
-
-extern bool panels_hidden;
-
 void NcDrawScreen(void);

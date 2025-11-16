@@ -36,7 +36,7 @@
 #endif
 
 #ifdef NC_SAVE_SCREEN
-static SavedScreen saved_screen;
+static struct SavedScreen saved_screen;
 #endif
 
 #ifdef NC_GLOB
@@ -49,6 +49,7 @@ static const uint8_t STATE_HIDDEN = 1 << 5;
 static const uint16_t STACK_SIZE = 1024;
 
 static uint8_t copy_buffer_size;  // Размер panel.buffer в 128 байтных блоках
+static bool panels_hidden;
 
 static const char help_64_no_fn[] =
     " ;\0Tab  \0"

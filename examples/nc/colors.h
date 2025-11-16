@@ -19,6 +19,8 @@
 
 #include <c8080/colors.h>
 
+#ifdef ARCH_MICRO80_COLOR
+
 #define CHANGE_INK_TO_BLACK(X) ((X)&0xF0)
 
 static const uint8_t COLOR_COMMAND_LINE = COLOR_PAPER_BLACK | COLOR_INK_WHITE;
@@ -55,3 +57,5 @@ static const uint8_t COLOR_INPUT = COLOR_PAPER_BLACK | COLOR_INK_LIGHT_WHITE;
 static const uint8_t COLOR_BUTTON = COLOR_PAPER_CYAN | COLOR_INK_BLACK;
 
 static const uint8_t COLOR_BUTTON_ACTIVE = COLOR_PAPER_YELLOW | COLOR_INK_BLACK;
+
+#endif

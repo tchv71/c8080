@@ -23,7 +23,7 @@ extern uint8_t BIOS_COLOR __address(0xF759);
 extern uint16_t BIOS_CURSOR __address(0xF75A);
 extern uint8_t BIOS_CURSOR_VISIBLE __address(0xF75E);
 
-void SaveScreen(SavedScreen *s) {
+void SaveScreen(struct SavedScreen *s) {
     s->color = BIOS_COLOR;
     s->cursor = BIOS_CURSOR;
     s->cursor_visible = BIOS_CURSOR_VISIBLE;
