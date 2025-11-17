@@ -8,7 +8,7 @@ all: c8080 files
 
 .PHONY: clean
 clean:
-	rm -r -f build build.w64 build.w32 c8080.creator.user c8080.files
+	rm -r -f build build.w64 build.w32 c8080.creator.user c8080.files c8080 c8080.exe
 
 .PHONY: files
 files:

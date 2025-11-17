@@ -234,12 +234,12 @@ int main(int argc, char **argv) {
         if (programm.error)
             return 1;
 
+        if (o.print_expression_tree)
+            Dump(programm.first_node, "");
+
         if (programm.cmm) {
             I8080::CompileCmm(programm, o.asm_file_name);
         } else {
-            if (o.print_expression_tree)
-                Dump(programm.first_node, "");
-
             I8080::Compile(c, programm, o.output_format, o.bin_file_name, o.asm_file_name);
         }
 

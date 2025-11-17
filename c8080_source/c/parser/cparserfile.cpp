@@ -1335,7 +1335,7 @@ CNodePtr CParserFile::ParseInitBlock(CType &type, bool can_change_size) {
                 if (!l.CloseToken(",", "}"))
                     break;
             }
-            if (can_change_size && type.pointers.back().array_size < items_count)
+            if (can_change_size && type.pointers.back().is_array && type.pointers.back().array_size == 0)
                 type.pointers.back().array_size = items_count;
 
             if (items_count > type.pointers.back().array_size && init.last != nullptr)
