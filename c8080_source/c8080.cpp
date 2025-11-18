@@ -42,6 +42,7 @@ struct Options {
     std::string bin_file_name;                          // -o
     std::string asm_file_name;                          // -a
     bool print_expression_tree = false;                 // -V
+    bool print_expression_tree_opt = false;             // -W
     bool assembler_need_path = true;                    // -A
     std::string assembler = ASSEMBLER;                  // -A
 };
@@ -58,7 +59,8 @@ static void Usage(char **argv) {
               << "  -o<file>   Set name for output binary file" << std::endl
               << "  -a<file>   Set name for output assembler file" << std::endl
               << "  -A<file>   Alternative assembler tool" << std::endl
-              << "  -V         Print expression tree" << std::endl
+              << "  -V         Print expression tree after parsing" << std::endl
+              << "  -W         Print expression tree after compilation" << std::endl
               << "  --         Last option" << std::endl;
 }
 
@@ -71,6 +73,9 @@ static void ParseOptions(int argc, char **argv, Options &o, CParser &c) {
                 switch (s[1]) {
                     case 'V':
                         o.print_expression_tree = true;
+                        continue;
+                    case 'W':
+                        o.print_expression_tree_opt = true;
                         continue;
                     case '-':
                         disable_options = true;
@@ -242,6 +247,9 @@ int main(int argc, char **argv) {
         } else {
             I8080::Compile(c, programm, o.output_format, o.bin_file_name, o.asm_file_name);
         }
+
+        if (o.print_expression_tree_opt)
+            Dump(programm.first_node, "");
 
         if (programm.error)
             return BadExit();

@@ -30,7 +30,6 @@ static const PrepareFunctionType prepare_function_list[] = {
     PrepareRemoveDead,
     PrepareIncDec,
     PrepareSub16ToAdd16,
-    PrepareJump,
     PrepareLoadVariable,
     nullptr,
 };

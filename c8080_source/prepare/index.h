@@ -31,3 +31,4 @@ bool PrepareAddrDeaddr(Prepare &p, CNodePtr &node);
 bool PrepareAddWithStackAddress(Prepare &p, CNodePtr &node);
 bool PrepareDoubleConvert(Prepare &, CNodePtr &node);
 bool PrepareCompareOperators(Prepare &, CNodePtr &node);
+bool PrepareJump(Prepare &, CNodePtr &parent);
