@@ -5,4 +5,4 @@ nc.com: *.c *.h
 
 .PHONY: clean
 clean:
-	rm nc.com nc.lst
+	rm nc.com nc.lst nc.asm
