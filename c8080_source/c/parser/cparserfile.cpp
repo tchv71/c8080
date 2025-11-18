@@ -1354,7 +1354,7 @@ CNodePtr CParserFile::ParseInitBlock(CType &type, bool can_change_size) {
                 return nullptr;
             }
             const size_t items_count = init->ctype.pointers[0].array_size;
-            if (can_change_size && type.pointers.back().array_size < items_count)
+            if (can_change_size && type.pointers.back().is_array && type.pointers.back().array_size == 0)
                 type.pointers.back().array_size = items_count;
 
             // Constant strings can be truncated

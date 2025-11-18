@@ -10,6 +10,9 @@ all: c8080 files
 clean:
 	rm -r -f build build.w64 build.w32 c8080.creator.user c8080.files c8080 c8080.exe
 
+.PHONY: full
+full: c8080 c8080.exe c8080.win32.exe
+
 .PHONY: files
 files:
 	find . -type f >c8080.files
