@@ -51,8 +51,10 @@ void Compiler::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, AsmLa
             switch (node->operator_code) {
                 case COP_CMP_E:
                 case COP_CMP_NE:
+                case COP_CMP_L_ADD_CONST:
+                case COP_CMP_GE_ADD_CONST:
                 case COP_CMP_L:
-                case COP_CMP_GE:
+                case COP_CMP_GE: {
                     if (prepare) {
                         MeasureReset(node, REG_PREPARE);
                         BuildOperator(node);
@@ -79,10 +81,19 @@ void Compiler::BuildJumpIf(bool prepare, CNodePtr &node, bool jmp_if_true, AsmLa
                             else
                                 out.jp_label(label);
                             break;
+                        case COP_CMP_L_ADD_CONST:
+                            assert(node->a->ctype.IsUnsigned());
+                            out.jnc_label(label);
+                            break;
+                        case COP_CMP_GE_ADD_CONST:
+                            assert(node->a->ctype.IsUnsigned());
+                            out.jc_label(label);
+                            break;
                         default:
                             C_ERROR_UNSUPPORTED_OPERATOR(node);
                     }
                     return;
+                }
                 case COP_LAND:
                     if (jmp_if_true) {
                         AsmLabel *label2 = prepare ? nullptr : out.AllocLabel();

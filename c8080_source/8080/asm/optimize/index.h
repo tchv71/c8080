@@ -22,8 +22,8 @@
 namespace I8080 {
 
 void AsmOptimize(AsmBase &a);
-void AsmOptimizeJumpJump(AsmBase &a);
-void AsmOptimizeDeadCode(AsmBase &a);
-void AsmOptimizeLoadSave(AsmBase &a);
+bool AsmOptimizeJumpJump(AsmBase &a);
+bool AsmOptimizeDeadCode(AsmBase &a);
+bool AsmOptimizeLoadSave(AsmBase &a);
 
 }  // namespace I8080

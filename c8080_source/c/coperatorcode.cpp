@@ -52,6 +52,8 @@ bool IsSetOperator(COperatorCode code) {
         case COP_LOR:
         case COP_IF:
         case COP_COMMA:
+        case COP_CMP_L_ADD_CONST:
+        case COP_CMP_GE_ADD_CONST:
             return false;
     }
     return false;
@@ -65,6 +67,8 @@ bool IsCompareOperator(COperatorCode code) {
         case COP_CMP_GE:
         case COP_CMP_L:
         case COP_CMP_G:
+        case COP_CMP_L_ADD_CONST:
+        case COP_CMP_GE_ADD_CONST:
             return true;
         case COP_ADD:
         case COP_SUB:
@@ -110,6 +114,10 @@ COperatorCode NegativeCompareOperator(COperatorCode code) {
             return COP_CMP_G;
         case COP_CMP_GE:
             return COP_CMP_L;
+        case COP_CMP_L_ADD_CONST:
+            return COP_CMP_GE_ADD_CONST;
+        case COP_CMP_GE_ADD_CONST:
+            return COP_CMP_L_ADD_CONST;
     }
     throw std::runtime_error("Internal error " + std::to_string(code) + " in " + __PRETTY_FUNCTION__);
 }
@@ -117,11 +125,13 @@ COperatorCode NegativeCompareOperator(COperatorCode code) {
 const char *ToString(COperatorCode code) {
     switch (code) {
         case COP_CMP_L:
+        case COP_CMP_L_ADD_CONST:
             return "<";
         case COP_CMP_G:
             return ">";
         case COP_CMP_LE:
             return "<=";
+        case COP_CMP_GE_ADD_CONST:
         case COP_CMP_GE:
             return ">=";
         case COP_CMP_E:

@@ -200,17 +200,21 @@ static bool JumpJump(AsmBase &a, AsmBase::Line &l, size_t i) {
     return false;
 }
 
-void AsmOptimizeJumpJump(AsmBase &a) {
+bool AsmOptimizeJumpJump(AsmBase &a) {
+    bool changed = false;
     bool restart;
     do {
         restart = false;
         size_t i = 0;
         for (auto &l : a.lines) {
-            while (JumpJump(a, l, i))
+            while (JumpJump(a, l, i)) {
                 restart = true;
+                changed = true;
+            }
             i++;
         }
     } while (restart);
+    return changed;
 }
 
 }  // namespace I8080

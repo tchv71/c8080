@@ -35,9 +35,11 @@ static bool DeadCode(AsmBase &a) {
     return label_removed;
 }
 
-void AsmOptimizeDeadCode(AsmBase &a) {
-    while (DeadCode(a)) {
-    }
+bool AsmOptimizeDeadCode(AsmBase &a) {
+    bool changed = false;
+    while (DeadCode(a))
+        changed = true;
+    return changed;
 }
 
 }  // namespace I8080

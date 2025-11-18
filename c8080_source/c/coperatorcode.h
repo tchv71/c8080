@@ -49,6 +49,8 @@ enum COperatorCode {
     COP_SET_XOR,
     COP_IF,
     COP_COMMA,
+    COP_CMP_L_ADD_CONST,
+    COP_CMP_GE_ADD_CONST,
 };
 
 bool IsSetOperator(COperatorCode code);

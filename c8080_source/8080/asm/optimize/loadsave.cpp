@@ -101,16 +101,17 @@ static StateRegister *ResetState(State &s, AsmRegister reg, bool saveValue = fal
     return nullptr;
 }
 
-static void AddSave(AsmBase &a, Saves &saves, const AsmArgument &variable, uint64_t position) {
+static bool AddSave(AsmBase &a, Saves &saves, const AsmArgument &variable, uint64_t position) {
     if (variable.type != AAT_STRING)
-        return;
+        return false;
     Saves::iterator p = saves.find(variable.string);
     if (p != saves.end()) {
         a.lines[p->second].opcode = AC_REMOVED;
         p->second = position;
-    } else {
-        saves[variable.string] = position;
+        return true;
     }
+    saves[variable.string] = position;
+    return false;
 }
 
 static void RemoveSave(Saves &saves, const AsmArgument &variable) {
@@ -135,7 +136,8 @@ static void RemoveSave(Saves &saves, const AsmArgument &variable) {
         saves.erase(p);
 }
 
-void LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
+bool LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
+    bool changed = false;
     State s;
     ResetState(s);
     size_t i = size_t(0) - size_t(1);
@@ -186,11 +188,11 @@ void LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
                 break;
             }
             case AC_STA:
-                AddSave(a, saves, l.argument[0], i);
+                changed |= AddSave(a, saves, l.argument[0], i);
                 s.a.variable = l.argument[0];  // TODO: Может изменить переменную. Можно удалить лишнее.
                 break;
             case AC_SHLD:
-                AddSave(a, saves, l.argument[0], i);
+                changed |= AddSave(a, saves, l.argument[0], i);
                 s.hl.variable = l.argument[0];  // TODO: Может изменить переменную. Можно удалить лишнее.
                 break;
             case AC_ALU_REG:
@@ -211,6 +213,7 @@ void LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
             case AC_LHLD:
                 if (s.hl.variable == l.argument[0]) {  // Если HL содержит адрес переменной
                     l.opcode = AC_REMOVED;
+                    changed = true;
                     continue;
                 }
                 RemoveSave(saves, l.argument[0]);
@@ -220,6 +223,7 @@ void LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
             case AC_LDA:
                 if (s.a.variable == l.argument[0]) {  // Если A содержит адрес переменной
                     l.opcode = AC_REMOVED;
+                    changed = true;
                     continue;
                 }
                 RemoveSave(saves, l.argument[0]);
@@ -236,6 +240,7 @@ void LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
                 if (sr != nullptr) {
                     if (sr->value == l.argument[1]) {
                         l.opcode = AC_REMOVED;
+                        changed = true;
                         break;
                     }
                     sr->value = l.argument[1];
@@ -244,6 +249,7 @@ void LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
                 if (l.argument[0].reg == R8_A && s.a.value.Is0()) {
                     l.opcode = AC_ALU_REG;
                     l.alu = ALU_XOR;
+                    changed = true;
                 }
                 break;
             }
@@ -312,9 +318,10 @@ void LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
                 ResetState(s);
         }
     }
+    return changed;
 }
 
-void AsmOptimizeLoadSave(AsmBase &a) {
+bool AsmOptimizeLoadSave(AsmBase &a) {
     size_t i = 0;
     for (auto &l : a.lines) {
         if ((l.opcode == AC_JMP || l.opcode == AC_JMP_CONDITION) && l.argument[0].type == AAT_LABEL)
@@ -325,8 +332,9 @@ void AsmOptimizeLoadSave(AsmBase &a) {
 
     std::map<size_t, StateItem> states;
 
-    LoadSave(a, states, false);
-    LoadSave(a, states, true);
+    bool result = LoadSave(a, states, false);
+    result |= LoadSave(a, states, true);
+    return result;
 }
 
 }  // namespace I8080

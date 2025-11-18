@@ -40,6 +40,8 @@ void Compiler::BuildOperator16(CNodePtr &node) {
 void Compiler::Alu16(CNodePtr &node) {
     switch (node->operator_code) {
         case COP_ADD:
+        case COP_CMP_L_ADD_CONST:
+        case COP_CMP_GE_ADD_CONST:
             return out.add_hl_de();
         case COP_CMP_L:
         case COP_CMP_G:

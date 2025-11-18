@@ -77,7 +77,7 @@ bool PrepareCompareOperators(Prepare &, CNodePtr &node) {
         return true;
     }
 
-    // Replace "CONST < X" with "X >= CONST + 1". For fast "cmp const"
+    // Replace "CONST >= X" with "X < CONST + 1". For fast "cmp const"
     if (node->operator_code == COP_CMP_GE && node->a->type == CNT_NUMBER)
         if (ReplaceOp(node, COP_CMP_L))
             return true;
@@ -86,6 +86,15 @@ bool PrepareCompareOperators(Prepare &, CNodePtr &node) {
     if (node->operator_code == COP_CMP_L && node->a->type == CNT_NUMBER)
         if (ReplaceOp(node, COP_CMP_GE))
             return true;
+
+    // Replace "X < CONST" or "X >= CONST" with "X + (0x10000 - CONST)".For fast "cmp const".
+    if (node->operator_code == COP_CMP_L || node->operator_code == COP_CMP_GE) {
+        if (node->b->type == CNT_NUMBER && node->a->ctype.GetAsmType() == CBT_UNSIGNED_SHORT && node->b->number.u > 0) {
+            node->b->number.u = 0x10000 - node->b->number.u;
+            node->operator_code = (node->operator_code == COP_CMP_L) ? COP_CMP_L_ADD_CONST : COP_CMP_GE_ADD_CONST;
+            return true;
+        }
+    }
 
     return false;
 }

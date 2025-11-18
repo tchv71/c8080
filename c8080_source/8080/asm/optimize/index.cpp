@@ -20,9 +20,12 @@
 namespace I8080 {
 
 void AsmOptimize(AsmBase &a) {
-    AsmOptimizeJumpJump(a);
-    AsmOptimizeDeadCode(a);
-    AsmOptimizeLoadSave(a);
+    bool retry;
+    do {
+        retry = AsmOptimizeJumpJump(a);
+        retry |= AsmOptimizeDeadCode(a);
+        retry |= AsmOptimizeLoadSave(a);
+    } while(retry);
 }
 
 }  // namespace I8080
