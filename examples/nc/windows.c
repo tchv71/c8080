@@ -30,9 +30,10 @@ uint8_t window_x = 0;
 char input[128];
 uint8_t input_pos;
 
-void MakeString(char *str, char c, uint8_t l) {
+char *MakeString(char *str, char c, uint8_t l) {
     memset(str, c, l);
     str[l] = 0;
+    return str;
 }
 
 void DrawWindowTextCenter(uint8_t y, const char *text) {
@@ -105,17 +106,17 @@ bool RunInput(uint8_t y) {
 
 void DrawProgress(uint8_t y) {
     char buf[PROGRESS_WIDTH + 1];
-    MakeString(buf, '░', PROGRESS_WIDTH);
-    DrawWindowText(y, buf);
+    DrawWindowText(y, MakeString(buf, '░', PROGRESS_WIDTH));
 }
 
-void DrawProgressNext(uint8_t y, uint8_t width) {
+void DrawProgressNext(uint8_t y, uint16_t current, uint16_t maximal) {
+    while (current > (uint16_t)(0xFFFF / PROGRESS_WIDTH)) {
+        current /= 2;
+        maximal /= 2;
+    }
+    const uint8_t width = current * PROGRESS_WIDTH / maximal;
     char buf[PROGRESS_WIDTH + 1];
-    if (width > PROGRESS_WIDTH)
-        width = PROGRESS_WIDTH;
-    // TODO: Прогресс
-    MakeString(buf, '█', width);
-    DrawWindowText(y, buf);
+    DrawWindowText(y, MakeString(buf, '█', width <= PROGRESS_WIDTH ? width : PROGRESS_WIDTH));
 }
 
 static uint8_t DrawButton(uint8_t x, uint8_t y, uint8_t active, const char *text, uint8_t text_size) {
@@ -191,10 +192,9 @@ void ErrorWindow(const char *text) {
 }
 
 bool MakeDirWindow(void) {
-    uint8_t y = DrawWindow(WINDOW_X_CENTER, 7, " Make directory ");  // Original
+    const uint8_t y = DrawWindow(WINDOW_X_CENTER, 7, " Make directory ");  // Original
     DrawWindowText(y, "Create the directory");                       // Original
     DrawButtons(y + 4, 0, "Create\0");
-
     input[0] = 0;
     return RunInput(y + 2);
 }

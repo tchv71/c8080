@@ -84,9 +84,11 @@ uint8_t DirParsePathName(struct FCB *fcb, const char *file_name, uint8_t drive_d
 
 void DirMakePathName(char *out, uint8_t out_size, uint8_t dir_index, struct FCB *fcb) {
     // TODO: Пока путь не восстанавливает
-    out[0] = 'A' + (dir_index & 0x0F);
-    out[1] = ':';
-    CpmConvertFromName83(out + 2, fcb->name83);
+    *out = 'A' + (dir_index & 0x0F);
+    out++;
+    *out = ':';
+    out++;
+    CpmConvertFromName83(out, fcb->name83);
 }
 
 uint8_t DirMake(uint8_t drive_dir, const char *name) {

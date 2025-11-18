@@ -68,9 +68,13 @@ static void NcDrawCommandLine(void) {
               COLOR_COMMAND_LINE);
 }
 
-static void NcPanelDrawActiveTitleAndCommandLine(void) {
+static void NcDrawCommandLinePrefix(void) {
     DrawTextXY(0, TEXT_HEIGHT - 2, COLOR_COMMAND_LINE, panel_a.path + panel_a.short_path_skip);
     DrawTextXY(panel_a.short_path_size, TEXT_HEIGHT - 2, COLOR_COMMAND_LINE, ">");
+}
+
+static void NcPanelDrawActiveTitleAndCommandLine(void) {
+    NcDrawCommandLinePrefix();
     NcDrawCommandLine();
     PanelDrawTitle(COLOR_PANEL_TITLE_ACTIVE);
     PanelShowCursor();
@@ -90,10 +94,12 @@ static void NcDrawHelp(void) {
 }
 
 void NcDrawScreen(void) {
+    HideCursor();
+    MoveCursor(0, 0); // Что бы уменьшить вероятность прокрутки экрана из-за ошибок CP/M
+
 #ifdef NC_SAVE_SCREEN
     if (panels_hidden) {
         RestoreScreen(&saved_screen);
-        HideCursor();
     }
 #endif
 
@@ -103,6 +109,7 @@ void NcDrawScreen(void) {
     if (panels_hidden) {
         if (panel_a.total_kb == 0)
             PanelReload();  // Для вычисления пути, который будет отображен в ком. строке
+        NcDrawCommandLinePrefix();
         NcDrawCommandLine();
         return;
     }
@@ -158,7 +165,15 @@ static void NcCommand(const char *text) {
     puts(panel_a.path);
     puts(">");
     puts(text);
-    CpmCommand(panel_a.drive_user, text);
+    uint8_t d = panel_a.drive_user;
+#ifdef NC_GLOB
+    // TODO: Если указываем диск, то всегда будет корневая папка. А потом нужно будет вставить парсер пути.
+    if (text[0] != 0 && text[1] == ':') {
+        bios_user = 0xF0 + (d >> 4);
+        d &= 0x0F;
+    }
+#endif
+    CpmCommand(d, text);
 }
 
 static void NcExecute(void) {
@@ -335,7 +350,6 @@ static void NcCopyMoveRename(bool rename) {
                 }
                 buffer += CPM_128_BLOCK;
                 count++;
-                i++;
             } while (count < copy_buffer_size);
 
             CpmSetCurrentUser(dest_user);  // TODO: Error
@@ -355,14 +369,15 @@ static void NcCopyMoveRename(bool rename) {
             if (result == CPM_READ_EOF)
                 break;
 
-            DrawProgressNext(y + 4, (uint32_t)i * PROGRESS_WIDTH / source_file->blocks_128);
+            i += copy_buffer_size;
+            DrawProgressNext(y + 4, i, source_file->blocks_128);
 
             if (CpmConsoleDirect(0xFF) == KEY_ESC) {
                 rename = false;  // Не удалять исходный файл
                 break;
             }
         }
-        DrawProgressNext(y + 4, PROGRESS_WIDTH);
+        DrawProgressNext(y + 4, 1, 1);
 
     break2:
         CpmSetDma(DEFAULT_DMA);
@@ -441,6 +456,7 @@ static void NcDelete(void) {
     CpmSetCurrentUser(PanelGetDirIndex());
     CpmDelete(&f);  // TODO: Проверить ошибку
 
+    // TODO: Выйти из удаленной папки
     // Обновить список файлов
     NcDriveChanged(panel_a.drive_user);
 }
@@ -462,7 +478,7 @@ int main(int, char **) {
 
     // CCP будет запускать A:NC вместо ожидания ввода команды пользователем
 #ifdef NC_GLOB
-    glob_dont_resart_nc = 0;
+    bios_dont_resart_nc = 0;
 #endif
 
     // Что бы командер нижней строкой не закрывал полезные данные
@@ -485,7 +501,10 @@ int main(int, char **) {
 
 #ifdef NC_GLOB
     // Текущий диск и папку в активную панель
-    panel_a.drive_user = CpmGetCurrentDrive() | (glob_tdrive & 0xF0);
+    panel_a.drive_user = ((((bios_user & 0xF0) == 0xE0) ? bios_user : CpmGetCurrentUser()) << 4)
+            | CpmGetCurrentDrive();
+
+    bios_user = 0;
 
     // Восстановление состояния
     panel_a.cursor_x = glob_a_cursor_x;
@@ -571,7 +590,7 @@ int main(int, char **) {
                 case '0':
                     NcBeforeExit();
 #ifdef NC_GLOB
-                    glob_dont_resart_nc = 1;
+                    bios_dont_resart_nc = 1;
 #endif
                     return 0;
             }
@@ -581,8 +600,21 @@ int main(int, char **) {
             case KEY_ENTER:
                 NcCommand(input);
                 continue;
+            case 0x0A: {  // CTRL+ENTER
+                uint8_t new_size = input_pos + strlen(panel_a.selected_name);
+                if (new_size < sizeof(input) - 1) {
+                    input_pos = new_size;
+                    strcat(input, panel_a.selected_name);
+                    NcDrawCommandLine();
+                }
+                continue;
+            }
+            case 'I' & 0x1F:  // CTRL+I
+                panel_x = PANEL_WIDTH - panel_x;
+                NcDrawScreen();
+                continue;
 #ifdef NC_SAVE_SCREEN
-            case 0x0F:  // CTRL+O
+            case 'O' & 0x1F:  // CTRL+O
                 panels_hidden = !panels_hidden;
                 NcDrawScreen();
                 continue;

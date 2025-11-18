@@ -52,7 +52,7 @@ static void SortFiles(struct FileInfo *low, struct FileInfo *high) {
     for (;;) {
         struct FileInfo *l = low;
         struct FileInfo *h = high;
-        struct FileInfo *m = l + (h - l) / 2;
+        struct FileInfo *m = l + ((uint8_t*)h - (uint8_t*)l) / (sizeof(*h) * 2);
         do {
             while (0 != SortFilesPred(m, l))
                 l++;
@@ -260,7 +260,7 @@ void PanelDrawTitle(uint8_t color) {
     strcpy(buf + 1, panel_a.path + panel_a.short_path_skip);
     strcat(buf, " ");
 
-    DrawTextXY(panel_x + (PANEL_WIDTH - 2 - panel_a.short_path_size) / 2, 0, color, buf);
+    DrawTextXY(panel_x + (uint8_t)(PANEL_WIDTH - 2 - panel_a.short_path_size) / 2, 0, color, buf);
 }
 
 void PanelDrawFreeSpace(void) {

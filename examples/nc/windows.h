@@ -44,8 +44,8 @@ void DrawInput(uint8_t x, uint8_t y, uint8_t width, uint8_t color);
 void ProcessInput(char c);
 bool RunInput(uint8_t y);
 void DrawProgress(uint8_t y);
-void DrawProgressNext(uint8_t y, uint8_t width);
-void MakeString(char *str, char c, uint8_t l);
+void DrawProgressNext(uint8_t y, uint16_t current, uint16_t maximal);
+char *MakeString(char *str, char c, uint8_t l);
 
 bool DeleteWindow(const char *file_name);
 void ErrorWindow(const char *text);
