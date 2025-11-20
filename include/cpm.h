@@ -128,7 +128,13 @@ uint8_t __global CpmOpen(struct FCB *fcb) __link("cpm_h/bdos.c");
 uint8_t __global CpmClose(struct FCB *fcb) __link("cpm_h/bdos.c");
 
 // 17 F_SFIRST Search for first
-struct FCB *__global CpmSearchFirst(void *dma, struct FCB *fcb) __link("cpm_h/bdos.c");
+// If "drive" is 0, then selected drive is used.
+// If "drive" is '?', then any directory entry for all users (including disc labels, date stamps etc.) will match.
+// If "name83" is 0, then any directory entry will match.
+// "name83 can include ? marks, which match anything on disc.
+// If "all_extents" is '?', then all suitable extents are matched.
+// Normally "all_extents" should be set to zero.
+struct FCB *__global CpmSearchFirst(uint8_t drive, const char *name83, char all_extents) __link("cpm_h/bdos.c");
 
 // 18 F_SNEXT Search for next
 struct FCB *__global CpmSearchNext(void) __link("cpm_h/bdos.c");

@@ -92,11 +92,17 @@ void DirMakePathName(char *out, uint8_t out_size, uint8_t dir_index, struct FCB 
 }
 
 uint8_t DirMake(uint8_t drive_dir, const char *name) {
+    // Поиск пути и имени
+    struct FCB dir;
+    drive_dir = DirParsePathName(&dir, name, drive_dir, drive_dir);
+    if (drive_dir == 0xFF || dir.name83[0] == ' ')
+        return DIR_MAKE_ERROR_NAME;
+
+    CpmSetDrive(drive_dir & 0x0F); // TODO: Error
+
     // Поиск свободного номера папки
     uint16_t bitmap = 1;
-    struct FCB f;
-    f.drive = '?';
-    struct FCB *x = CpmSearchFirst(DEFAULT_DMA, &f);
+    struct FCB *x = CpmSearchFirst('?', NULL, 0);
     while (x != NULL) {
         if (x->drive < CPM_MAX_USERS) {
             const uint8_t dir_index = CpmGetAttrib(x->name83 - 3) & 0x0F;
@@ -111,18 +117,12 @@ uint8_t DirMake(uint8_t drive_dir, const char *name) {
     if (dir_index > MAX_DIRS)
         return DIR_MAKE_ERROR_LIMIT;
 
-    // Поиск пути и имени
-    struct FCB dir;
-    drive_dir = DirParsePathName(&dir, name, drive_dir, drive_dir);
-    if (drive_dir == 0xFF || dir.name83[0] == ' ')
-        return DIR_MAKE_ERROR_NAME;
-
     // Установка номера новой папки
     CpmSetAttrib(dir.name83, dir_index << 3);
 
     // Проверка уникальности имени
     CpmSetUser(drive_dir >> 4);
-    if (CpmSearchFirst(DEFAULT_DMA, &dir) != NULL)
+    if (CpmSearchFirst(dir.drive, dir.name83, 0) != NULL)
         return DIR_MAKE_ERROR_EXISTS;
 
     // Создание

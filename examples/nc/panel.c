@@ -129,9 +129,7 @@ void PanelReload(void) {
     DirInfoReset(&dir_info, PanelGetDrive());
 
     // Поиск всех файлов
-    struct FCB search_args;
-    search_args.drive = '?';
-    const struct FCB *x = CpmSearchFirst(DEFAULT_DMA, &search_args);
+    const struct FCB *x = CpmSearchFirst('?', NULL, '?');
     while (x != NULL) {
         if (x->drive < CPM_MAX_USERS) {
             d->attrib = CpmGetNameAndAttrib(d->name83, x->name83) << ATTRIB_SHIFT;

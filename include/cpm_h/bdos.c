@@ -174,15 +174,43 @@ __a_1_cpmclose = 0
 }
 
 static struct FCB *_CpmSearch(void);
+static uint8_t cpm_search_buffer[1 + 8 + 3 + 1];
 
-struct FCB *__global CpmSearchFirst(void *dma, struct FCB *fcb) {
+struct FCB *__global CpmSearchFirst(uint8_t, const char *, char) {
+    (void)cpm_search_buffer;
     asm {
-        ld   (__a_2_cpmsearchfirst), hl
+        ; all_extents
+__a_3_cpmsearchfirst = 0
+        ld (cpm_search_buffer + 1 + 8 + 3), a
+
+        ; drive
+__a_1_cpmsearchfirst = cpm_search_buffer
+
+        ; name83
+__a_2_cpmsearchfirst = $ + 1
+        ld   hl, 0
+        ld   de, cpm_search_buffer + 1
+        ld   c, 8 + 3
+        ld   a, '?'
+CpmSearchFirst_1:
+        dec  hl
+        inc  hl
+        jp   c, CpmSearchFirst_2
+        ld   a, (hl)
+        inc  hl
+CpmSearchFirst_2:
+        ld   (de), a
+        inc  de
+        dec  c
+        jp   nz, CpmSearchFirst_1
+
+        ; Search
         ld   c, 11h
 _cpmsearch:
-__a_2_cpmsearchfirst = $+1
-        ld   de, 0
+        ld   de, cpm_search_buffer
         call 5
+
+        ; Result
         cp   0FFh
         ld   hl, 0
         ret  z
@@ -191,12 +219,8 @@ __a_2_cpmsearchfirst = $+1
         add  a
         add  a
         add  a
-__a_1_cpmsearchfirst = $+1
-        ld   hl, 0
-        add  l
+        add  80h ; DEFAULT_DMA
         ld   l, a
-        ret  nc
-        inc  h
     }
 }
 

@@ -280,7 +280,7 @@ static void NcCopyMoveRename(bool rename) {
     // Есть ли файл в папке назначения?
     const uint8_t dest_user = dest_drive_user >> 4;
     CpmSetUser(dest_user);
-    if (CpmSearchFirst(DEFAULT_DMA, &dest) != NULL) {
+    if (CpmSearchFirst(dest.drive, dest.name83, false) != NULL) {
         ErrorWindow("The file already exists");  // Original
         // В оригинале предлагается заменить файл
         // Если это сделаем, то нужно проверить, что мы не переносим файл сам в себя
@@ -289,7 +289,7 @@ static void NcCopyMoveRename(bool rename) {
 
     // Копирование атрибут, всех 16 бит.
     CpmSetUser(PanelGetDirIndex());
-    struct FCB *source_info = CpmSearchFirst(DEFAULT_DMA, &source);
+    struct FCB *source_info = CpmSearchFirst(source.drive, source.name83, false);
     if (source_info == NULL) {
         ErrorWindow("Incorrect file name");
         return;
@@ -441,22 +441,20 @@ static void NcDelete(void) {
 
     struct FileInfo *c = PanelGetCursor();
 
+    struct FCB f;
+    f.drive = PanelGetDrive() + 1;
+    memcpy(f.name83, c->name83, sizeof(f.name83));
+
     // Проверка, что папка не пустая
     if (c->attrib & ATTRIB_DIR_MASK) {
         CpmSetUser(GET_DIR_FROM_ATTRIB(c->attrib));
-        struct FCB search_args;
-        memset(&search_args, '?', sizeof(search_args));
-        search_args.drive = PanelGetDrive() + 1;
-        if (CpmSearchFirst(DEFAULT_DMA, &search_args) != NULL) {
+        if (CpmSearchFirst(f.drive, NULL, 0) != NULL) {
             ErrorWindow("Folder is not empty");
             return;
         }
     }
 
     // Удаление файла
-    struct FCB f;
-    f.drive = PanelGetDrive() + 1;
-    memcpy(f.name83, c->name83, sizeof(f.name83));
     CpmSetUser(PanelGetDirIndex());
     CpmDelete(&f);  // TODO: Проверить ошибку
 
