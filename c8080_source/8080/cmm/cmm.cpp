@@ -332,8 +332,9 @@ void Cmm::CompileLine(CNodePtr &n, Arg &out_arg) {
             return out.call(b.text);
         case CNT_RETURN:
             if (n->a) {
-                if (n->a->type == CNT_FUNCTION_CALL_ADDR && n->a->b->type == CNT_LOAD_VARIABLE && n->a->b->variable->c.internal_cmm_name == CMM_NAME_REG
-                        && n->a->b->variable->c.asm_register == R16_HL) {
+                if (n->a->type == CNT_FUNCTION_CALL_ADDR && n->a->b->type == CNT_LOAD_VARIABLE &&
+                    n->a->b->variable->c.internal_cmm_name == CMM_NAME_REG &&
+                    n->a->b->variable->c.asm_register == R16_HL) {
                     if (n->a->b->a)
                         p.Error(n->e, "only return hl()");
                     return out.pchl();

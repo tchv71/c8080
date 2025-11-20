@@ -119,7 +119,7 @@ static void RemoveSave(Saves &saves, const AsmArgument &variable) {
         return;
     if (variable.string.find('(') != std::string::npos) {
         // Это формула содержая один или несколько адресов
-        // переменных. Значение формула используется как адрес
+        // переменных. Значение формулы используется как адрес
         // переменной. Нам придется сохранить все переменные.
 
         // Например, эту строку нельзя удалять:
@@ -190,6 +190,14 @@ bool LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
             case AC_STA:
                 changed |= AddSave(a, saves, l.argument[0], i);
                 s.a.variable = l.argument[0];  // TODO: Может изменить переменную. Можно удалить лишнее.
+
+                // Замена LD (CONST), A на LD (HL), A
+                if (s.hl.value == s.a.variable) {
+                    l.opcode = AC_MOV;
+                    l.argument[1].Set(R8_A);
+                    l.argument[0].Set(R8_M);
+                    changed = true;
+                }
                 break;
             case AC_SHLD:
                 changed |= AddSave(a, saves, l.argument[0], i);
@@ -200,6 +208,16 @@ bool LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
                     break;  // CMP не изменяет регистры
                 if ((l.alu == ALU_OR || l.alu == ALU_AND) && l.argument[0].reg == R8_A)
                     break;  // Команды OR A и AND A не изменяют регистры
+                if (l.alu == ALU_XOR && l.argument[0].reg == R8_A) {
+                    if (s.a.value.Is0()) {
+                        l.opcode = AC_REMOVED;
+                        changed = true;
+                        break;
+                    }
+                    ResetState(s, R8_A);
+                    s.a.value.Set(uint16_t(0));
+                    break;
+                }
                 ResetState(s, R8_A);
                 break;
             case AC_ALU_CONST:
@@ -243,8 +261,17 @@ bool LoadSave(AsmBase &a, std::map<size_t, StateItem> &states, bool jb) {
                         changed = true;
                         break;
                     }
+                    // Замена LD A, CONST на ADD A
+                    if (l.argument[0].reg == R8_A && sr->value.type == AAT_NUMBER && l.argument[0].type == AAT_NUMBER &&
+                        l.argument[0].number == sr->value.number * 2) {
+                        l.opcode = AC_ALU_REG;
+                        l.alu = ALU_ADD;
+                        changed = true;
+                        break;
+                    }
                     sr->value = l.argument[1];
                 }
+
                 // Замена ld a, 0 на xor a
                 if (l.argument[0].reg == R8_A && s.a.value.Is0()) {
                     l.opcode = AC_ALU_REG;

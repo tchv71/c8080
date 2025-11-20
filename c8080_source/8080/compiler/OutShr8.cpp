@@ -49,7 +49,7 @@ void Compiler::OutShr8(CNodePtr &node, AsmRegister reg) {
         return;
 
     if (value == 1) {
-        out.or_a();  // Clear CF
+        out.alu_a_reg(ALU_AND, R8_A);  // Clear CF
         out.carry_rotate_right();
         return;
     }

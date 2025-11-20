@@ -29,6 +29,7 @@ void Compiler::BuildOperator16(CNodePtr &node) {
     Measure(node, R16_HL, &Compiler::Case_Mul16_AC);
     Measure(node, R16_HL, &Compiler::Case_Mul16_ACR);
     Measure(node, R16_HL, &Compiler::Case_Shl16_MN);
+    Measure(node, R16_HL, &Compiler::Case_Shr16_MN);
     Measure(node, R16_HL, &Compiler::Case_IncDec16_N);
     Measure(node, R16_DE, &Compiler::Case_IncDec16_N);
 
@@ -88,6 +89,28 @@ bool Compiler::Case_Shl16_MN(CNodePtr &node, AsmRegister reg) {
             OutMul16(node->a, 1u << value, R16_HL);
         }
         return true;
+    }
+    return false;
+}
+
+bool Compiler::Case_Shr16_MN(CNodePtr &node, AsmRegister reg) {
+    if (node->operator_code == COP_SHR && node->b->type == CNT_NUMBER && node->ctype.IsUnsigned()) {
+        const uint64_t value = GetNumberAsUint64(node->b);
+        if (value >= 16u) {
+            Build(node->a, REG_NONE);
+            out.ld_hl_number(0);
+            return true;
+        }
+        if (value == 8u) {
+            Build(node->a, R16_HL);
+            out.ld_r8_r8(R8_L, R8_H);
+            out.ld_r8_number(R8_H, 0);
+            return true;
+        }
+        if (value == 0) {
+            Build(node->a, reg);
+            return true;
+        }
     }
     return false;
 }

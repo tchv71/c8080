@@ -25,7 +25,7 @@ void AsmOptimize(AsmBase &a) {
         retry = AsmOptimizeJumpJump(a);
         retry |= AsmOptimizeDeadCode(a);
         retry |= AsmOptimizeLoadSave(a);
-    } while(retry);
+    } while (retry);
 }
 
 }  // namespace I8080

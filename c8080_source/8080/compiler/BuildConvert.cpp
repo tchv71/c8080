@@ -214,6 +214,12 @@ bool Compiler::Case_Convert_S16_32(CNodePtr &node, AsmRegister reg) {
 }
 
 bool Compiler::Case_Convert_16_8_M(CNodePtr &node, AsmRegister reg) {
+    if (node->a->type == CNT_OPERATOR && node->a->operator_code == COP_SHR && node->a->b->type == CNT_NUMBER &&
+        GetNumberAsUint64(node->a->b) == 8) {
+        Build(node->a->a, R16_HL);
+        out.ld_r8_r8(reg, R8_H);
+        return true;
+    }
     Build(node->a, R16_HL);
     out.ld_r8_r8(reg, R8_L);
     return true;

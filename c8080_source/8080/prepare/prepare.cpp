@@ -22,16 +22,8 @@
 namespace I8080 {
 
 static const PrepareFunctionType prepare_function_list[] = {
-    PrepareConst,
-    PrepareSetOperators,
-    PrepareFast8BitMath,
-    PrepareFast8BitOptimization,
-    PrepareCompareOperators,
-    PrepareRemoveDead,
-    PrepareIncDec,
-    PrepareSub16ToAdd16,
-    PrepareLoadVariable,
-    nullptr,
+    PrepareConst,      PrepareSetOperators, PrepareFast8BitMath, PrepareFast8BitOptimization, PrepareCompareOperators,
+    PrepareRemoveDead, PrepareIncDec,       PrepareSub16ToAdd16, PrepareLoadVariable,         nullptr,
 };
 
 void PrepareFunction(CProgramm &programm, CNodePtr &node, Asm &out) {

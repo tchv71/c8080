@@ -157,6 +157,7 @@ protected:
     void BuildOperator16(CNodePtr &node);
     bool Case_Operator16(CNodePtr &node, AsmRegister reg);
     bool Case_Shl16_MN(CNodePtr &node, AsmRegister reg);
+    bool Case_Shr16_MN(CNodePtr &node, AsmRegister reg);
     bool Case_IncDec16_N(CNodePtr &node, AsmRegister reg);
     bool Case_Mul16_MC(CNodePtr &node, AsmRegister reg);
     bool Case_Mul16_AC(CNodePtr &node, AsmRegister reg);
