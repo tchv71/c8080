@@ -15,7 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../tools/trimself.h"
 #include "../../tools/parseutf8.h"
 #include "cparserfile.h"
 
