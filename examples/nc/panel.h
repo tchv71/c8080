@@ -43,7 +43,7 @@ static const uint8_t ATTRIB_DIR_MAX = 0x0F;
 static const uint8_t ATTRIB_DIR_SHIFT = 4;
 static const uint8_t ATTRIB_DIR_MASK = ATTRIB_DIR_MAX << ATTRIB_DIR_SHIFT;
 static const uint8_t ATTRIB_DIR_ALL = ATTRIB_DIR_MASK | ATTRIB_DIR_UP;
-#define GET_DIR_FROM_ATTRIB(X) (((X) >> ATTRIB_DIR_SHIFT) & ATTRIB_DIR_MAX)
+#define GET_DIR_FROM_ATTRIB(X) ((uint8_t)(X) >> ATTRIB_DIR_SHIFT)
 
 struct Panel {
     uint8_t copy_start[0];

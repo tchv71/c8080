@@ -146,7 +146,7 @@ uint8_t DrawButtons(uint8_t y, uint8_t cursor, const char *items) {
             x += l + (4 + 3);
             p += l + 1;
         } while (*p);
-        x = (WINDOW_WIDTH - x) / 2 + window_x;
+        x = (uint8_t)(WINDOW_WIDTH - x) / 2 + window_x;
         step++;
     } while (step < 2);
     return i;

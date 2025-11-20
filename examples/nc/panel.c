@@ -37,7 +37,7 @@ static uint8_t SortFilesPred(struct FileInfo *a, struct FileInfo *b) {
     if ((a->attrib ^ b->attrib) & ATTRIB_DIR_MASK)
         return b->attrib & ATTRIB_DIR_MASK;
 
-    int r = memcmp(a->name83 + 8, b->name83 + 8, 3);
+    int8_t r = memcmp(a->name83 + 8, b->name83 + 8, 3);
     if (r != 0)
         return r == 1;
     if (1 == memcmp(a->name83, b->name83, 8))

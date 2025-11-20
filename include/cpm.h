@@ -32,7 +32,7 @@ struct DPB {
 };
 
 struct FCB {
-    char drive;            // 0 = default, 1 = A, 2 = B
+    uint8_t drive;         // 0 = default, 1 = A, 2 = B
     char name83[8 + 3];    // File name and extension
     uint8_t ex;            // current extent, ie (file pointer / 16384) % 32
     uint8_t s1;            //
