@@ -23,7 +23,7 @@ static uint8_t CpmCallA(void) __address(5);
 static void *CpmCallPtr(void) __address(5);
 static uint16_t CpmCallHl(void) __address(5);
 
-void __global CpmTerm(void) {
+void __global CpmTerminate(void) {
     asm {
         ld   c, 0
     }
@@ -135,7 +135,7 @@ void __global CpmResetAllDrives(void) {
     CpmCallA();
 }
 
-uint8_t __global CpmSelectDrive(uint8_t) {
+uint8_t __global CpmSetDrive(uint8_t) {
     asm {
 __a_1_cmdselectdrive = 0
         ld   e, a
@@ -259,7 +259,7 @@ uint16_t __global CpmGetLoggedDrives(void) {
     return CpmCallHl();
 }
 
-uint8_t __global CpmGetCurrentDrive(void) {
+uint8_t __global CpmGetDrive(void) {
     asm {
         ld   c, 19h
     }
@@ -312,7 +312,7 @@ const struct DPB *__global CpmGetDpb(void) {
     return CpmCallPtr();
 }
 
-uint8_t __global CpmGetCurrentUser(void) {
+uint8_t __global CpmGetUser(void) {
     asm {
         ld   e, 0FFh
         ld   c, 20h
@@ -320,9 +320,9 @@ uint8_t __global CpmGetCurrentUser(void) {
     return CpmCallA();
 }
 
-void __global CpmSetCurrentUser(uint8_t user) {
+void __global CpmSetUser(uint8_t user) {
     asm {
-__a_1_cpmsetcurrentuser = 0
+__a_1_cpmsetuser = 0
         ld   e, a
         ld   c, 20h
     }

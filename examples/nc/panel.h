@@ -31,9 +31,7 @@ static const uint8_t PANEL_SHORT_PATH = PANEL_WIDTH - 4;
 
 struct FileInfo {
     char name83[8 + 3];
-    uint16_t attrib_16[0];
     uint8_t attrib;
-    uint8_t attrib_high;
     uint16_t blocks_128;
 };
 

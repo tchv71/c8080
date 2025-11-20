@@ -71,7 +71,7 @@ void __global CpmBiosConOut(char c) __link("cpm_h/cpmbiosconout.c");
 // *** BDOS ***
 
 // 0 P_TERMCPM System Reset
-void __global CpmTerm(void) __link("cpm_h/bdos.c");
+void __global CpmTerminate(void) __link("cpm_h/bdos.c");
 
 // 1 C_READ Console input, return data
 char __global CpmConsoleRead(void) __link("cpm_h/bdos.c");
@@ -117,7 +117,7 @@ uint16_t __global CpmBdosVersion(void) __link("cpm_h/bdos.c");
 void __global CpmResetAllDrives(void) __link("cpm_h/bdos.c");
 
 // 14 DRV_SET Select drive
-uint8_t __global CpmSelectDrive(uint8_t drive) __link("cpm_h/bdos.c");
+uint8_t __global CpmSetDrive(uint8_t drive) __link("cpm_h/bdos.c");
 
 // 15 F_OPEN Open file
 // Returns A=0-3 if successful, A=0FFh if error
@@ -154,7 +154,7 @@ uint8_t __global CpmRename(struct FCB *fcb) __link("cpm_h/bdos.c");
 uint16_t __global CpmGetLoggedDrives(void) __link("cpm_h/bdos.c");
 
 // 25 DRV_GET Return current drive
-uint8_t __global CpmGetCurrentDrive(void) __link("cpm_h/bdos.c");
+uint8_t __global CpmGetDrive(void) __link("cpm_h/bdos.c");
 
 // 26 F_DMAOFF Set DMA address
 void __global CpmSetDma(void *buffer) __link("cpm_h/bdos.c");
@@ -175,11 +175,11 @@ uint8_t __global CpmSetFileAttributes(struct FCB *fcb) __link("cpm_h/bdos.c");
 // 31 DRV_DPB Get DPB address
 const struct DPB *__global CpmGetDpb(void);
 
-// 32 F_USERNUM get/set user number
-uint8_t __global CpmGetCurrentUser(void) __link("cpm_h/bdos.c");
+// 32 F_USERNUM get user number
+uint8_t __global CpmGetUser(void) __link("cpm_h/bdos.c");
 
-// 32 F_USERNUM get/set user number
-void __global CpmSetCurrentUser(uint8_t user) __link("cpm_h/bdos.c");
+// 32 F_USERNUM set user number
+void __global CpmSetUser(uint8_t user) __link("cpm_h/bdos.c");
 
 // 33 F_READRAND Random access read record
 uint8_t __global CpmRandomRead(struct FCB *fcb) __link("cpm_h/bdos.c");

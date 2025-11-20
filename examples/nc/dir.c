@@ -121,7 +121,7 @@ uint8_t DirMake(uint8_t drive_dir, const char *name) {
     CpmSetAttrib(dir.name83, dir_index << 3);
 
     // Проверка уникальности имени
-    CpmSetCurrentUser(drive_dir >> 4);
+    CpmSetUser(drive_dir >> 4);
     if (CpmSearchFirst(DEFAULT_DMA, &dir) != NULL)
         return DIR_MAKE_ERROR_EXISTS;
 

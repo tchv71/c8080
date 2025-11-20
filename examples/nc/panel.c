@@ -52,7 +52,7 @@ static void SortFiles(struct FileInfo *low, struct FileInfo *high) {
     for (;;) {
         struct FileInfo *l = low;
         struct FileInfo *h = high;
-        struct FileInfo *m = l + ((uint8_t*)h - (uint8_t*)l) / (sizeof(*h) * 2);
+        struct FileInfo *m = l + ((uint8_t *)h - (uint8_t *)l) / (sizeof(*h) * 2);
         do {
             while (0 != SortFilesPred(m, l))
                 l++;
@@ -105,7 +105,7 @@ void PanelReloadOrCopy(void) {
 void PanelReload(void) {
     panel_a.count = 0;
 
-    if (CpmSelectDrive(PanelGetDrive()) == 0xFF)
+    if (CpmSetDrive(PanelGetDrive()) == 0xFF)
         return;  // TODO: Вывод ошибки
 
     // Получение размера накопителя и свободного места
@@ -118,7 +118,7 @@ void PanelReload(void) {
     struct FileInfo *d = panel_a.files;
     const uint8_t dir_index = PanelGetDirIndex();
     if (dir_index != 0) {
-        static const struct FileInfo parent = {"..         ", {}, ATTRIB_DIR_UP};
+        static const struct FileInfo parent = {"..         ", ATTRIB_DIR_UP};
         memcpy(d, &parent, sizeof(parent));
         d++;
         panel_a.count = 1;
@@ -134,7 +134,7 @@ void PanelReload(void) {
     const struct FCB *x = CpmSearchFirst(DEFAULT_DMA, &search_args);
     while (x != NULL) {
         if (x->drive < CPM_MAX_USERS) {
-            d->attrib_16[0] = CpmGetNameAndAttrib(d->name83, x->name83) << ATTRIB_SHIFT;
+            d->attrib = CpmGetNameAndAttrib(d->name83, x->name83) << ATTRIB_SHIFT;
 
             // Построение дерева папок
             if (d->attrib & ATTRIB_DIR_MASK) {

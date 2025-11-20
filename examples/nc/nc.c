@@ -73,7 +73,7 @@ static void NcDrawCommandLinePrefix(void) {
     DrawTextXY(panel_a.short_path_size, TEXT_HEIGHT - 2, COLOR_COMMAND_LINE, ">");
 }
 
-static void NcPanelDrawActiveTitleAndCommandLine(void) {
+static void NcDrawActivePanelTitleAndCommandLine(void) {
     NcDrawCommandLinePrefix();
     NcDrawCommandLine();
     PanelDrawTitle(COLOR_PANEL_TITLE_ACTIVE);
@@ -95,7 +95,7 @@ static void NcDrawHelp(void) {
 
 void NcDrawScreen(void) {
     HideCursor();
-    MoveCursor(0, 0); // Что бы уменьшить вероятность прокрутки экрана из-за ошибок CP/M
+    MoveCursor(0, 0);  // Что бы уменьшить вероятность прокрутки экрана из-за ошибок CP/M
 
 #ifdef NC_SAVE_SCREEN
     if (panels_hidden) {
@@ -122,7 +122,7 @@ void NcDrawScreen(void) {
         PanelReload();
 
     PanelDrawFiles();
-    NcPanelDrawActiveTitleAndCommandLine();
+    NcDrawActivePanelTitleAndCommandLine();
     PanelDrawFreeSpace();
 
     PanelSwap();
@@ -193,7 +193,7 @@ static void NcExecute(void) {
         PanelReload();
 
         PanelDrawFiles();
-        NcPanelDrawActiveTitleAndCommandLine();
+        NcDrawActivePanelTitleAndCommandLine();
         return;
     }
 
@@ -274,15 +274,12 @@ static void NcCopyMoveRename(bool rename) {
     if (dest.name83[0] == ' ')
         memcpy(dest.name83, source.name83, sizeof(dest.name83));
 
-    // Копирование атрибут
-    CpmSetAttrib(dest.name83, source_file->attrib_16[0] >> ATTRIB_SHIFT);
-
     // Для вывода на экран
     DirMakePathName(input, sizeof(input), dest_drive_user, &dest);
 
     // Есть ли файл в папке назначения?
     const uint8_t dest_user = dest_drive_user >> 4;
-    CpmSetCurrentUser(dest_user);
+    CpmSetUser(dest_user);
     if (CpmSearchFirst(DEFAULT_DMA, &dest) != NULL) {
         ErrorWindow("The file already exists");  // Original
         // В оригинале предлагается заменить файл
@@ -290,7 +287,14 @@ static void NcCopyMoveRename(bool rename) {
         return;
     }
 
-    CpmSetCurrentUser(PanelGetDirIndex());
+    // Копирование атрибут, всех 16 бит.
+    CpmSetUser(PanelGetDirIndex());
+    struct FCB *source_info = CpmSearchFirst(DEFAULT_DMA, &source);
+    if (source_info == NULL) {
+        ErrorWindow("Incorrect file name");
+        return;
+    }
+    CpmSetAttrib(dest.name83, CpmGetAttrib(source_info->name83));
 
     // Переименование файла.
     // Средствами системы нельзя переносить файл между папками, т.к. нельзя изменять пользователя.
@@ -314,7 +318,7 @@ static void NcCopyMoveRename(bool rename) {
         return;
     }
 
-    CpmSetCurrentUser(dest_user);
+    CpmSetUser(dest_user);
 
     if (CpmCreate(&dest) == 0xFF) {
         ErrorWindow("Can't create the file");  // Original
@@ -333,7 +337,7 @@ static void NcCopyMoveRename(bool rename) {
 
         uint16_t i = 0;
         for (;;) {
-            CpmSetCurrentUser(PanelGetDirIndex());
+            CpmSetUser(PanelGetDirIndex());
 
             uint8_t *buffer = (void *)panel_b.files;
             uint8_t count = 0;
@@ -352,7 +356,7 @@ static void NcCopyMoveRename(bool rename) {
                 count++;
             } while (count < copy_buffer_size);
 
-            CpmSetCurrentUser(dest_user);  // TODO: Error
+            CpmSetUser(dest_user);  // TODO: Error
 
             buffer = (void *)panel_b.files;
             while (count > 0) {
@@ -381,7 +385,7 @@ static void NcCopyMoveRename(bool rename) {
 
     break2:
         CpmSetDma(DEFAULT_DMA);
-        CpmSetCurrentUser(dest_user);
+        CpmSetUser(dest_user);
 
         if (CpmClose(&dest) == 0xFF) {
             rename = false;  // Не удалять исходный файл при ошибке
@@ -389,7 +393,7 @@ static void NcCopyMoveRename(bool rename) {
         }
     }
 
-    CpmSetCurrentUser(PanelGetDirIndex());
+    CpmSetUser(PanelGetDirIndex());
 
     if (CpmClose(&source) == 0xFF) {
         rename = false;  // Не удалять исходный файл при ошибке
@@ -418,7 +422,7 @@ static void NcMakeDir(void) {
 
     const uint8_t drive_dir = DirMake(panel_a.drive_user, input);
     if (drive_dir >= DIR_MAKE_ERROR_LIMIT) {
-        ErrorWindow(errors[drive_dir - DIR_MAKE_ERROR_LIMIT]);
+        ErrorWindow(errors[(uint8_t)(drive_dir - DIR_MAKE_ERROR_LIMIT)]);
         return;
     }
 
@@ -439,7 +443,7 @@ static void NcDelete(void) {
 
     // Проверка, что папка не пустая
     if (c->attrib & ATTRIB_DIR_MASK) {
-        CpmSetCurrentUser(GET_DIR_FROM_ATTRIB(c->attrib));
+        CpmSetUser(GET_DIR_FROM_ATTRIB(c->attrib));
         struct FCB search_args;
         memset(&search_args, '?', sizeof(search_args));
         search_args.drive = PanelGetDrive() + 1;
@@ -453,7 +457,7 @@ static void NcDelete(void) {
     struct FCB f;
     f.drive = PanelGetDrive() + 1;
     memcpy(f.name83, c->name83, sizeof(f.name83));
-    CpmSetCurrentUser(PanelGetDirIndex());
+    CpmSetUser(PanelGetDirIndex());
     CpmDelete(&f);  // TODO: Проверить ошибку
 
     // TODO: Выйти из удаленной папки
@@ -501,8 +505,7 @@ int main(int, char **) {
 
 #ifdef NC_GLOB
     // Текущий диск и папку в активную панель
-    panel_a.drive_user = ((((bios_user & 0xF0) == 0xE0) ? bios_user : CpmGetCurrentUser()) << 4)
-            | CpmGetCurrentDrive();
+    panel_a.drive_user = ((((bios_user & 0xF0) == 0xE0) ? bios_user : CpmGetUser()) << 4) | CpmGetDrive();
 
     bios_user = 0;
 
@@ -530,7 +533,7 @@ int main(int, char **) {
         panel_b.drive_user = panel_a.drive_user;
 #else
     // Текущий диск и папку в активную панель
-    panel_a.drive_user = CpmGetCurrentDrive() | (CpmGetCurrentUser() << 4);
+    panel_a.drive_user = CpmGetDrive() | (CpmGetUser() << 4);
     panel_b.drive_user = panel_a.drive_user;
 #endif
 
@@ -545,7 +548,7 @@ int main(int, char **) {
                         PanelDrawTitle(COLOR_PANEL_TITLE);
                         PanelHideCursor();
                         PanelSwap();
-                        NcPanelDrawActiveTitleAndCommandLine();
+                        NcDrawActivePanelTitleAndCommandLine();
                         continue;
                     case '1':
                         NcSelectDrive(0);

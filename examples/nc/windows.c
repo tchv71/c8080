@@ -193,7 +193,7 @@ void ErrorWindow(const char *text) {
 
 bool MakeDirWindow(void) {
     const uint8_t y = DrawWindow(WINDOW_X_CENTER, 7, " Make directory ");  // Original
-    DrawWindowText(y, "Create the directory");                       // Original
+    DrawWindowText(y, "Create the directory");                             // Original
     DrawButtons(y + 4, 0, "Create\0");
     input[0] = 0;
     return RunInput(y + 2);
