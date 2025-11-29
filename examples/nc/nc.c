@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
+#define ARCH_MICRO80_COLOR
 #include "nc.h"
 #include <c8080/hal.h>
 #include <c8080/keys.h>
@@ -31,9 +31,9 @@
 #include "dir.h"
 #include "config.h"
 
-#ifdef ARCH_MICRO80_COLOR
+//#ifdef ARCH_MICRO80_COLOR
 #include "arch_micro80.h"
-#endif
+//#endif
 
 #ifdef NC_SAVE_SCREEN
 static struct SavedScreen saved_screen;

@@ -178,13 +178,15 @@ static uint8_t cpm_search_buffer[1 + 8 + 3 + 1];
 
 struct FCB *__global CpmSearchFirst(uint8_t, const char *, char) {
     (void)cpm_search_buffer;
+    //extern uint8_t cpm_search_buffer[];
     asm {
         ; all_extents
 __a_3_cpmsearchfirst = 0
         ld (cpm_search_buffer + 1 + 8 + 3), a
 
         ; drive
-__a_1_cpmsearchfirst = cpm_search_buffer
+__a_1_cpmsearchfirst = 0
+         ld (cpm_search_buffer), a
 
         ; name83
 __a_2_cpmsearchfirst = $ + 1

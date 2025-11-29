@@ -26,7 +26,7 @@ static const uint8_t PANEL_OY = 2;
 static const uint8_t PANEL_COLUMN_WIDTH = 15;
 static const uint8_t PANEL_COLUMNS_COUNT = 2;
 static const uint8_t PANEL_ROWS_COUNT = TEXT_HEIGHT - 8;
-static const uint8_t PANEL_WIDTH = 32;//TEXT_WIDTH / 2;
+static const uint8_t PANEL_WIDTH = TEXT_WIDTH / 2;
 static const uint8_t PANEL_SHORT_PATH = PANEL_WIDTH - 4;
 
 struct FileInfo {
