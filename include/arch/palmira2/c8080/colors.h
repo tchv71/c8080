@@ -29,7 +29,7 @@ static const uint8_t COLOR_INK_RED = 6 << 4;
 static const uint8_t COLOR_INK_CYAN = 7 << 4;
 static const uint8_t COLOR_INK_MAGENTA = 13 << 4;
 static const uint8_t COLOR_INK_YELLOW = 10 << 4;
-static const uint8_t COLOR_INK_WHITE = 15 << 4;
+static const uint8_t COLOR_INK_WHITE = 14 << 4;  // 15 << 4;
 static const uint8_t COLOR_INK_GRAY = 14 << 4;
 static const uint8_t COLOR_INK_LIGHT_BLUE = 5 << 4;
 static const uint8_t COLOR_INK_LIGHT_RED = 9 << 4;
@@ -37,7 +37,7 @@ static const uint8_t COLOR_INK_LIGHT_CYAN = COLOR_INK_CYAN;
 static const uint8_t COLOR_INK_LIGHT_GREEN = 3 << 4;
 static const uint8_t COLOR_INK_LIGHT_MAGENTA = COLOR_INK_MAGENTA;
 static const uint8_t COLOR_INK_LIGHT_YELLOW = 11 << 4;
-static const uint8_t COLOR_INK_LIGHT_WHITE = COLOR_INK_WHITE;
+static const uint8_t COLOR_INK_LIGHT_WHITE = 15 << 4;  // COLOR_INK_WHITE;
 
 static const uint8_t COLOR_PAPER_BLACK = COLOR_INK_BLACK >> 4;
 static const uint8_t COLOR_PAPER_RED = COLOR_INK_RED >> 4;

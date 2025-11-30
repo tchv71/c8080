@@ -16,7 +16,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <c8080/codepage/micro80.h>
+#include <c8080/codepage/koi8.h>
 
 static uint8_t *const SCREEN = (uint8_t *)0x0;
 static uint8_t *const SCREEN_ATTRIB = (uint8_t *)0x3000;

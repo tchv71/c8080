@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\hal">
+      <UniqueIdentifier>{99ce707e-9013-4423-aacd-bd58bf16676c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cpm">
+      <UniqueIdentifier>{c86cfc8e-f6a8-4558-9846-521e0dc14a93}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dir.c">
@@ -26,6 +32,63 @@
     </ClCompile>
     <ClCompile Include="windows.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\sound.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\restorescreen.c">
+      <Filter>Source Files\hal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\drawscreen.c">
+      <Filter>Source Files\hal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\drawimagecolortile.c">
+      <Filter>Source Files\hal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\drawtext.c">
+      <Filter>Source Files\hal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\drawimagetile.c">
+      <Filter>Source Files\hal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\changetilecolor.c">
+      <Filter>Source Files\hal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\resetscreen.c">
+      <Filter>Source Files\hal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\savescreen.c">
+      <Filter>Source Files\hal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\cpm_h\bdos.c">
+      <Filter>Source Files\cpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\cpm_h\cpmbiosconin.c">
+      <Filter>Source Files\cpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\cpm_h\cpmbiosconout.c">
+      <Filter>Source Files\cpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\cpm_h\cpmbiosconst.c">
+      <Filter>Source Files\cpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\cpm_h\cpmcommand.c">
+      <Filter>Source Files\cpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\cpm_h\cpmconvertfromname83.c">
+      <Filter>Source Files\cpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\cpm_h\cpmgetattrib.c">
+      <Filter>Source Files\cpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\cpm_h\cpmgetnameandattrib.c">
+      <Filter>Source Files\cpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\cpm_h\cpmparsename.c">
+      <Filter>Source Files\cpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\cpm_h\cpmsetattrib.c">
+      <Filter>Source Files\cpm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +124,9 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="nc.asm">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="nc.lst">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

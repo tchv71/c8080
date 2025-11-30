@@ -38,9 +38,9 @@ void __global mem_to_scr(void *, const void *, size_t) {
     asm {
 __a_3_mem_to_scr=0
 	ex   hl, de             ; de = size
-__a_2_mem_to_scr=$
+__a_2_mem_to_scr=$+1
 	ld   bc, 0              ; bc = source
-__a_1_mem_to_scr=$
+__a_1_mem_to_scr=$+1
 	ld   hl, 0              ; hl = destination
 	ld   a, l
 	out  (99h), a

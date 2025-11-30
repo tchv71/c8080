@@ -67,7 +67,7 @@
 make all</NMakeBuildCommandLine>
     <NMakeOutput>nc.com</NMakeOutput>
     <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
-    <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>WIN32;_DEBUG;ARCH_CPM_CCP;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <PublicIncludeDirectories>D:\RK\c8080\include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <IncludePath>D:\RK\c8080\include\arch\palmira2;D:\RK\c8080\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
@@ -92,6 +92,25 @@ make all</NMakeBuildCommandLine>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\changetilecolor.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\drawimagecolortile.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\drawimagetile.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\drawscreen.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\drawtext.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\resetscreen.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\restorescreen.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\savescreen.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\sound.c" />
+    <ClCompile Include="..\..\include\cpm_h\bdos.c" />
+    <ClCompile Include="..\..\include\cpm_h\cpmbiosconin.c" />
+    <ClCompile Include="..\..\include\cpm_h\cpmbiosconout.c" />
+    <ClCompile Include="..\..\include\cpm_h\cpmbiosconst.c" />
+    <ClCompile Include="..\..\include\cpm_h\cpmcommand.c" />
+    <ClCompile Include="..\..\include\cpm_h\cpmconvertfromname83.c" />
+    <ClCompile Include="..\..\include\cpm_h\cpmgetattrib.c" />
+    <ClCompile Include="..\..\include\cpm_h\cpmgetnameandattrib.c" />
+    <ClCompile Include="..\..\include\cpm_h\cpmparsename.c" />
+    <ClCompile Include="..\..\include\cpm_h\cpmsetattrib.c" />
     <ClCompile Include="dir.c" />
     <ClCompile Include="nc.c" />
     <ClCompile Include="panel.c" />
@@ -112,6 +131,7 @@ make all</NMakeBuildCommandLine>
   <ItemGroup>
     <None Include="Makefile" />
     <None Include="nc.asm" />
+    <None Include="nc.lst" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -236,19 +236,19 @@ uint8_t PanelGetDirIndex(void) {
 }
 
 static void PanelDrawTop(uint8_t x) {
-    DrawTextXY(x, 0, COLOR_PANEL_BORDER, "╔══════════════════════════════╗");
+    DrawTextXY(x, 0, COLOR_PANEL_BORDER, "╔══════════════════════════════════════╗");
 }
 
 void PanelDrawBorder(uint8_t x) {
     PanelDrawTop(x);
     for (uint8_t y = 1; y < TEXT_HEIGHT - 6; y++)
-        DrawTextXY(x, y, COLOR_PANEL_BORDER, "║              │               ║");
-    DrawTextXY(x + 6, 1, COLOR_PANEL_HEADER, "Name");
-    DrawTextXY(x + 6 + 15, 1, COLOR_PANEL_HEADER, "Name");
-    DrawTextXY(x, TEXT_HEIGHT - 6, COLOR_PANEL_BORDER, "╟──────────────┴───────────────╢");
-    DrawTextXY(x, TEXT_HEIGHT - 5, COLOR_PANEL_BORDER, "║                              ║");
-    DrawTextXY(x, TEXT_HEIGHT - 4, COLOR_PANEL_BORDER, "║                              ║");
-    DrawTextXY(x, TEXT_HEIGHT - 3, COLOR_PANEL_BORDER, "╚══════════════════════════════╝");
+        DrawTextXY(x, y, COLOR_PANEL_BORDER, "║                  │                   ║");
+    DrawTextXY(x + 6 + 2, 1, COLOR_PANEL_HEADER, "Name");
+    DrawTextXY(x + 6 + 2 + 15, 1, COLOR_PANEL_HEADER, "Name");
+    DrawTextXY(x, TEXT_HEIGHT - 6, COLOR_PANEL_BORDER, "╟──────────────────┴───────────────────╢");
+    DrawTextXY(x, TEXT_HEIGHT - 5, COLOR_PANEL_BORDER, "║                                      ║");
+    DrawTextXY(x, TEXT_HEIGHT - 4, COLOR_PANEL_BORDER, "║                                      ║");
+    DrawTextXY(x, TEXT_HEIGHT - 3, COLOR_PANEL_BORDER, "╚══════════════════════════════════════╝");
 }
 
 void PanelDrawTitle(uint8_t color) {
@@ -279,7 +279,7 @@ void PanelDrawFileInfo(void) {
         CpmConvertFromName83(panel_a.selected_name, file_pointer->name83);
         memcpy(text, panel_a.selected_name, strlen(panel_a.selected_name));
         if (file_pointer->attrib & ATTRIB_DIR_ALL) {
-            strcpy(&text[12 + 7], (file_pointer->attrib & ATTRIB_DIR_UP) ? "►UP--DIR◄" : "►SUB-DIR◄");
+            strcpy(&text[12 + 7], (file_pointer->attrib & ATTRIB_DIR_UP) ? ">UP--DIR<" : ">SUB-DIR<");
         } else {
             Uint32ToString(text + 12, (uint32_t)file_pointer->blocks_128 * 128, 10);
             strcpy(&text[12 + 10], " bytes");

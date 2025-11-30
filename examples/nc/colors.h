@@ -21,7 +21,7 @@
 
 #ifdef ARCH_MICRO80_COLOR
 
-#define CHANGE_INK_TO_BLACK(X) ((X)&0xF0)
+#define CHANGE_INK_TO_BLACK(X) ((X)&0xF | 0x10)
 
 static const uint8_t COLOR_COMMAND_LINE = COLOR_PAPER_BLACK | COLOR_INK_WHITE;
 
