@@ -243,8 +243,8 @@ void PanelDrawBorder(uint8_t x) {
     PanelDrawTop(x);
     for (uint8_t y = 1; y < TEXT_HEIGHT - 6; y++)
         DrawTextXY(x, y, COLOR_PANEL_BORDER, "║                  │                   ║");
-    DrawTextXY(x + 6 + 2, 1, COLOR_PANEL_HEADER, "Name");
-    DrawTextXY(x + 6 + 2 + 15, 1, COLOR_PANEL_HEADER, "Name");
+    DrawTextXY(x + (6 + 2), 1, COLOR_PANEL_HEADER, "Name");
+    DrawTextXY(x + (6 + 2 + 15), 1, COLOR_PANEL_HEADER, "Name");
     DrawTextXY(x, TEXT_HEIGHT - 6, COLOR_PANEL_BORDER, "╟──────────────────┴───────────────────╢");
     DrawTextXY(x, TEXT_HEIGHT - 5, COLOR_PANEL_BORDER, "║                                      ║");
     DrawTextXY(x, TEXT_HEIGHT - 4, COLOR_PANEL_BORDER, "║                                      ║");
@@ -363,7 +363,7 @@ void PanelMoveCursorLeft(void) {
 void PanelMoveCursorRight(void) {
     PanelHideCursor();
 
-    // Переместится вправо нельзя
+    // Переместиться вправо нельзя
     uint16_t w = PanelGetCursorIndex();
     if (w + PANEL_ROWS_COUNT >= panel_a.count) {  //! перепутаны > и >=
         // Это последний файл
