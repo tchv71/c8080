@@ -19,7 +19,7 @@
 
 int getchar(void) {
     asm {
-        call cpmconsoleread;0F803h
+        call cpmbiosconin;0F803h
         ld   l, a
         rla
         sbc  a

@@ -92,6 +92,14 @@ make all</NMakeBuildCommandLine>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\clearconsole.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\getcursorposition.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\hidecursor.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\movecursor.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\movecursorhome.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\resetconsole.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\setconsolecolor.c" />
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\showcursor.c" />
     <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\changetilecolor.c" />
     <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\drawimagecolortile.c" />
     <ClCompile Include="..\..\include\arch\palmira2\c8080\hal_h\drawimagetile.c" />

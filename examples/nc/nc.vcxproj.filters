@@ -19,6 +19,9 @@
     <Filter Include="Source Files\cpm">
       <UniqueIdentifier>{c86cfc8e-f6a8-4558-9846-521e0dc14a93}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Console">
+      <UniqueIdentifier>{70b1e220-4364-4099-be1c-27c1bf5f6f1e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dir.c">
@@ -89,6 +92,30 @@
     </ClCompile>
     <ClCompile Include="..\..\include\cpm_h\cpmsetattrib.c">
       <Filter>Source Files\cpm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\clearconsole.c">
+      <Filter>Source Files\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\getcursorposition.c">
+      <Filter>Source Files\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\hidecursor.c">
+      <Filter>Source Files\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\movecursor.c">
+      <Filter>Source Files\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\movecursorhome.c">
+      <Filter>Source Files\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\resetconsole.c">
+      <Filter>Source Files\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\setconsolecolor.c">
+      <Filter>Source Files\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\arch\palmira2\c8080\console_h\showcursor.c">
+      <Filter>Source Files\Console</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

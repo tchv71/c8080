@@ -20,17 +20,19 @@
 
 uint16_t GetCursorPosition(void)
 {
-    (void)CpmConsoleRead;
+    (void)CpmBiosConIn;
     asm
     {
 	;CpmConsoleWriteString("\033Z$");
 	;return ((uint16_t) CpmConsoleRead()) << 8 | CpmConsoleRead();
 	ld   hl, getcursorposition_data
 	call __puts;0F818h
-	call cpmconsoleread
+	call cpmbiosconin
+	sub  0x20
 	ld   l,a
 	push hl
-	call cpmconsoleread
+	call cpmbiosconin
+	sub  0x20
 	pop  hl
 	ld   h,a
 	ret
