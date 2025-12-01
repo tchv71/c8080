@@ -176,6 +176,17 @@ static void NcCommand(const char *text) {
     CpmCommand(d, text);
 }
 
+
+static void NcExec(const char* prog, const char * text)
+{
+    strcpy(input, prog);
+    strcat(input, text);
+    uint8_t d = panel_a.drive_user;
+    ToUpperCase(input);
+    CpmCommand(d, input);
+}
+
+
 static void NcExecute(void) {
     // Выход, если папка пуста или файл не выбран
     if (panel_a.count == 0)
@@ -556,6 +567,12 @@ int main(int, char **) {
                         continue;
                     case KEY_ENTER:
                         NcExecute();
+                        continue;
+                    case '3':
+                        NcExec("view ", panel_a.selected_name);
+                        continue;
+                    case '4':
+                        NcExec("e3 ", panel_a.selected_name);
                         continue;
                     case '5':
                         NcCopyMoveRename(false);

@@ -34,6 +34,7 @@ struct SavedScreen {
     uint16_t cursor;
     uint8_t cursor_visible;
     uint8_t color;
+    char context[6];
 };
 
 #define TILE(X, Y) (SCREEN + (X) + (Y)*SCREEN_BPL)
