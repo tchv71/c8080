@@ -185,8 +185,9 @@ __a_3_cpmsearchfirst = 0
         ld (cpm_search_buffer + 1 + 8 + 3), a
 
         ; drive
-__a_1_cpmsearchfirst = 0
-         ld (cpm_search_buffer), a
+__a_1_cpmsearchfirst = $ + 1
+        ld a,0
+        ld (cpm_search_buffer), a
 
         ; name83
 __a_2_cpmsearchfirst = $ + 1

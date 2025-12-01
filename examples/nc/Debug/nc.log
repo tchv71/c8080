@@ -2,9 +2,9 @@
   ../../c8080 -OCPM -DARCH_CPM_CCP -DARCH_PALMIRA2 -I../../include/micro80 -onc.com -A..\..\include\sjasmplus.exe dir.c nc.c panel.c windows.c
   C Compiler for i8080 (Nov 18 2025)
   (c) Aleksey Morozov aleksey.f.morozov@gmail.com aleksey.f.morozov@yandex.ru
-  SjASMPlus Z80 Cross-Assembler v1.07 RC7 (build 02-04-2008)
+  SjASMPlus Z80 Cross-Assembler v1.21.0 (https://github.com/z00m128/sjasmplus)
   Pass 1 complete (0 errors)
   Pass 2 complete (0 errors)
   Pass 3 complete
-  Errors: 0, warnings: 0, compiled: 6680 lines, work time: 0.031 seconds
+  Errors: 0, warnings: 0, compiled: 6686 lines, work time: 0.078 seconds
   Done

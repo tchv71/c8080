@@ -173,12 +173,14 @@ static void NcCommand(const char *text) {
         d &= 0x0F;
     }
 #endif
+    ToUpperCase(input);
     CpmCommand(d, text);
 }
 
 
 static void NcExec(const char* prog, const char * text)
 {
+    NcBeforeExit();
     strcpy(input, prog);
     strcat(input, text);
     uint8_t d = panel_a.drive_user;
