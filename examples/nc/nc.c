@@ -61,6 +61,8 @@ static const char help_64_no_fn[] =
     " 6\0Ren  \0"
     " 7\0Mkdir\0"
     " 8\0Del  \0"
+    " 9\0     \0"
+    " 0\0Exit \0"
     " \0";
 
 static void NcDrawCommandLine(void) {
