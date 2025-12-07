@@ -573,10 +573,10 @@ int main(int, char **) {
                         NcExecute();
                         continue;
                     case '3':
-                        NcExec("view ", panel_a.selected_name);
+                        NcExec("a:view ", panel_a.selected_name);
                         continue;
                     case '4':
-                        NcExec("e3 ", panel_a.selected_name);
+                        NcExec("a:e3 ", panel_a.selected_name);
                         continue;
                     case '5':
                         NcCopyMoveRename(false);
