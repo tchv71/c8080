@@ -64,3 +64,15 @@ CONOU1:
 	jp	(hl)
     }
 }
+
+void __global ClearScroll()
+{
+    asm {
+	LD	BC,3C00h
+	LD   A,C
+	OUT  (98h+1), A
+	LD   A,B
+	OR   80h
+	OUT  (98h+1), A
+    }
+}

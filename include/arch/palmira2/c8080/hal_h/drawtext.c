@@ -20,27 +20,47 @@
 void __global DrawText(void *, uint8_t, uint8_t, const char *) {
     asm {
 __a_4_drawtext=0
-	ex   hl, de
+	ex	hl, de
 __a_1_drawtext=$+1
-	ld   bc, 0 ; tile
-	DI
-	LD   A,C
-	OUT  (98h+1), A
-	LD   A,B
-	OR   40h
-	OUT  (98h+1), A
+	ld	bc, 0 ; tile
+	di
+	ld	a,c
+	out	(98h+1), a
+	ld	a,b
+	or	40h
+	out	(98h+1), a
+	ld	h, 0
 drawtext_l1:
-	ld   a, (de)
-	inc  de
-	or   a
-	ret  z
-	;and  7fh
-	out  (98h), a
+	ld	a, (de)
+	inc	de
+	or	a
+	jp	z, drawtext_l2
+	inc	h
+	out	(98h), a
+	jp	drawtext_l1
+drawtext_l2:
+	push	hl
+	ld	hl, 3000h
+	add	hl, bc
+	ld	a,l
+	out	(98h+1), a
+	ld	a,h
+	or	40h
+	out	(98h+1), a
+	pop	hl
+drawtext_l3:
+	inc	h
+	dec	h
+	ret	z
+drawtext_l4:
 __a_3_drawtext=$+1
-	ld   a, 0 ;ld   (hl), 0 ; color
-	out  (98h), a
-	;inc  c
-	;inc  l
-	jp   drawtext_l1
+	ld	a, 0 ; color
+	rlca
+	rlca
+	rlca
+	rlca
+	out	(98h), a
+	dec	h
+	jp	nz, drawtext_l4
     }
 }

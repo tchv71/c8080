@@ -46,3 +46,5 @@ uint16_t GetCursorPosition(void) __link("c8080/console_h/getcursorposition.c");
 
 /* Set cursor position. */
 void __global MoveCursor(uint8_t x, uint8_t y) __link("c8080/console_h/movecursor.c");
+
+void __global ClearScroll() __link("c8080/console_h/movecursor.c");

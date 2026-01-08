@@ -36,22 +36,23 @@ drawimagetile_l1:
 	push bc
 	push hl
 drawimagetile_l2:
-	;ld   a, h
-	;sub  08h
-	;ld   h, a
-
 	ld   a, (de)
 	inc  de
-	;ld   (hl), a
 	out  (98h), a
 
-	;ld   a, h
-	;add  08h
-	;ld   h, a
-
+	push	hl
+	push	bc
+	ld	bc,3000h
+	add	hl, bc
+	pop	bc
+	ld	a, l
+	out	(99h), a
+	ld	a, h
+	or	40h
+	out	(99h), a
+	pop	hl
 	ld   a, (de)
 	inc  de
-	;ld   (hl), a
 	out  (98h), a
 
 	inc  l

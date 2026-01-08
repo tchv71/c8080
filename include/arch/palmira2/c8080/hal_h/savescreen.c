@@ -31,7 +31,9 @@ void SaveScreen(struct SavedScreen *s) {
     s->cursor = BIOS_CURSOR;
     s->cursor_visible = BIOS_CURSOR_VISIBLE;
     HideCursor();
-    scr_to_mem(s->screen, SCREEN, TEXT_WIDTH * TEXT_HEIGHT * 2);
+    scr_to_mem(s->screen, SCREEN, TEXT_WIDTH * TEXT_HEIGHT);
+    scr_to_mem(s->screen + TEXT_WIDTH * TEXT_HEIGHT, SCREEN + VRAM_COLOR_ADDRESS, TEXT_WIDTH * TEXT_HEIGHT);
+
     memcpy(s->context, &BIOS_CURSOR_VISIBLE + 2, sizeof(s->context));
     /* memcpy(s->screen + TEXT_WIDTH * TEXT_HEIGHT, SCREEN, TEXT_WIDTH * TEXT_HEIGHT); */
     if (s->cursor_visible)

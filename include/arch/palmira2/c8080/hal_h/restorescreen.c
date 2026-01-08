@@ -28,7 +28,8 @@ void RestoreScreen(struct SavedScreen *s) {
     HideCursor();
     BIOS_COLOR = s->color;
     BIOS_CURSOR = s->cursor;
-    mem_to_scr(SCREEN, s->screen, TEXT_WIDTH * TEXT_HEIGHT * 2);
+    mem_to_scr(SCREEN, s->screen, TEXT_WIDTH * TEXT_HEIGHT);
+    mem_to_scr(SCREEN + VRAM_COLOR_ADDRESS, s->screen + TEXT_WIDTH * TEXT_HEIGHT, TEXT_WIDTH * TEXT_HEIGHT);
     memcpy(&BIOS_CURSOR_VISIBLE + 2, s->context, sizeof(s->context));
 
     /* memcpy(SCREEN, s->screen + TEXT_WIDTH * TEXT_HEIGHT, TEXT_WIDTH * TEXT_HEIGHT); */

@@ -66,8 +66,7 @@ static const char help_64_no_fn[] =
     " \0";
 
 static void NcDrawCommandLine(void) {
-    DrawInput(panel_a.short_path_size + 1, TEXT_HEIGHT - 2, TEXT_WIDTH - 1 - panel_a.short_path_size,
-              COLOR_COMMAND_LINE);
+    DrawInput(panel_a.short_path_size + 1, TEXT_HEIGHT - 2, TEXT_WIDTH - 1 - panel_a.short_path_size, COLOR_COMMAND_LINE);
 }
 
 static void NcDrawCommandLinePrefix(void) {
@@ -98,7 +97,7 @@ static void NcDrawHelp(void) {
 void NcDrawScreen(void) {
     HideCursor();
     MoveCursor(0, 0);  // Что бы уменьшить вероятность прокрутки экрана из-за ошибок CP/M
-
+    ClearScroll();
 #ifdef NC_SAVE_SCREEN
     if (panels_hidden) {
         RestoreScreen(&saved_screen);

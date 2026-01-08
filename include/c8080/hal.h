@@ -20,6 +20,13 @@
 #include <stdbool.h>
 #include <c8080/halconsts.h>
 
+enum VRAM_OPT
+{
+  VRAM_COLOR_ADDRESS = 0x3000,
+  VRAM_NAME_ADDRESS = 0,
+  T_T80_VRAM_PATT_ADDRESS = 0x100
+};
+
 /*** Direct video ***/
 
 /* Reset screen to default settings (such as black background color) and clear the screen */

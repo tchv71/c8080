@@ -18,34 +18,34 @@
 void __global ChangeTileColor(void *tile, uint8_t color, uint8_t width, uint8_t height) {
     asm {
 __a_4_changetilecolor=0
-        ld   c, a ; height
+	ld	c, a ; height
 __a_1_changetilecolor=$+1
-        ld   hl, 0 ; tile
-        ld   a, h
-        ;sub  8
-        add   30h
-        ld   h, a
+	ld	hl, 0 ; tile
+	ld	a, h
+	add	30h
+	ld	h, a
 
-__a_2_changetilecolor=$+1
-        ld   a, 0 ; color
 changetilecolor_1:
 __a_3_changetilecolor=$+1
-        ld   b, 0 ; width
-       	push af
-	ld   a,l
-        out  (98h+1), a
-        ld   a,h
-        or   40h
-        out  (98h+1), a
-        pop  af
+	ld	b, 0 ; width
+	ld	a,l
+	out	(98h+1), a
+	ld	a,h
+	or	40h
+	out	(98h+1), a
 changetilecolor_2:
-        out  (98h), a
-        ;inc  de
-        dec  b
-        jp   nz, changetilecolor_2
-        ld   de, 80;64
-        add  hl, de
-        dec  c
-        jp   nz, changetilecolor_1
+__a_2_changetilecolor=$+1
+	ld	a, 0 ; color
+	rlca
+	rlca
+	rlca
+	rlca
+	out	(98h), a
+	dec	b
+	jp	nz, changetilecolor_2
+	ld	de, 80;64
+	add	hl, de
+	dec	c
+	jp	nz, changetilecolor_1
     }
 }
