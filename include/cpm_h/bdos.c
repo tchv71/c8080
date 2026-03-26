@@ -194,11 +194,11 @@ __a_2_cpmsearchfirst = $ + 1
         ld   hl, 0
         ld   de, cpm_search_buffer + 1
         ld   c, 8 + 3
-        ld   a, '?'
 CpmSearchFirst_1:
-        dec  hl
-        inc  hl
-        jp   c, CpmSearchFirst_2
+        ld   a, h
+        or   l
+        ld   a, '?'
+        jp   z, CpmSearchFirst_2
         ld   a, (hl)
         inc  hl
 CpmSearchFirst_2:
@@ -214,15 +214,12 @@ _cpmsearch:
         call 5
 
         ; Result
-        cp   0FFh
         ld   hl, 0
-        ret  z
-        add  a
-        add  a
-        add  a
-        add  a
-        add  a
-        add  80h ; DEFAULT_DMA
+        rrca
+        rrca
+        rrca
+        ret  c
+        add  80h ; Default DMA
         ld   l, a
     }
 }

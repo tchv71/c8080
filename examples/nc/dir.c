@@ -98,7 +98,7 @@ uint8_t DirMake(uint8_t drive_dir, const char *name) {
     if (drive_dir == 0xFF || dir.name83[0] == ' ')
         return DIR_MAKE_ERROR_NAME;
 
-    CpmSetDrive(drive_dir & 0x0F); // TODO: Error
+    CpmSetDrive(drive_dir & 0x0F);  // TODO: Error
 
     // Поиск свободного номера папки
     uint16_t bitmap = 1;

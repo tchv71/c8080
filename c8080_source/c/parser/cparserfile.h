@@ -51,7 +51,7 @@ private:
     CBaseType ParseBaseType();
     CNodePtr ParseExpressionStructItem(CMonoOperatorCode mo, CNodePtr &a, CErrorPosition &e);
     CNodePtr ParseExpressionArrayElement(CNodePtr &a, CErrorPosition &e);
-    void IgnoreAttributes();
+    void ParseGccAttributes(CAlignAttribute *a);
     void IgnoreInsideBrackets(size_t level);
 
     // Preprocessor

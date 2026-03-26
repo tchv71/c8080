@@ -55,7 +55,10 @@ uint32_t PrepareInt(Prepare &p, CNodePtr *pnode) {
     while (*pnode != nullptr) {
         uint32_t r;
         do {
-            r = PrepareJump(p, *pnode);
+            r = 0;
+
+            if (!p.programm.cmm)
+                r = PrepareJump(p, *pnode);
 
             r |= PrepareInt(p, &(*pnode)->a);
             r |= PrepareInt(p, &(*pnode)->b);

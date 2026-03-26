@@ -55,6 +55,7 @@ void RegisterProhibitedOutputNames(CProgramm &programm) {
         "c",
         "d",
         "e",
+        "f",
         "h",
         "l",
         "h",

@@ -101,9 +101,9 @@ void CParserFile::IgnoreInsideBrackets(size_t level) {
     }
 }
 
-void CParserFile::IgnoreAttributes() {  // gcc compatibility
+void CParserFile::ParseGccAttributes(CAlignAttribute* a) {
     for (;;) {
-        if (l.IfToken("__asm__")) {
+        if (l.IfToken("__asm__")) { // gcc compatibility
             if (l.WantToken("("))
                 IgnoreInsideBrackets(1);
             continue;
@@ -112,7 +112,18 @@ void CParserFile::IgnoreAttributes() {  // gcc compatibility
         if (l.IfToken("__attribute__")) {
             l.NeedToken("(");
             l.NeedToken("(");
-            IgnoreInsideBrackets(2);
+            if (a && l.IfToken("aligned")) {
+                if (a->exists)
+                    l.Error(std::string("already defined"));
+                l.NeedToken("(");
+                a->exists = true;
+                a->value = ParseUint64();
+                l.NeedToken(")");
+                l.NeedToken(")");
+                l.NeedToken(")");
+                continue;
+            }
+            IgnoreInsideBrackets(2); // gcc compatibility
             continue;
         }
 
@@ -273,14 +284,15 @@ CNodePtr CParserFile::ParseLine(bool *out_break, bool global) {
             continue;
         }
 
-        IgnoreAttributes();
-
         CNodePtr node =
             CNODE({typedef_flag ? CNT_TYPEDEF : CNT_DECLARE_VARIABLE, ctype : type, extern_flag : extern_flag, e : e});
 
         bool is_function = type.base_type == CBT_FUNCTION && !type.IsPointer();
         if (is_function)
             node->extern_flag = true;  // Function prototype is always "extern"
+
+        CAlignAttribute align_attribute;
+        ParseGccAttributes(&align_attribute);
 
         CNodePtr init;
         if (l.IfToken("=")) {
@@ -293,6 +305,7 @@ CNodePtr CParserFile::ParseLine(bool *out_break, bool global) {
         }
 
         CVariablePtr v = RegisterVariable(node->extern_flag, node, global, name);
+        v->align_attribute = align_attribute;
 
         node->variable = v;
         CPrepareArgs(node);
@@ -454,7 +467,7 @@ void CParserFile::ParseStruct(CStruct &struct_object) {
             CStructItemPtr struct_item = std::make_shared<CStructItem>();
             struct_item->type = base_type;
             ParseTypeNameArray(base_type, struct_item->name, struct_item->type);
-            IgnoreAttributes();
+            ParseGccAttributes(nullptr);
             struct_object.items.push_back(struct_item);
         } while (l.IfToken(","));
         l.NeedToken(";");

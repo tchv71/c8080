@@ -25,11 +25,10 @@
 #include "nc.h"
 #include "config.h"
 
-char spaces[TEXT_WIDTH + 1];
 uint8_t window_color = COLOR_WINDOW;
 uint8_t window_x = 0;
 char input[128];
-uint8_t input_pos;
+uint8_t input_size;
 
 char *MakeString(char *str, char c, uint8_t l) {
     memset(str, c, l);
@@ -65,31 +64,34 @@ uint8_t DrawWindow(uint8_t x, uint8_t height, const char *title) {
 }
 
 void DrawInput(uint8_t x, uint8_t y, uint8_t width, uint8_t color) {
-    const uint8_t input_pos_1 = input_pos + 1;
+    char spaces[TEXT_WIDTH + 1];
+    MakeString(spaces, ' ', width);
+
     uint8_t offset = 0;
-    if (input_pos_1 > width)
-        offset = input_pos_1 - width;
-    DrawTextXY(x, y, color, input + offset);
-    DrawTextXY(x + (input_pos - offset), y, color, "_");
-    if (input_pos_1 < width)
-        DrawTextXY(x + input_pos_1, y, color, SPACES(width + offset - input_pos_1));
+    if (input_size >= width)
+        offset = input_size - width + 1;
+    memcpy(spaces, input + offset, input_size);
+
+    spaces[input_size - offset] = '_';
+
+    DrawTextXY(x, y, color, spaces);
 }
 
 void ProcessInput(char c) {
     if (c == KEY_BACKSPACE) {
-        if (input_pos > 0)
-            input_pos--;
+        if (input_size > 0)
+            input_size--;
     } else if (c >= ' ') {
-        if (input_pos < sizeof(input) - 2) {
-            input[input_pos] = c;
-            input_pos++;
+        if (input_size < sizeof(input) - 2) {
+            input[input_size] = c;
+            input_size++;
         }
     }
-    input[input_pos] = 0;
+    input[input_size] = 0;
 }
 
 bool RunInput(uint8_t y) {
-    input_pos = 0;  // TODO: input_pos = strlen(input);
+    input_size = 0;  // TODO: input_pos = strlen(input);
     char c;
     for (;;) {
         DrawInput(window_x, y, WINDOW_WIDTH, COLOR_INPUT);
@@ -100,7 +102,7 @@ bool RunInput(uint8_t y) {
             break;
         ProcessInput(c);
     }
-    input_pos = 0;  // Что бы введенный текст не появился в ком. строке
+    input_size = 0;  // Что бы введенный текст не появился в ком. строке
     NcDrawScreen();
     return c == KEY_ENTER;
 }

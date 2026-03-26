@@ -174,6 +174,10 @@ public:
         Write(":\n");
     }
 
+    void align(uint64_t size) {
+        Write("\t.align ", size, "\n");
+    }
+
     void ds(size_t size) {
         if (size != 0)
             Write("\tds ", size, "\n");

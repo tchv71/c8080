@@ -53,3 +53,19 @@ struct CLinkAttribute {
         return !(*this == b);
     }
 };
+
+// Example: int data[256] __attribute__((aligned(8)));
+
+struct CAlignAttribute {
+    bool exists{};
+    uint64_t value{};
+
+    bool operator==(const CAlignAttribute &b) const {
+        return exists == b.exists && value == b.value;
+    }
+
+    bool operator!=(const CAlignAttribute &b) const {
+        return !(*this == b);
+    }
+};
+

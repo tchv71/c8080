@@ -29,11 +29,8 @@ static const uint8_t PROGRESS_WIDTH = WINDOW_WIDTH;
 static const uint8_t PROGRESS_X = (TEXT_WIDTH - PROGRESS_WIDTH) / 2;
 
 extern char input[128];
-extern uint8_t input_pos;
+extern uint8_t input_size;
 extern uint8_t window_color;
-
-extern char spaces[TEXT_WIDTH + 1];
-#define SPACES(count) (spaces + sizeof(spaces) - 1 - (count))
 
 uint8_t DrawWindow(uint8_t x, uint8_t height, const char *title);
 void DrawWindowText(uint8_t y, const char *text);

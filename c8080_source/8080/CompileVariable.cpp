@@ -25,6 +25,9 @@ void CompileVariable(Asm &out, CProgramm &p, CVariablePtr &vd) {
 
     PrepareVariable(p, vd, out);
 
+    if (vd->align_attribute.exists)
+        out.align(vd->align_attribute.value);
+
     out.variable(vd->output_name);
 
     size_t bytes_written = 0;

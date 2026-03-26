@@ -40,6 +40,7 @@ struct CVariable {
     size_t label_call_count{};
     CAddressAttribute address_attribute;
     CLinkAttribute link_attribute;
+    CAlignAttribute align_attribute;
     bool link_attribute_processed{};
     bool c_calc_const_executed{};
 
